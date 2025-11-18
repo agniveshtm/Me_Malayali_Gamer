@@ -1,0 +1,129 @@
+{% extends "users/template_signup_login.html" %}
+{% load static %}
+
+{% block page_title %}Signup Page{% endblock page_title %}
+
+{% block content %}
+    <div class="auth-header">
+        <h1><b>Create Account</b></h1>
+        <p>Create your account to get started</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="form-group 
+            {% if frm.email.errors %}
+                input-error
+            {% endif %}">
+            
+            <label for="email">Email</label>
+            <input type="email" class="form-control" id="email" name="email" value="{{ frm.email.value|default_if_none:'' }}" placeholder="Enter your email" required>
+            
+            {% if frm.email.errors %}
+                {% for error in frm.email.errors %}
+                    <div class="error-message">{{ error }}</div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="form-group 
+            {% if frm.username.errors %}
+                input-error
+            {% endif %}">
+            
+            <label for="username">Username</label>
+            <input type="text" class="form-control" id="username" name="username" value="{{ frm.username.value|default_if_none:'' }}" placeholder="Enter your username" required>
+            
+            {% if frm.username.errors %}
+                {% for error in frm.username.errors %}
+                    <div class="error-message">{{ error }}</div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="form-group 
+            {% if frm.password1.errors or frm.non_field_errors %}
+                input-error
+            {% endif %}">
+            
+            <label for="password">Password</label>
+            <div class="input-group">
+                <input type="password" class="form-control" id="password" name="password1" placeholder="Enter your password" required>
+                <button class="btn btn-outline-secondary" type="button" id="togglePassword" style="border-left: 0; border-color: #ddd;">
+                    <i class="bi bi-eye-slash" id="eyeIcon"></i>
+                </button>
+            </div>
+            
+            {% if frm.password1.errors %}
+                {% for error in frm.password1.errors %}
+                    <div class="error-message">{{ error }}</div>
+                {% endfor %}
+            {% endif %}
+            {% if frm.non_field_errors %}
+                {% for error in frm.non_field_errors %}
+                    <div class="error-message">{{ error }}</div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="form-group 
+            {% if frm.password2.errors or frm.non_field_errors %}
+                input-error
+            {% endif %}">
+            
+            <label for="confirm_password">Confirm Password</label>
+            <div class="input-group">
+                <input type="password" class="form-control" id="confirm_password" name="password2" placeholder="Re-enter your password" required>
+                <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword" style="border-left: 0; border-color: #ddd;">
+                    <i class="bi bi-eye-slash" id="eyeIconConfirm"></i>
+                </button>
+            </div>
+            
+            {% if frm.password2.errors %}
+                {% for error in frm.password2.errors %}
+                    <div class="error-message">{{ error }}</div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Sign Up</button>
+
+        <div class="link-text">
+            Already have an account?
+            <a href="{% url 'user_login' %}">Log in</a>
+        </div>
+    </form>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Unified toggle for both password fields
+        const toggles = [
+            { inputId: 'password', toggleId: 'togglePassword', iconId: 'eyeIcon' },
+            { inputId: 'confirm_password', toggleId: 'toggleConfirmPassword', iconId: 'eyeIconConfirm' }
+        ];
+
+        toggles.forEach(({ inputId, toggleId, iconId }) => {
+            const input = document.getElementById(inputId);
+            const toggleBtn = document.getElementById(toggleId);
+            const eyeIcon = document.getElementById(iconId);
+
+            if (input && toggleBtn && eyeIcon) {
+                toggleBtn.addEventListener('click', function() {
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        eyeIcon.classList.remove('bi-eye-slash');
+                        eyeIcon.classList.add('bi-eye');
+                    } else {
+                        input.type = 'password';
+                        eyeIcon.classList.remove('bi-eye');
+                        eyeIcon.classList.add('bi-eye-slash');
+                    }
+                });
+            }
+        });
+    });
+</script>
+{% endblock scripts %}

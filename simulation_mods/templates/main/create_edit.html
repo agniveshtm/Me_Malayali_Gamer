@@ -1,0 +1,242 @@
+{% extends "main/base.html" %}
+{% load static %}
+{% block title %}
+    {% if is_edit %}Edit Mod - Me Malayali Gamer{% else %}Upload a Mod - Me Malayali Gamer{% endif %}
+{% endblock %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="upload-container">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- MOVED INSIDE FORM -->
+            <div class="mod-visibility">
+                <div>
+                   <strong id="visibility-status">{{ frm.is_public.value|yesno:"Public,Private" }}</strong> - 
+                    <span id="visibility-text">visible to {{ frm.is_public.value|yesno:"anyone,nobody" }}</span>
+                    <br>
+                    <span class="text-muted" style="font-size: 12px;">Visibility can only be changed by logged-in users.</span>
+                </div>
+                <div class="form-check form-switch">
+                    <input type="checkbox" class="form-check-input" id="is_public_toggle" name="is_public" {% if frm.is_public.value %}checked{% endif %}>
+                    <label class="form-check-label" for="is_public_toggle">{{ frm.is_public.value|yesno:"Public,Private" }}</label>
+                </div>
+            </div>
+
+            <h2>
+                {% if is_edit %}
+                    <i class="fas fa-edit me-2"></i>Edit Your Mod
+                {% else %}
+                    <i class="fas fa-cloud-upload-alt me-2"></i>Upload New Mod
+                {% endif %}
+            </h2>
+
+            {% if frm.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in frm.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="form-grid">
+                <div class="form-field">
+                    <label for="{{ frm.title.id_for_label }}">{{ frm.title.label }}</label>
+                    <input type="text" id="{{ frm.title.id_for_label }}" name="{{ frm.title.html_name }}"
+                           class="form-control {% if frm.title.errors %}is-invalid{% endif %}"
+                           placeholder="e.g., KSRTC Bus Mod Kerala" value="{{ frm.title.value|default_if_none:'' }}" required>
+                    {% if frm.title.errors %}<div class="invalid-feedback">{{ frm.title.errors.as_text }}</div>{% endif %}
+                </div>
+
+                <div class="form-field">
+                    <label for="{{ frm.version.id_for_label }}">{{ frm.version.label }}</label>
+                    <input type="text" id="{{ frm.version.id_for_label }}" name="{{ frm.version.html_name }}"
+                           class="form-control {% if frm.version.errors %}is-invalid{% endif %}"
+                           placeholder="e.g., 1.0.2 or BETA" value="{{ frm.version.value|default_if_none:'' }}">
+                    {% if frm.version.errors %}<div class="invalid-feedback">{{ frm.version.errors.as_text }}</div>{% endif %}
+                </div>
+
+                <div class="form-field">
+                    <label for="{{ frm.category.id_for_label }}">{{ frm.category.label }}</label>
+                    {{ frm.category }}
+                    {% if frm.category.errors %}<div class="invalid-feedback d-block">{{ frm.category.errors.as_text }}</div>{% endif %}
+                </div>
+
+                <div class="form-field">
+                    <label for="{{ frm.download_link.id_for_label }}">{{ frm.download_link.label }}</label>
+                    <input type="url" id="{{ frm.download_link.id_for_label }}" name="{{ frm.download_link.html_name }}"
+                           class="form-control {% if frm.download_link.errors %}is-invalid{% endif %}"
+                           placeholder="Enter the URL" value="{{ frm.download_link.value|default_if_none:'' }}" required>
+                    {% if frm.download_link.errors %}<div class="invalid-feedback">{{ frm.download_link.errors.as_text }}</div>{% endif %}
+                </div>
+
+                <div class="form-field full-width images-section">
+                    <label class="mb-2">Images (Screenshots)</label>
+                    <div class="image-grid" id="imageGrid">
+                        <label for="id_thumbnail_img" class="image-placeholder" data-index="0">
+                            {% if mod.thumbnail_img %}
+                                <img src="{{ mod.thumbnail_img.url }}" alt="Thumbnail">
+                            {% else %}
+                                <i class="fas fa-plus"></i>
+                            {% endif %}
+                            <input type="file" id="id_thumbnail_img" name="thumbnail_img" class="image-input" accept="image/*">
+                        </label>
+
+                        <label for="id_img_1" class="image-placeholder" data-index="1">
+                            {% if mod.img_1 %}
+                                <img src="{{ mod.img_1.url }}" alt="Image 1">
+                            {% else %}
+                                <i class="fas fa-plus"></i>
+                            {% endif %}
+                            <input type="file" id="id_img_1" name="img_1" class="image-input" accept="image/*">
+                        </label>
+
+                        <label for="id_img_2" class="image-placeholder" data-index="2">
+                            {% if mod.img_2 %}
+                                <img src="{{ mod.img_2.url }}" alt="Image 2">
+                            {% else %}
+                                <i class="fas fa-plus"></i>
+                            {% endif %}
+                            <input type="file" id="id_img_2" name="img_2" class="image-input" accept="image/*">
+                        </label>
+
+                        <label for="id_img_3" class="image-placeholder" data-index="3">
+                            {% if mod.img_3 %}
+                                <img src="{{ mod.img_3.url }}" alt="Image 3">
+                            {% else %}
+                                <i class="fas fa-plus"></i>
+                            {% endif %}
+                            <input type="file" id="id_img_3" name="img_3" class="image-input" accept="image/*">
+                        </label>
+                    </div>
+                    <span class="image-limit-note">
+                        Max 4 MB per image. Up to 4 images. First image is the <b>Thumbnail Image</b>.
+                    </span>
+                </div>
+
+                <div class="form-field full-width">
+                    <label for="{{ frm.description.id_for_label }}">{{ frm.description.label }}</label>
+                    <textarea id="{{ frm.description.id_for_label }}" name="{{ frm.description.html_name }}"
+                              class="form-control {% if frm.description.errors %}is-invalid{% endif %}"
+                              placeholder="Provide a detailed description..." required>{{ frm.description.value|default_if_none:'' }}</textarea>
+                    {% if frm.description.errors %}<div class="invalid-feedback d-block">{{ frm.description.errors.as_text }}</div>{% endif %}
+                </div>
+            </div>
+
+            <div class="submit-section">
+                <div class="date-and-button d-flex justify-content-end align-items-end">
+                    <div class="form-field date-field-wrapper me-4">
+                        <label for="id_uploaded_on"> {{ frm.uploaded_on.label }}</label>
+                        <input type="text" id="id_uploaded_on" name="{{ frm.uploaded_on.html_name }}"
+                               class="form-control {% if frm.uploaded_on.errors %}is-invalid{% endif %}"
+                               placeholder="Select upload date" value="{{ frm.uploaded_on.value|default_if_none:'' }}">
+                        {% if frm.uploaded_on.errors %}<div class="invalid-feedback d-block">{{ frm.uploaded_on.errors.as_text }}</div>{% endif %}
+                    </div>
+                    <button type="submit" class="btn btn-custom-primary btn-lg flex-grow-1">
+                        {% if is_edit %}Update Mod{% else %}Submit Mod{% endif %}
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    flatpickr("#id_uploaded_on", {
+        enableTime: true,              // ✅ Enable time picker
+        time_24hr: true,                // ✅ 24-hour format
+        dateFormat: "Y-m-d H:i",        // ✅ Include hours and minutes
+        altInput: true,
+        altFormat: "F j, Y at h:i K",   // ✅ Display format with time
+        allowInput: true,
+        defaultDate: new Date()         // ✅ Use current date and time
+});
+
+    const PRIMARY_COLOR = '#1E90FF';
+    const GRAY_500 = '#adb5bd';
+
+    const handleFile = (file, input, ph) => {
+        if (!file || !file.type.startsWith('image/')) return alert("Please upload an image.");
+        const dt = new DataTransfer(); dt.items.add(file); input.files = dt.files;
+        const reader = new FileReader();
+        reader.onload = e => {
+            ph.innerHTML = ''; ph.appendChild(input);
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+            ph.appendChild(img);
+            ph.style.border = ph.dataset.index === '0' ? '2px solid ' + PRIMARY_COLOR : '2px solid #ccc';
+            ph.style.backgroundColor = 'transparent';
+        };
+        reader.readAsDataURL(file);
+    };
+
+    // Sync toggle and status
+    function updateVisibilityStatus() {
+        const toggle = document.getElementById('is_public_toggle');
+        const status = document.getElementById('visibility-status');
+        const visibilityText = document.getElementById('visibility-text');
+        const label = toggle?.nextElementSibling;
+        if (toggle && status && label) {
+            const isPublic = toggle.checked;
+            status.textContent = isPublic ? 'Public' : 'Private';
+            label.textContent = isPublic ? 'Public' : 'Private';
+            visibilityText.textContent = isPublic ? 'visible to anyone' : 'visible to nobody';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        updateVisibilityStatus();
+
+        document.querySelectorAll('.image-placeholder').forEach(ph => {
+            const img = ph.querySelector('img');
+            const input = ph.querySelector('.image-input');
+            const isMain = ph.dataset.index === '0';
+            if (img) {
+                ph.style.border = isMain ? '2px solid ' + PRIMARY_COLOR : '2px solid #ccc';
+                ph.style.backgroundColor = 'transparent';
+            } else {
+                const icon = document.createElement('i');
+                icon.className = 'fas fa-plus';
+                icon.style.fontSize = isMain ? '36px' : '24px';
+                icon.style.color = isMain ? PRIMARY_COLOR : GRAY_500;
+                ph.appendChild(icon);
+            }
+            if (input && !ph.contains(input)) {
+                ph.appendChild(input);
+            }
+        });
+
+        document.querySelectorAll('.image-placeholder').forEach(ph => {
+            ['dragenter','dragover','dragleave','drop'].forEach(ev => 
+                ph.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); })
+            );
+            ['dragenter','dragover'].forEach(ev => 
+                ph.addEventListener(ev, () => ph.classList.add('drag-over'))
+            );
+            ['dragleave','drop'].forEach(ev => 
+                ph.addEventListener(ev, () => ph.classList.remove('drag-over'))
+            );
+            ph.addEventListener('drop', e => {
+                const file = e.dataTransfer.files[0];
+                if (file) handleFile(file, ph.querySelector('.image-input'), ph);
+            });
+        });
+
+        document.querySelectorAll('.image-input').forEach(input => {
+            input.addEventListener('change', e => {
+                const file = e.target.files[0];
+                if (file) handleFile(file, input, input.closest('.image-placeholder'));
+            });
+        });
+
+        document.getElementById('is_public_toggle')?.addEventListener('change', updateVisibilityStatus);
+    });
+</script>
+{% endblock %}

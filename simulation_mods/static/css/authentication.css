@@ -1,0 +1,286 @@
+/*========================================================SIGNUP-LOGIN-CSS=====================================================*/
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 🔥 FLICKER FIX: Set the default background color to match the gradient's dark side */
+body {
+    font-family: Arial, sans-serif;
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+    background-color: #1A2A40; 
+}
+
+/* 🔥 FLICKER FIX: Apply to HTML as well for full viewport coverage */
+html {
+    overflow: hidden;
+    background-color: #1A2A40;
+}
+
+.gradient-section {
+    width: 50%;
+    height: 100vh;
+    /* Branded dark blue/cyan gradient */
+    background: linear-gradient(135deg, #1A2A40 0%, #00BFFF 100%); 
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+}
+
+.gradient-section::before {
+    content: '';
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 30% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                                    radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+    z-index: 1;
+}
+
+.gamer-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 2;
+    transition: transform 0.3s ease-in-out;
+}
+
+.gamer-image:hover {
+    transform: scale(1.05);
+}
+
+.auth-section { /* Generic content section */
+    width: 50%;
+    height: 100vh;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    padding: 60px 50px;
+    overflow-y: hidden;
+    justify-content: center;
+}
+
+.auth-header {
+    margin-bottom: 10px;
+}
+
+.auth-header h1 {
+    color: #333;
+    margin-bottom: 8px;
+    font-size: 32px;
+}
+
+.auth-header p {
+    color: #666;
+    font-size: 14px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    color: #555;
+    font-weight: 500;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+/* Error styling for fields (used by signup) */
+.input-error input,
+.input-error .input-group input { 
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.error-message { /* Generic error class */
+    color: #dc3545;
+    font-size: 13px;
+    margin-top: 6px;
+}
+
+button[type="submit"] {
+    width: 100%;
+    padding: 12px;
+    /* Branded dark blue/cyan gradient for the button */
+    background: linear-gradient(135deg, #1A2A40 0%, #00BFFF 100%); 
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.3s;
+}
+
+button[type="submit"]:hover {
+    opacity: 0.9;
+}
+
+/* Message styling (used by login) */
+.login-message {
+    margin-bottom: 15px;
+    padding: 10px 12px 10px 40px; 
+    border-radius: 6px;
+    font-size: 14px;
+    position: relative;
+    opacity: 0;
+    animation: fadeIn 0.5s forwards;
+}
+
+.login-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.login-success .checkmark {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.login-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Link styling (used by both) */
+.link-text {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+.link-text a {
+    /* Link in cyan */
+    color: #00BFFF; 
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.link-text a:hover {
+    text-decoration: underline;
+}
+
+/* --- MEDIA QUERIES --- */
+
+/* Tablet devices */
+@media (max-width: 1024px) {
+    .auth-section {
+        padding: 40px 30px;
+    }
+}
+
+/* Mobile devices */
+@media (max-width: 768px) {
+    body {
+        flex-direction: column;
+    }
+    
+    .gradient-section {
+        width: 100%;
+        height: 200px; 
+        min-height: 200px;
+        padding: 20px;
+    }
+    
+    .auth-section {
+        width: 100%;
+        padding: 30px 20px;
+        overflow-y: auto; 
+        height: auto; 
+        min-height: calc(100vh - 200px); 
+    }
+    
+    .auth-header h1 {
+        font-size: 26px;
+    }
+    
+    .auth-header p {
+        font-size: 14px;
+    }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+    .gradient-section {
+        height: 150px;
+        min-height: 150px;
+        padding: 10px;
+    }
+    
+    .gamer-image {
+        max-height: 100%;
+        object-fit: contain;
+    }
+    
+    .auth-section {
+        padding: 20px 15px;
+    }
+    
+    .auth-header {
+        margin-bottom: 10px;
+    }
+    
+    .auth-header h1 {
+        font-size: 22px;
+    }
+    
+    .auth-header p {
+        font-size: 13px;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    label {
+        font-size: 13px;
+        margin-bottom: 5px;
+    }
+    
+    input[type="text"],
+    input[type="password"],
+    input[type="email"] {
+        padding: 10px; 
+        font-size: 14px; 
+    }
+    
+    button[type="submit"] {
+        padding: 11px;
+        font-size: 15px;
+    }
+    
+    .link-text {
+        margin-top: 12px;
+        font-size: 13px;
+    }
+}

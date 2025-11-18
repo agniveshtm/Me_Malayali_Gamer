@@ -1,0 +1,324 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock title %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock extra_head %}
+
+{% block content %}
+<div class="container-fluid px-3 py-4">
+  <div class="row">
+    <div class="col-12">
+
+   <!-- WELCOME MESSAGE -->
+      <div class="text-center mb-4">
+        <h2 class="welcome-msg">Welcome back, <span class="text-cyan-600 fw-black">{{ user.username }}!</span></h2>
+        <p class="text-muted fs-5 mt-2">
+          {% if has_filters %}
+            Found <strong class="text-primary">{{ filtered_count }}</strong> mod(s) with matching results
+          {% else %}
+            You have uploaded <strong class="text-primary">{{ count }}</strong> mod(s)
+          {% endif %}
+        </p>
+      </div>
+
+      <!-- Header + Search + Filter -->
+      <div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
+        <h1 class="display-3 fw-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 drop-shadow-lg mb-0 mb-md-0">
+          UPLOADED MODS
+        </h1>
+        <div class="d-flex align-items-center gap-2 mt-2 mt-md-0" style="width: 100%; max-width: 450px;">
+          <input type="text" id="searchInput" placeholder="Search your mods..." 
+                 class="form-control form-control-lg px-4 py-2 border-2 border-secondary rounded-pill focus:outline-none focus:ring-4 focus:ring-cyan-400 transition-all shadow-lg flex-grow-1">
+          <div class="dropdown">
+            <button class="btn btn-lg rounded-circle shadow-lg d-flex align-items-center justify-content-center filter-btn" 
+                    type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" viewBox="0 0 24 24">
+                <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/>
+              </svg>
+            </button>
+            <div class="dropdown-menu dropdown-menu-end p-4 shadow-lg border-0 rounded-3" style="min-width: 320px;" aria-labelledby="filterDropdown">
+              <h5 class="fw-bold mb-3 text-center" style="color: #06b6d4;">Filter Mods</h5>
+              <form method="get" id="filterForm">
+                <div class="mb-3">
+                  <label for="categoryFilter" class="form-label fw-bold small">Category</label>
+                  <input type="text" class="form-control rounded-pill" id="categoryFilter" name="category" placeholder="Enter category...">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label fw-bold small">Uploaded Between</label>
+                  <div class="d-flex gap-2 align-items-center">
+                    <input type="date" class="form-control rounded-pill" name="uploaded_on_after" placeholder="From">
+                    <span class="text-muted">to</span>
+                    <input type="date" class="form-control rounded-pill" name="uploaded_on_before" placeholder="To">
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label for="visibilityFilter" class="form-label fw-bold small">Visibility</label>
+                  <select class="form-select rounded-pill" id="visibilityFilter" name="is_public">
+                    <option value="">All Mods</option>
+                    <option value="true">Public Only</option>
+                    <option value="false">Private Only</option>
+                  </select>
+                </div>
+                <div class="d-flex gap-2">
+                  <button type="submit" class="btn btn-primary rounded-pill fw-bold flex-grow-1" style="background: linear-gradient(to right, #06b6d4, #3b82f6); border: none;">
+                    Apply Filters
+                  </button>
+                  <button type="button" class="btn btn-secondary rounded-pill fw-bold" id="clearFilters">
+                    Clear
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      {% if messages %}
+      <div class="mb-4">
+        {% for message in messages %}
+        <div class="alert-message d-flex align-items-center gap-3 p-3 rounded-3 text-white fw-bold shadow-lg animate-bounceIn 
+                    {% if 'success' in message.tags %}bg-success{% else %}bg-danger{% endif %} mb-2">
+          <i class="bi bi-check-circle-fill fs-4"></i>
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- MODS TABLE -->
+      {% if mods %}
+      <div class="card bg-white rounded-3 shadow-lg overflow-hidden border-0">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <tbody>
+                {% for m in mods %}
+                <tr class="border-bottom border-light">
+                  <!-- THUMBNAIL -->
+                  <td class="p-3 p-md-4 align-top" style="width: 40%; min-width: 280px;">
+                    <div class="thumb-container group position-relative overflow-hidden" data-url="{{ m.thumbnail_img.url|default:''|escape }}" data-title="{{ m.title|escape }}">
+                      {% if m.thumbnail_img %}
+                        <img src="{{ m.thumbnail_img.url }}" alt="{{ m.title }}" class="thumb-img">
+                        <div class="position-absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 d-flex align-items-end p-3 p-md-4">
+                          <p class="text-white fw-bold fs-3 drop-shadow-2xl mb-0">Click to view full</p>
+                        </div>
+                      {% else %}
+                        <div class="thumb-placeholder">M</div>
+                      {% endif %}
+                    </div>
+                  </td>
+
+                  <!-- TITLE + META -->
+                  <td class="p-3 p-md-4 align-top">
+                    <h3 class="h2 fw-black mod-title d-flex align-items-center flex-wrap gap-2 mb-2">
+                      {{ m.title }}
+                      <span class="px-2 py-1 fs-6 fw-bold bg-gradient-to-r from-cyan-100 via-blue-100 to-indigo-100 text-cyan-900 rounded-pill">
+                        v{{ m.version }}
+                      </span>
+                      {% if m.is_fresh %}
+                      <span class="px-2 py-1 fs-6 fw-black bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-700 text-white rounded-pill shadow animate-pulse">
+                        FRESH
+                      </span>
+                      {% endif %}
+                      <span class="visibility-badge {% if m.is_public %}public{% else %}private{% endif %}">
+                        <i class="bi {% if m.is_public %}bi-globe{% else %}bi-lock-fill{% endif %}"></i>
+                        {% if m.is_public %}Public{% else %}Private{% endif %}
+                      </span>
+                    </h3>
+
+                    <div class="text-muted d-flex flex-column gap-2 meta-stats mb-3" style="font-size: 1.1rem;">
+                      <span class="d-flex align-items-center gap-1">
+                        <i class="bi bi-box text-cyan-700"></i>
+                        <strong>{{ m.category }}</strong>
+                      </span>
+                      <span class="d-flex align-items-center gap-1">
+                        <i class="bi bi-calendar text-muted"></i>
+                        {{ m.uploaded_on|date:"M d, Y" }}
+                      </span>
+                      <span class="d-flex align-items-center gap-1">
+                        <i class="bi bi-download text-muted"></i>
+                        {{ m.downloads|default:0 }} downloads
+                      </span>
+                      <span class="d-flex align-items-center gap-1">
+                        <i class="bi bi-hand-thumbs-up text-muted"></i>
+                        {{ m.likes|default:0 }} likes
+                      </span>
+                    </div>
+                  </td>
+
+                  <!-- ACTIONS -->
+                  <td class="p-3 p-md-4 text-end align-middle" style="width: 30%;">
+                    <div class="d-flex flex-column gap-2">
+                      <a href="{% url 'edit' m.pk %}" class="btn btn-success btn-lg fw-bold rounded-pill shadow">EDIT MOD</a>
+                      <button class="btn btn-danger btn-lg fw-bold rounded-pill shadow delete-btn"
+                              data-url="{% url 'delete' m.pk %}" data-title="{{ m.title|escapejs }}">DELETE MOD</button>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {% else %}
+      {% if request.GET.category or request.GET.uploaded_on_after or request.GET.uploaded_on_before or request.GET.is_public %}
+        <div id="noResultsIndicator" style="display: none;"></div>
+      {% else %}
+        <div class="card bg-white rounded-3 shadow-lg border-0 no-mods-container">
+          <h1 class="no-mods-title">NO MODS YET</h1>
+          <p class="no-mods-subtitle">Upload your mod!</p>
+          <a href="{% url 'create' %}" class="upload-btn">UPLOAD MOD</a>
+        </div>
+      {% endif %}
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content bg-white rounded-3 shadow-4xl">
+      <div class="modal-body text-center p-5">
+        <div class="mx-auto mb-4 bg-danger-subtle rounded-circle d-flex align-items-center justify-content-center" style="width: 96px; height: 96px;">
+          <svg class="text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 48px; height: 48px;">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+        </div>
+        <h3 class="delete-modal-title mb-2">DELETE MOD?</h3>
+        <p class="delete-modal-warning mb-4">Permanently erase <strong id="modTitle" class="text-dark"></strong>?</p>
+        <div class="d-flex gap-2 justify-content-center">
+          <button type="button" class="btn btn-secondary px-4 py-2 fw-bold rounded-3" data-bs-dismiss="modal">CANCEL</button>
+          <button id="confirmDeleteBtn" class="btn btn-danger px-4 py-2 fw-bold text-white rounded-3">DELETE</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- No Results Modal -->
+<div class="modal fade" id="noResultsModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-white rounded-3 shadow-4xl">
+      <div class="modal-body text-center p-5">
+        <div class="no-results-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="white" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+          </svg>
+        </div>
+        <h3 class="no-results-title">No Matching Mods Found</h3>
+        <p class="no-results-subtitle">No mods match your current filter criteria. Try adjusting your filters or clearing them to see all your mods.</p>
+        <div class="d-flex gap-2 justify-content-center">
+          <button type="button" class="btn btn-secondary px-4 py-2 fw-bold rounded-pill" data-bs-dismiss="modal">OK</button>
+          <button type="button" class="btn btn-primary px-4 py-2 fw-bold rounded-pill" id="clearFiltersFromModal" style="background: linear-gradient(to right, #06b6d4, #3b82f6); border: none;">
+            Clear Filters
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Image Modal -->
+<div class="modal fade image-modal" id="imageModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background: transparent; border: none; position: relative;">
+      <button type="button" class="close-image-btn" data-bs-dismiss="modal">
+        <i class="bi bi-x-lg"></i>
+      </button>
+      <div class="modal-body p-0">
+        <img id="fullscreenImage" src="" alt="" style="display: none; max-width: 100%; max-height: 100vh; margin: auto; border-radius: 1rem;">
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => document.querySelectorAll(sel);
+
+    // Auto-fade messages
+    $$('.alert-message').forEach(msg => {
+      setTimeout(() => {
+        msg.style.opacity = '0';
+        setTimeout(() => msg.remove(), 500);
+      }, 5000);
+    });
+
+    // Show no results modal if filters applied but no results
+    if ($('#noResultsIndicator')) {
+      new bootstrap.Modal($('#noResultsModal')).show();
+    }
+
+    // Populate filter form from URL
+    const params = new URLSearchParams(window.location.search);
+    const formInputs = {
+      category: $('#categoryFilter'),
+      uploaded_on_after: $('input[name="uploaded_on_after"]'),
+      uploaded_on_before: $('input[name="uploaded_on_before"]'),
+      is_public: $('#visibilityFilter')
+    };
+    
+    Object.entries(formInputs).forEach(([key, input]) => {
+      const value = params.get(key);
+      if (value && input) input.value = value;
+    });
+
+    // Delete modal
+    let deleteUrl = '';
+    $$('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        $('#modTitle').textContent = btn.dataset.title;
+        deleteUrl = btn.dataset.url;
+        new bootstrap.Modal($('#deleteModal')).show();
+      });
+    });
+
+    $('#confirmDeleteBtn').addEventListener('click', () => {
+      if (deleteUrl) window.location.href = deleteUrl;
+    });
+
+    // Search
+    const searchInput = $('#searchInput');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase();
+        $$('tbody tr').forEach(row => {
+          row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
+        });
+      });
+    }
+
+    // Clear filters
+    const clearFilters = () => window.location.href = window.location.pathname;
+    $('#clearFilters')?.addEventListener('click', clearFilters);
+    $('#clearFiltersFromModal')?.addEventListener('click', clearFilters);
+
+    // Image modal for thumbnails
+    $$('.thumb-container').forEach(container => {
+      container.addEventListener('click', () => {
+        const imageUrl = container.dataset.url;
+        const title = container.dataset.title;
+        if (!imageUrl) return;
+        
+        const modal = new bootstrap.Modal($('#imageModal'), { backdrop: 'static' });
+        const img = $('#fullscreenImage');
+        img.src = imageUrl;
+        img.alt = title;
+        img.style.display = 'block';
+        modal.show();
+      });
+    });
+  });
+</script>
+
+{% endblock content %}

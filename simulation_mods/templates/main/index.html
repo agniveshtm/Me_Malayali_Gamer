@@ -1,0 +1,446 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block title %}ModHub - Euro Truck Simulator Mods Community{% endblock %}
+
+{% block extra_head %}
+<script src="https://unpkg.com/htmx.org@1.9.12"></script>
+{% endblock extra_head %}
+
+{% block content %}
+    <section class="banner-section">
+        <img src="{% static 'img/me_malayali_gamer_logo.jpg' %}" class="img-fluid" alt="ETS2 Hero Banner Image">
+    </section>
+
+
+
+    <section class="hero-section bg-primary text-white text-center">
+        <div class="container">
+            <h1 class="display-4">ModHub</h1>
+            <p class="lead">Your Ultimate Destination for Euro Truck Simulator 2 Mods</p>
+            <p>Discover, share, and download mods for ETS2, ATS, and more truck sims. Community-driven and safe!</p>
+            {% if user.is_authenticated %}
+                <a href="{% url 'create' %}" class="btn btn-light btn-lg">Upload Your Mods</a>
+            {% else %}
+                <a href="{% url 'user_signup' %}" class="btn btn-light btn-lg">Upload Your Mods</a>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- PUBLIC MODS SECTION -->
+    <section class="py-5">
+        <div class="container-fluid px-3">
+            <h2 class="text-center mb-5 display-4 fw-black" style="background: linear-gradient(to right, #06b6d4, #3b82f6, #8b5cf6); -webkit-background-clip: text; background-clip: text; color: transparent;">
+                PUBLIC MODS
+            </h2>
+
+            <!-- Search Box -->
+            <div class="row justify-content-center mb-4">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <input type="text" id="searchInput" placeholder="Search ETS2 mods: trucks, maps, skins..."
+                               class="form-control form-control-lg px-4 py-2 border-2 border-secondary rounded-pill focus:outline-none focus:ring-4 focus:ring-cyan-400 transition-all shadow-lg">
+                        <button class="btn btn-primary rounded-pill px-4 py-2 ms-2" type="button" id="searchButton">
+                            <i class="bi bi-search"></i> Search
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+            {% if public_mods %}
+            <div class="card bg-white rounded-3 shadow-lg overflow-hidden border-0" style="max-width: 1200px; margin: 0 auto;">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <tbody>
+                                {% for m in public_mods %}
+                                <tr class="border-bottom border-light">
+                                    <!-- THUMBNAIL -->
+                                    <td class="p-2 p-md-3 align-top" style="width: 30%; min-width: 200px;">
+                                        <div class="thumb-container group position-relative overflow-hidden" data-url="{{ m.thumbnail_img.url|default:''|escape }}" data-title="{{ m.title|escape }}">
+                                            {% if m.thumbnail_img %}
+                                                <img src="{{ m.thumbnail_img.url }}" alt="{{ m.title }}" class="thumb-img">
+                                                <div class="position-absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 d-flex align-items-end p-3 p-md-4">
+                                                    <p class="text-white fw-bold fs-3 drop-shadow-2xl mb-0">Click to view full</p>
+                                                </div>
+                                            {% else %}
+                                                <div class="thumb-placeholder">M</div>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+
+                                    <!-- TITLE + META -->
+                                    <td class="p-2 p-md-3 align-top" style="width: 40%;">
+                                        <h3 class="h2 fw-black mod-title d-flex align-items-center flex-wrap gap-2 mb-2">
+                                            {{ m.title }}
+                                            <span class="px-2 py-1 fs-6 fw-bold bg-gradient-to-r from-cyan-100 via-blue-100 to-indigo-100 text-cyan-900 rounded-pill">
+                                                v{{ m.version }}
+                                            </span>
+                                            {% if m.is_fresh %}
+                                            <span class="px-2 py-1 fs-6 fw-black bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-700 text-white rounded-pill shadow animate-pulse">
+                                                FRESH
+                                            </span>
+                                            {% endif %}
+                                            <span class="visibility-badge public">
+                                                <i class="bi bi-globe"></i>
+                                                Public
+                                            </span>
+                                        </h3>
+
+                                        <div class="text-muted d-flex flex-column gap-2 meta-stats mb-3" style="font-size: 1.1rem;">
+                                            <span class="d-flex align-items-center gap-1">
+                                                <i class="bi bi-box text-cyan-700"></i>
+                                                <strong>{{ m.category }}</strong>
+                                            </span>
+                                            <span class="d-flex align-items-center gap-1">
+                                                <i class="bi bi-calendar text-muted"></i>
+                                                {{ m.uploaded_on|timesince }} ago [{{m.uploaded_on|date:"M d, Y"}}]
+                                            </span>
+                                            <span class="d-flex align-items-center gap-1">
+                                                <i class="bi bi-download text-muted"></i>
+                                                {{ m.downloads|default:0 }} downloads
+                                            </span>
+                                            <span class="d-flex align-items-center gap-1">
+                                                <i class="bi bi-hand-thumbs-up-fill text-primary"></i>
+                                                <span class="like-count-display" data-mod-id="{{ m.pk }}">{{ m.likes|default:0 }}</span> likes
+                                            </span>
+                                            <span class="d-flex align-items-center gap-1">
+                                                <i class="bi bi-person-circle"></i>
+                                                by <strong>{{ m.user.username }}</strong>
+
+                                            </span>
+                                        </div>
+
+                                        <!-- LIKE BUTTON -->
+                                        <button class="like-btn" data-mod-id="{{ m.pk }}">
+                                            <i class="bi bi-hand-thumbs-up"></i>
+                                            Like
+                                        </button>
+                                    </td>
+
+                                    <!-- ACTIONS -->
+                                    <td class="p-2 p-md-3 text-end align-middle" style="width: 30%;">
+                                        <div class="d-flex flex-column gap-2 justify-content-center">
+                                            <a href="{% url 'download_count' m.pk %}"
+                                                class="btn btn-success btn-lg fw-bold rounded-pill shadow download-btn"
+                                                target="_blank">
+                                                    <i class="bi bi-download"></i> DOWNLOAD MOD
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <p class="lead text-muted">No public mods available yet. Be the first to upload!</p>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-4">Latest Mod Uploads</h2>
+            <div id="latestModsCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <img src="https://via.placeholder.com/300x200?text=Volvo+FH16" class="d-block w-100 rounded" alt="Volvo FH16 Interior">
+                            </div>
+                            <div class="col-md-8">
+                                <h3>Volvo FH16 Interior Overhaul</h3>
+                                <p>By TruckModderPro | Uploaded 2 hours ago</p>
+                                <p>Complete interior redesign with new textures and animations for realistic cab experience.</p>
+                                <a href="/mods/volvo-fh16" class="btn btn-primary">Download Mod</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <img src="https://via.placeholder.com/300x200?text=Scania+Map" class="d-block w-100 rounded" alt="Scania Map Addon">
+                            </div>
+                            <div class="col-md-8">
+                                <h3>Scania R Series Map Addon</h3>
+                                <p>By MapMaster | Uploaded 1 day ago</p>
+                                <p>Expansive new routes and cities tailored for Scania trucks in ETS2.</p>
+                                <a href="/mods/scania-map" class="btn btn-primary">Download Mod</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="carousel-item">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <img src="https://via.placeholder.com/300x200?text=Weather+Pack" class="d-block w-100 rounded" alt="Realistic Weather">
+                            </div>
+                            <div class="col-md-8">
+                                <h3>Realistic Weather Pack</h3>
+                                <p>By WeatherWizard | Uploaded 3 days ago</p>
+                                <p>Dynamic weather effects including rain, snow, and fog for immersive driving.</p>
+                                <a href="/mods/weather-pack" class="btn btn-primary">Download Mod</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#latestModsCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#latestModsCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center mb-4">Featured ETS2 Mods</h2>
+            <div class="row">
+                <div class="col-md-3 mb-4">
+                    <div class="card h-100">
+                        <img src="https://via.placeholder.com/300x200?text=Realistic+Weather" class="card-img-top" alt="Weather Pack">
+                        <div class="card-body">
+                            <h5 class="card-title">Realistic Weather Pack</h5>
+                            <p class="card-text">Enhanced weather for immersive drives.</p>
+                            <div class="d-flex justify-content-between">
+                                <span>5K Downloads</span>
+                                <span>★★★★☆</span>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <a href="/mods/weather-pack" class="btn btn-primary w-100">Download</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="card h-100">
+                        <img src="https://via.placeholder.com/300x200?text=Kenworth+Skin" class="card-img-top" alt="Kenworth Skin">
+                        <div class="card-body">
+                            <h5 class="card-title">Custom Kenworth T680 Skin</h5>
+                            <p class="card-text">Stylish new paint job for ATS trucks.</p>
+                            <div class="d-flex justify-content-between">
+                                <span>3K Downloads</span>
+                                <span>★★★★★</span>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <a href="/mods/kenworth-skin" class="btn btn-primary w-100">Download</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="card h-100">
+                        <img src="https://via.placeholder.com/300x200?text=Off-Road+Exp" class="card-img-top" alt="Off-Road Expansion">
+                        <div class="card-body">
+                            <h5 class="card-title">Off-Road Expansion Pack</h5>
+                            <p class="card-text">New terrains for rugged adventures.</p>
+                            <div class="d-flex justify-content-between">
+                                <span>9K Downloads</span>
+                                <span>★★★★☆</span>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <a href="/mods/off-road-exp" class="btn btn-primary w-100">Download</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="card h-100">
+                        <img src="https://via.placeholder.com/300x200?text=Traffic+Pack" class="card-img-top" alt="Traffic Pack">
+                        <div class="card-body">
+                            <h5 class="card-title">Advanced Traffic Pack</h5>
+                            <p class="card-text">Realistic AI traffic behaviors.</p>
+                            <div class="d-flex justify-content-between">
+                                <span>2K Downloads</span>
+                                <span>★★★☆☆</span>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <a href="/mods/traffic-pack" class="btn btn-primary w-100">Download</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center mb-4">Categories</h2>
+            <div class="row text-center">
+                <div class="col-md-4 mb-3">
+                    <a href="/category/trucks" class="btn btn-outline-primary btn-lg">Trucks & Skins</a>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <a href="/category/maps" class="btn btn-outline-primary btn-lg">Maps & Routes</a>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <a href="/category/traffic" class="btn btn-outline-primary btn-lg">Traffic & AI</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-dark text-light py-5">
+        <a id="youtube-section" class="anchor-link" style="position: relative; top: calc(-1 * var(--navbar-height)); display: block; height: 0; visibility: hidden;"></a>
+        
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <h5 class="text-center mb-3"><b>Latest Video</b></h5>
+                    <div class="card bg-light text-dark">
+                        <div class="video-embed">
+                            <iframe src="https://www.youtube.com/embed/qKahpf1Kr4s" title="Dangerous MAP Mod with overloaded BUS in Ets2 |Ets2 Multiplayer Live| Me Malayali Gamer" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title">Dangerous MAP Mod with overloaded BUS in Ets2</h6>
+                            <p class="card-text small">Streamed Jun 28, 2025 | 447 views | ETS2 Multiplayer Live</p>
+                            <a href="https://www.youtube.com/watch?v=qKahpf1Kr4s" class="btn btn-outline-primary btn-sm" target="_blank">Watch on YouTube</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="text-center mb-3"><b>Trending Video</b></h5>
+                    <div class="card bg-light text-dark">
+                        <div class="video-embed">
+                            <iframe src="https://www.youtube.com/embed/TI6ERyxv0Ao" title="Private bus driving |Me Malayali Gamer" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title">Private Bus Driving</h6>
+                            <p class="card-text small">Published Nov 18, 2024 | 419 views | ETS2 Bus Sim</p>
+                            <a href="https://www.youtube.com/watch?v=TI6ERyxv0Ao" class="btn btn-outline-primary btn-sm" target="_blank">Watch on YouTube</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <a href="https://www.youtube.com/@MeMalayaliGamer/videos" class="btn btn-primary" target="_blank">View All Videos</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Image Modal -->
+    <div class="modal fade image-modal" id="imageModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background: transparent; border: none; position: relative;">
+                <button type="button" class="close-image-btn" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+                <div class="modal-body p-0">
+                    <img id="fullscreenImage" src="" alt="" style="display: none; max-width: 100%; max-height: 100vh; margin: auto; border-radius: 1rem;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const $ = (sel) => document.querySelector(sel);
+            const $$ = (sel) => document.querySelectorAll(sel);
+
+            // Search
+            const searchInput = $('#searchInput');
+            if (searchInput) {
+              searchInput.addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase();
+                $$('tbody tr').forEach(row => {
+                  row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
+                });
+              });
+            }
+
+            // Image modal for thumbnails
+            $$('.thumb-container').forEach(container => {
+                container.addEventListener('click', () => {
+                    const imageUrl = container.dataset.url;
+                    const title = container.dataset.title;
+                    if (!imageUrl) return;
+
+                    const modal = new bootstrap.Modal($('#imageModal'), { backdrop: 'static' });
+                    const img = $('#fullscreenImage');
+                    img.src = imageUrl;
+                    img.alt = title;
+                    img.style.display = 'block';
+                    modal.show();
+                });
+            });
+
+            // Like button functionality - TOGGLE SUPPORT
+            $$('.like-btn').forEach(btn => {
+                // Check session storage to see if this mod was liked
+                const modId = btn.dataset.modId;
+                const wasLiked = sessionStorage.getItem(`liked_mod_${modId}`) === 'true';
+
+                if (wasLiked) {
+                    btn.classList.add('liked');
+                    btn.querySelector('i').className = 'bi bi-hand-thumbs-up-fill';
+                }
+
+                btn.addEventListener('click', async function(e) {
+                    e.preventDefault();
+
+                    // Prevent spam clicking
+                    if (this.disabled) return;
+                    this.disabled = true;
+
+                    const modId = this.dataset.modId;
+
+                    try {
+                        // Get CSRF token
+                        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+                                        document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+
+                        const response = await fetch(`/like/${modId}/`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': csrfToken
+                            }
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+
+                            // Update like count in the meta stats section
+                            const likeCountDisplay = document.querySelector(`.like-count-display[data-mod-id="${modId}"]`);
+                            if (likeCountDisplay) {
+                                likeCountDisplay.textContent = data.likes;
+                            }
+
+                            // Toggle button style and icon
+                            if (data.liked) {
+                                this.classList.add('liked');
+                                this.querySelector('i').className = 'bi bi-hand-thumbs-up-fill';
+                                sessionStorage.setItem(`liked_mod_${modId}`, 'true');
+                            } else {
+                                this.classList.remove('liked');
+                                this.querySelector('i').className = 'bi bi-hand-thumbs-up';
+                                sessionStorage.setItem(`liked_mod_${modId}`, 'false');
+                            }
+
+                            // Show feedback
+                            console.log(data.liked ? `Liked! Total: ${data.likes}` : `Unliked! Total: ${data.likes}`);
+                        }
+                    } catch (error) {
+                        console.error('Error toggling like:', error);
+                        alert('Failed to toggle like. Please try again.');
+                    } finally {
+                        // Re-enable button after delay
+                        setTimeout(() => {
+                            this.disabled = false;
+                        }, 300);
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}
