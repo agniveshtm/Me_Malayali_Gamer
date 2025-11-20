@@ -1,12 +1,16 @@
 from django.shortcuts import render,get_object_or_404,redirect
 from Main.models import Modsinfo
+from .filters import PublicModsFilter
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from django.core.paginator import Paginator
 #=============HOME PAGE===============#
 #============= DISPLAY HOME PAGE ===============#
 def home_page(request):
     mod_set = Modsinfo.objects.filter(is_public = True).order_by('-uploaded_on')
-    return render(request,'main/index.html',{'public_mods':mod_set})
+    mods_filter = PublicModsFilter(request.GET,queryset=mod_set)
+    filtered_mods = mods_filter.qs
+    return render(request,'main/index.html',{"public_mods":filtered_mods,"filter":mods_filter})
 
 def download_count(request,pk):
     mod = get_object_or_404(Modsinfo,pk=pk)

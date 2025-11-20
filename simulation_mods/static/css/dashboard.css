@@ -338,7 +338,7 @@ textarea.form-control { min-height: 120px; resize: vertical; }
 .btn-custom-primary { background-color: var(--primary-color) !important; border-color: var(--primary-color) !important; color: #fff !important; font-weight: 600; transition: all 0.2s ease; }
 .btn-custom-primary:hover { background-color: var(--primary-accent) !important; }
 
-.date-field-wrapper { 
+.date-field-wrapper {
     max-width: 250px !important; /* ⬆ Increased width of uploaded_on box */
     flex-grow: 1;
 }
@@ -376,11 +376,227 @@ textarea.form-control { min-height: 120px; resize: vertical; }
     margin-left: 0.5rem; font-weight: 500; color: var(--bs-body-color); user-select: none;
 }
 
-@media (max-width: 768px) { 
-    .form-grid { grid-template-columns: 1fr; gap: 20px; } 
-    .date-and-button { flex-direction: column; gap: 15px; } 
-    .date-field-wrapper { max-width: 100%; } 
-    button[type="submit"] { width: 100%; } 
-    .mod-visibility { flex-direction: column; align-items: flex-start; gap: 10px; }
-    .mod-visibility .form-switch { align-self: flex-end; }
+/* RESPONSIVE DESIGN FOR CREATE/EDIT FORM */
+@media (max-width: 992px) {
+    .upload-container {
+        padding: 25px 30px;
+        margin: 20px 0 40px;
+    }
+
+    h2 {
+        font-size: 1.75rem;
+        margin-bottom: 20px;
+    }
+
+    .form-grid {
+        gap: 15px 20px;
+    }
+
+    .image-grid {
+        gap: 12px;
+        justify-content: center;
+    }
+
+    .image-placeholder {
+        width: 120px;
+        height: 120px;
+    }
+
+    .image-placeholder[data-index="0"] {
+        width: 140px;
+        height: 140px;
+    }
+
+    .date-field-wrapper {
+        max-width: 200px !important;
+    }
+
+    .submit-section button[type="submit"] {
+        width: 250px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .upload-container {
+        padding: 20px 20px;
+        margin: 15px 0 30px;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+        padding-bottom: 8px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .mod-visibility {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 12px 15px;
+        font-size: 14px;
+    }
+
+    .mod-visibility .form-switch {
+        align-self: flex-end;
+    }
+
+    label {
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+
+    .form-control, select {
+        padding: 8px 10px;
+        font-size: 14px;
+    }
+
+    textarea.form-control {
+        min-height: 100px;
+    }
+
+    .image-grid {
+        gap: 10px;
+        justify-content: space-around;
+    }
+
+    .image-placeholder {
+        width: 100px;
+        height: 100px;
+        flex-shrink: 0;
+    }
+
+    .image-placeholder[data-index="0"] {
+        width: 120px;
+        height: 120px;
+    }
+
+    .image-placeholder[data-index="0"] i {
+        font-size: 28px;
+    }
+
+    .image-placeholder i {
+        font-size: 20px;
+    }
+
+    .image-limit-note {
+        font-size: 12px;
+        text-align: center;
+    }
+
+    .submit-section {
+        padding-top: 20px;
+        margin-top: 20px;
+    }
+
+    .date-and-button {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch !important;
+    }
+
+    .date-field-wrapper {
+        max-width: 100% !important;
+    }
+
+    .submit-section button[type="submit"] {
+        width: 100% !important;
+        padding: 12px 20px;
+        font-size: 16px;
+    }
+
+    .btn-custom-primary {
+        font-size: 16px;
+        padding: 12px 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .upload-container {
+        padding: 15px 15px;
+        margin: 10px 0 20px;
+        border-radius: 6px;
+    }
+
+    h2 {
+        font-size: 1.25rem;
+        margin-bottom: 12px;
+        padding-bottom: 6px;
+    }
+
+    .mod-visibility {
+        padding: 10px 12px;
+        font-size: 13px;
+        margin-bottom: 20px;
+    }
+
+    label {
+        font-size: 13px;
+        margin-bottom: 4px;
+    }
+
+    .form-control, select {
+        padding: 8px 10px;
+        font-size: 13px;
+        border-radius: 4px;
+    }
+
+    textarea.form-control {
+        min-height: 80px;
+    }
+
+    .image-grid {
+        gap: 8px;
+        justify-content: center;
+    }
+
+    .image-placeholder {
+        width: 80px;
+        height: 80px;
+    }
+
+    .image-placeholder[data-index="0"] {
+        width: 100px;
+        height: 100px;
+    }
+
+    .image-placeholder[data-index="0"] i {
+        font-size: 24px;
+    }
+
+    .image-placeholder i {
+        font-size: 16px;
+    }
+
+    .image-limit-note {
+        font-size: 11px;
+    }
+
+    .submit-section {
+        padding-top: 15px;
+        margin-top: 15px;
+    }
+
+    .date-and-button {
+        gap: 12px;
+    }
+
+    .submit-section button[type="submit"] {
+        padding: 10px 16px;
+        font-size: 15px;
+    }
+
+    .btn-custom-primary {
+        font-size: 15px;
+        padding: 10px 16px;
+    }
+
+    .form-check.form-switch .form-check-label {
+        font-size: 13px;
+        margin-left: 0.25rem;
+    }
 }

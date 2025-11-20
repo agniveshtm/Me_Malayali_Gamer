@@ -28,7 +28,7 @@
     </section>
 
     <!-- PUBLIC MODS SECTION -->
-    <section class="py-5">
+    <section class="py-5" id="public-mods-section">
         <div class="container-fluid px-3">
             <h2 class="text-center mb-5 display-4 fw-black" style="background: linear-gradient(to right, #06b6d4, #3b82f6, #8b5cf6); -webkit-background-clip: text; background-clip: text; color: transparent;">
                 PUBLIC MODS
@@ -37,14 +37,49 @@
             <!-- Search Box -->
             <div class="row justify-content-center mb-4">
                 <div class="col-md-8">
-                    <div class="input-group">
-                        <input type="text" id="searchInput" placeholder="Search ETS2 mods: trucks, maps, skins..."
-                               class="form-control form-control-lg px-4 py-2 border-2 border-secondary rounded-pill focus:outline-none focus:ring-4 focus:ring-cyan-400 transition-all shadow-lg">
-                        <button class="btn btn-primary rounded-pill px-4 py-2 ms-2" type="button" id="searchButton">
-                            <i class="bi bi-search"></i> Search
-                        </button>
+                    <div class="d-flex align-items-center gap-2">
+                        <form id="searchForm" class="input-group flex-grow-1">
+                            <input type="text" id="searchInput" placeholder="Search ETS2 mods: trucks, maps, skins..."
+                                   class="form-control form-control-lg px-4 py-2 border-2 border-secondary rounded-pill focus:outline-none focus:ring-4 focus:ring-cyan-400 transition-all shadow-lg">
+                            <button class="btn btn-primary rounded-pill px-4 py-2 ms-2" type="submit" id="searchButton">
+                                <i class="bi bi-search"></i> Search
+                            </button>
+                        </form>
+                        <div class="dropdown">
+                            <button class="btn btn-lg rounded-circle shadow-lg d-flex align-items-center justify-content-center"
+                                    type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false"
+                                    style="background: linear-gradient(to right, #06b6d4, #3b82f6); border: none;">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" viewBox="0 0 24 24">
+                                <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/>
+                              </svg>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end p-4 shadow-lg border-0 rounded-3" style="min-width: 320px;" aria-labelledby="filterDropdown">
+                              <h5 class="fw-bold mb-3 text-center" style="color: #06b6d4;">Filter Mods</h5>
+                              <form method="get" id="filterForm">
+                                <div class="mb-3">
+                                  <label for="categoryFilter" class="form-label fw-bold small">Category</label>
+                                  <input type="text" class="form-control rounded-pill" id="categoryFilter" name="category" placeholder="Enter category...">
+                                </div>
+                                <div class="mb-3">
+                                  <label class="form-label fw-bold small">Uploaded Between</label>
+                                  <div class="d-flex gap-2 align-items-center">
+                                    <input type="date" class="form-control rounded-pill" name="uploaded_on_after" placeholder="From">
+                                    <span class="text-muted">to</span>
+                                    <input type="date" class="form-control rounded-pill" name="uploaded_on_before" placeholder="To">
+                                  </div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                  <button type="submit" class="btn btn-primary rounded-pill fw-bold flex-grow-1" style="background: linear-gradient(to right, #06b6d4, #3b82f6); border: none;">
+                                    Apply Filters
+                                  </button>
+                                  <button type="button" class="btn btn-secondary rounded-pill fw-bold" id="clearFilters">
+                                    Clear
+                                  </button>
+                                </div>
+                              </form>
+                            </div>
+                        </div>
                     </div>
-
                 </div>
             </div>
 
@@ -136,10 +171,17 @@
                     </div>
                 </div>
             </div>
-            {% else %}
-            <div class="text-center py-5">
-                <p class="lead text-muted">No public mods available yet. Be the first to upload!</p>
+            <div id="noResults" class="text-center py-5" style="display:none;">
+                <p class="h4 fw-bold text-info">No mods found matching your search.</p>
             </div>
+            {% else %}
+            {% if request.GET.category or request.GET.uploaded_on_after or request.GET.uploaded_on_before %}
+                <div id="noResultsIndicator" style="display: none;"></div>
+            {% else %}
+                <div class="text-center py-5">
+                    <p class="lead text-muted">No public mods available yet. Be the first to upload!</p>
+                </div>
+            {% endif %}
             {% endif %}
         </div>
     </section>
@@ -342,20 +384,102 @@
         </div>
     </div>
 
+    <!-- No Results Modal -->
+    <div class="modal fade" id="noResultsModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-white rounded-3 shadow-4xl">
+                <div class="modal-body text-center p-5">
+                    <div class="no-results-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="#dc3545" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                        </svg>
+                    </div>
+                    <h3 class="no-results-title">No Matching Mods Found</h3>
+                    <p class="no-results-subtitle">No mods match your current filter criteria. Try adjusting your filters or clearing them to see all your mods.</p>
+                    <div class="d-flex gap-2 justify-content-center">
+                        <button type="button" class="btn btn-secondary px-4 py-2 fw-bold rounded-pill" data-bs-dismiss="modal">OK</button>
+                        <button type="button" class="btn btn-primary px-4 py-2 fw-bold rounded-pill" id="clearFiltersFromModal" style="background: linear-gradient(to right, #06b6d4, #3b82f6); border: none;">
+                            Clear Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const $ = (sel) => document.querySelector(sel);
             const $$ = (sel) => document.querySelectorAll(sel);
 
+            // Show no results modal if filters applied but no results
+            if ($('#noResultsIndicator')) {
+              new bootstrap.Modal($('#noResultsModal')).show();
+            }
+
+            // Populate filter form from URL
+            const params = new URLSearchParams(window.location.search);
+            const formInputs = {
+              category: $('#categoryFilter'),
+              uploaded_on_after: $('input[name="uploaded_on_after"]'),
+              uploaded_on_before: $('input[name="uploaded_on_before"]')
+            };
+
+            Object.entries(formInputs).forEach(([key, input]) => {
+              const value = params.get(key);
+              if (value && input) input.value = value;
+            });
+
+            // Scroll to public mods section if filters are applied
+            if (params.has('category') || params.has('uploaded_on_after') || params.has('uploaded_on_before')) {
+                const section = $('#public-mods-section');
+                if (section) section.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            // Clear filters
+            const clearFilters = () => window.location.href = window.location.pathname;
+            $('#clearFilters')?.addEventListener('click', clearFilters);
+            $('#clearFiltersFromModal')?.addEventListener('click', clearFilters);
+
+            // Search function
+            const performSearch = () => {
+                const term = searchInput.value.toLowerCase();
+                const rows = $$('tbody tr');
+                let visibleCount = 0;
+                rows.forEach(row => {
+                    const isVisible = row.textContent.toLowerCase().includes(term);
+                    row.style.display = isVisible ? '' : 'none';
+                    if (isVisible) visibleCount++;
+                });
+                const noResults = $('#noResults');
+                if (noResults) {
+                    noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+                }
+            };
+
             // Search
             const searchInput = $('#searchInput');
+            const searchButton = $('#searchButton');
+            const searchForm = $('#searchForm');
             if (searchInput) {
-              searchInput.addEventListener('input', (e) => {
-                const term = e.target.value.toLowerCase();
-                $$('tbody tr').forEach(row => {
-                  row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
-                });
+              searchInput.addEventListener('input', () => {
+                if (searchInput.value === '') {
+                  // Show all rows when input is cleared
+                  const rows = $$('tbody tr');
+                  rows.forEach(row => row.style.display = '');
+                  const noResults = $('#noResults');
+                  if (noResults) noResults.style.display = 'none';
+                }
               });
+            }
+            if (searchForm) {
+              searchForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                performSearch();
+              });
+            }
+            if (searchButton) {
+              searchButton.addEventListener('click', performSearch);
             }
 
             // Image modal for thumbnails
