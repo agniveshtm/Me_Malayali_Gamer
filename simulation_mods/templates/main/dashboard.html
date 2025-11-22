@@ -30,14 +30,20 @@
           UPLOADED MODS
         </h1>
         <div class="d-flex align-items-center gap-2 mt-2 mt-md-0" style="width: 100%; max-width: 450px;">
-          <input type="text" id="searchInput" placeholder="Search your mods..." 
+          <input type="text" id="searchInput" placeholder="Search your mods..."
                  class="form-control form-control-lg px-4 py-2 border-2 border-secondary rounded-pill focus:outline-none focus:ring-4 focus:ring-cyan-400 transition-all shadow-lg flex-grow-1">
+          <button class="btn btn-lg rounded-circle shadow-lg d-flex align-items-center justify-content-center"
+                  type="button" id="orderButton" data-order="{{ current_order }}"
+                  style="background: linear-gradient(to right, #06b6d4, #3b82f6); border: none;">
+            <i class="bi bi-sort-up" id="orderIcon"></i>
+          </button>
           <div class="dropdown">
-            <button class="btn btn-lg rounded-circle shadow-lg d-flex align-items-center justify-content-center filter-btn" 
+            <button class="btn btn-lg rounded-circle shadow-lg d-flex align-items-center justify-content-center filter-btn position-relative"
                     type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" viewBox="0 0 24 24">
                 <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/>
               </svg>
+              <span id="filterBadge" class="badge bg-danger position-absolute top-0 start-100 translate-middle" style="display: none;"></span>
             </button>
             <div class="dropdown-menu dropdown-menu-end p-4 shadow-lg border-0 rounded-3" style="min-width: 320px;" aria-labelledby="filterDropdown">
               <h5 class="fw-bold mb-3 text-center" style="color: #06b6d4;">Filter Mods</h5>
@@ -45,6 +51,10 @@
                 <div class="mb-3">
                   <label for="categoryFilter" class="form-label fw-bold small">Category</label>
                   <input type="text" class="form-control rounded-pill" id="categoryFilter" name="category" placeholder="Enter category...">
+                </div>
+                <div class="mb-3">
+                  <label for="typeFilter" class="form-label fw-bold small">Type</label>
+                  <input type="text" class="form-control rounded-pill" id="typeFilter" name="type" placeholder="Enter type...">
                 </div>
                 <div class="mb-3">
                   <label class="form-label fw-bold small">Uploaded Between</label>
@@ -99,7 +109,7 @@
                 {% for m in mods %}
                 <tr class="border-bottom border-light">
                   <!-- THUMBNAIL -->
-                  <td class="p-3 p-md-4 align-top" style="width: 40%; min-width: 280px;">
+                    <td class="p-3 p-md-4 align-top" style="width: 40%; min-width: 280px;">
                     <div class="thumb-container group position-relative overflow-hidden" data-url="{{ m.thumbnail_img.url|default:''|escape }}" data-title="{{ m.title|escape }}">
                       {% if m.thumbnail_img %}
                         <img src="{{ m.thumbnail_img.url }}" alt="{{ m.title }}" class="thumb-img">
@@ -134,6 +144,10 @@
                       <span class="d-flex align-items-center gap-1">
                         <i class="bi bi-box text-cyan-700"></i>
                         <strong>{{ m.category }}</strong>
+                      </span>
+                      <span class="d-flex align-items-center gap-1">
+                        <i class="bi bi-tag text-cyan-700"></i>
+                        <strong>{{ m.type }}</strong>
                       </span>
                       <span class="d-flex align-items-center gap-1">
                         <i class="bi bi-calendar text-muted"></i>
@@ -262,6 +276,7 @@
     const params = new URLSearchParams(window.location.search);
     const formInputs = {
       category: $('#categoryFilter'),
+      type: $('#typeFilter'),
       uploaded_on_after: $('input[name="uploaded_on_after"]'),
       uploaded_on_before: $('input[name="uploaded_on_before"]'),
       is_public: $('#visibilityFilter')
@@ -269,8 +284,23 @@
     
     Object.entries(formInputs).forEach(([key, input]) => {
       const value = params.get(key);
-      if (value && input) input.value = value;
+      if (value && input) {
+        input.value = value;
+        input.classList.add('highlight-filter');
+      }
     });
+
+    // Update filter badge
+    const activeFilters = Array.from(params.keys()).filter(key => params.get(key) && key !== 'page' && key !== 'order');
+    const filterBadge = $('#filterBadge');
+    if (filterBadge) {
+      if (activeFilters.length > 0) {
+        filterBadge.textContent = activeFilters.length;
+        filterBadge.style.display = 'inline-block';
+      } else {
+        filterBadge.style.display = 'none';
+      }
+    }
 
     // Delete modal
     let deleteUrl = '';
@@ -303,13 +333,33 @@
     $('#clearFilters')?.addEventListener('click', clearFilters);
     $('#clearFiltersFromModal')?.addEventListener('click', clearFilters);
 
+    // Order button functionality
+    const orderButton = $('#orderButton');
+    const orderIcon = $('#orderIcon');
+    if (orderButton) {
+        // Set initial icon based on current order
+        const currentOrder = orderButton.dataset.order;
+        if (currentOrder === 'uploaded_on') {
+            orderIcon.className = 'bi bi-sort-up';
+        } else {
+            orderIcon.className = 'bi bi-sort-down';
+        }
+
+        orderButton.addEventListener('click', () => {
+            const params = new URLSearchParams(window.location.search);
+            const newOrder = currentOrder === '-uploaded_on' ? 'uploaded_on' : '-uploaded_on';
+            params.set('order', newOrder);
+            window.location.search = params.toString();
+        });
+    }
+
     // Image modal for thumbnails
     $$('.thumb-container').forEach(container => {
       container.addEventListener('click', () => {
         const imageUrl = container.dataset.url;
         const title = container.dataset.title;
         if (!imageUrl) return;
-        
+
         const modal = new bootstrap.Modal($('#imageModal'), { backdrop: 'static' });
         const img = $('#fullscreenImage');
         img.src = imageUrl;

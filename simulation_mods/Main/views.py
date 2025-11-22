@@ -27,13 +27,14 @@ def create_mods(request):
 @never_cache
 @login_required(login_url="user_login")
 def dashboard_page(request):
-    mods = Modsinfo.objects.filter(user=request.user)
+    order = request.GET.get('order', '-uploaded_on')
+    mods = Modsinfo.objects.filter(user=request.user).order_by(order)
     count = mods.count()
     mods_filter = ModsFilter(request.GET,queryset=mods)
     filtered_mods = mods_filter.qs
     filtered_count = filtered_mods.count()
     has_filters = bool(request.GET and any(request.GET.values()))
-    context = {"mods":filtered_mods,"filter":mods_filter,"count":count,"filtered_count":filtered_count,"has_filters":has_filters}
+    context = {"mods":filtered_mods,"filter":mods_filter,"count":count,"filtered_count":filtered_count,"has_filters":has_filters,"current_order":order}
     return render(request,"main/dashboard.html",context)
 
 #=============== EDIT =================

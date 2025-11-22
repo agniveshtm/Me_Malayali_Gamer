@@ -62,9 +62,15 @@
                 </div>
 
                 <div class="form-field">
-                    <label for="{{ frm.category.id_for_label }}">{{ frm.category.label }}</label>
+                    <label for="{{ frm.category.id_for_label }}">Vehicle {{ frm.category.label }}</label>
                     {{ frm.category }}
                     {% if frm.category.errors %}<div class="invalid-feedback d-block">{{ frm.category.errors.as_text }}</div>{% endif %}
+                </div>
+
+                <div class="form-field">
+                    <label for="{{ frm.type.id_for_label }}">Mod {{ frm.type.label }}</label>
+                    {{ frm.type }}
+                    {% if frm.type.errors %}<div class="invalid-feedback d-block">{{ frm.type.errors.as_text }}</div>{% endif %}
                 </div>
 
                 <div class="form-field">

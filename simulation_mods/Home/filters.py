@@ -3,7 +3,7 @@ from Main.models import Modsinfo
 class PublicModsFilter(ModsFilter):
     class Meta:
         model = Modsinfo
-        fields = ['category','uploaded_on']
+        fields = ['category','type','uploaded_on']
 
     
     def __init__(self,*args,**kwargs):

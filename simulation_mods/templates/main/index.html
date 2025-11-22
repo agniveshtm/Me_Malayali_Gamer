@@ -45,13 +45,21 @@
                                 <i class="bi bi-search"></i> Search
                             </button>
                         </form>
+                        <button class="btn btn-lg rounded-circle shadow-lg d-flex align-items-center justify-content-center ms-2"
+                                type="button" id="orderButton" data-order="{{ current_order }}"
+                                style="background: linear-gradient(to right, #06b6d4, #3b82f6); border: none;">
+                            <i class="bi bi-sort-down" id="orderIcon"></i>
+                        </button>
                         <div class="dropdown">
-                            <button class="btn btn-lg rounded-circle shadow-lg d-flex align-items-center justify-content-center"
+                            <button class="btn btn-lg rounded-circle shadow-lg d-flex align-items-center justify-content-center position-relative"
                                     type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false"
                                     style="background: linear-gradient(to right, #06b6d4, #3b82f6); border: none;">
                               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" viewBox="0 0 24 24">
                                 <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/>
                               </svg>
+                              <span id="filterBadge" class="badge bg-danger position-absolute top-0 start-100 translate-middle" style="display: none;"></span>
+
+
                             </button>
                             <div class="dropdown-menu dropdown-menu-end p-4 shadow-lg border-0 rounded-3" style="min-width: 320px;" aria-labelledby="filterDropdown">
                               <h5 class="fw-bold mb-3 text-center" style="color: #06b6d4;">Filter Mods</h5>
@@ -59,6 +67,10 @@
                                 <div class="mb-3">
                                   <label for="categoryFilter" class="form-label fw-bold small">Category</label>
                                   <input type="text" class="form-control rounded-pill" id="categoryFilter" name="category" placeholder="Enter category...">
+                                </div>
+                                <div class="mb-3">
+                                  <label for="typeFilter" class="form-label fw-bold small">Type</label>
+                                  <input type="text" class="form-control rounded-pill" id="typeFilter" name="type" placeholder="Enter type...">
                                 </div>
                                 <div class="mb-3">
                                   <label class="form-label fw-bold small">Uploaded Between</label>
@@ -127,6 +139,10 @@
                                             <span class="d-flex align-items-center gap-1">
                                                 <i class="bi bi-box text-cyan-700"></i>
                                                 <strong>{{ m.category }}</strong>
+                                            </span>
+                                            <span class="d-flex align-items-center gap-1">
+                                                <i class="bi bi-tag text-cyan-700"></i>
+                                                <strong>{{ m.type }}</strong>
                                             </span>
                                             <span class="d-flex align-items-center gap-1">
                                                 <i class="bi bi-calendar text-muted"></i>
@@ -202,7 +218,7 @@
                 <p class="h4 fw-bold text-info">No mods found matching your search.</p>
             </div>
             {% else %}
-            {% if request.GET.category or request.GET.uploaded_on_after or request.GET.uploaded_on_before %}
+            {% if request.GET.category or request.GET.type or request.GET.uploaded_on_after or request.GET.uploaded_on_before %}
                 <div id="noResultsIndicator" style="display: none;"></div>
             {% else %}
                 <div class="text-center py-5">
@@ -270,77 +286,7 @@
         </div>
     </section>
 
-    <section class="py-5 bg-light">
-        <div class="container">
-            <h2 class="text-center mb-4">Featured ETS2 Mods</h2>
-            <div class="row">
-                <div class="col-md-3 mb-4">
-                    <div class="card h-100">
-                        <img src="https://via.placeholder.com/300x200?text=Realistic+Weather" class="card-img-top" alt="Weather Pack">
-                        <div class="card-body">
-                            <h5 class="card-title">Realistic Weather Pack</h5>
-                            <p class="card-text">Enhanced weather for immersive drives.</p>
-                            <div class="d-flex justify-content-between">
-                                <span>5K Downloads</span>
-                                <span>★★★★☆</span>
-                            </div>
-                        </div>
-                        <div class="card-footer">
-                            <a href="/mods/weather-pack" class="btn btn-primary w-100">Download</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <div class="card h-100">
-                        <img src="https://via.placeholder.com/300x200?text=Kenworth+Skin" class="card-img-top" alt="Kenworth Skin">
-                        <div class="card-body">
-                            <h5 class="card-title">Custom Kenworth T680 Skin</h5>
-                            <p class="card-text">Stylish new paint job for ATS trucks.</p>
-                            <div class="d-flex justify-content-between">
-                                <span>3K Downloads</span>
-                                <span>★★★★★</span>
-                            </div>
-                        </div>
-                        <div class="card-footer">
-                            <a href="/mods/kenworth-skin" class="btn btn-primary w-100">Download</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <div class="card h-100">
-                        <img src="https://via.placeholder.com/300x200?text=Off-Road+Exp" class="card-img-top" alt="Off-Road Expansion">
-                        <div class="card-body">
-                            <h5 class="card-title">Off-Road Expansion Pack</h5>
-                            <p class="card-text">New terrains for rugged adventures.</p>
-                            <div class="d-flex justify-content-between">
-                                <span>9K Downloads</span>
-                                <span>★★★★☆</span>
-                            </div>
-                        </div>
-                        <div class="card-footer">
-                            <a href="/mods/off-road-exp" class="btn btn-primary w-100">Download</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <div class="card h-100">
-                        <img src="https://via.placeholder.com/300x200?text=Traffic+Pack" class="card-img-top" alt="Traffic Pack">
-                        <div class="card-body">
-                            <h5 class="card-title">Advanced Traffic Pack</h5>
-                            <p class="card-text">Realistic AI traffic behaviors.</p>
-                            <div class="d-flex justify-content-between">
-                                <span>2K Downloads</span>
-                                <span>★★★☆☆</span>
-                            </div>
-                        </div>
-                        <div class="card-footer">
-                            <a href="/mods/traffic-pack" class="btn btn-primary w-100">Download</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+
 
     <section class="py-5 bg-light">
         <div class="container">
@@ -351,9 +297,6 @@
                 </div>
                 <div class="col-md-4 mb-3">
                     <a href="/category/maps" class="btn btn-outline-primary btn-lg">Maps & Routes</a>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <a href="/category/traffic" class="btn btn-outline-primary btn-lg">Traffic & AI</a>
                 </div>
             </div>
         </div>
@@ -448,20 +391,26 @@
             const params = new URLSearchParams(window.location.search);
             const formInputs = {
               category: $('#categoryFilter'),
+              type: $('#typeFilter'),
               uploaded_on_after: $('input[name="uploaded_on_after"]'),
               uploaded_on_before: $('input[name="uploaded_on_before"]')
             };
 
             Object.entries(formInputs).forEach(([key, input]) => {
               const value = params.get(key);
-              if (value && input) input.value = value;
+              if (value && input) {
+                input.value = value;
+                input.classList.add('highlight-filter');
+              }
             });
 
-            // Scroll to public mods section if filters are applied
-            if (params.has('category') || params.has('uploaded_on_after') || params.has('uploaded_on_before')) {
+            // Scroll to public mods section if filters or order are applied
+            if (params.has('category') || params.has('type') || params.has('uploaded_on_after') || params.has('uploaded_on_before') || params.has('order')) {
                 const section = $('#public-mods-section');
                 if (section) section.scrollIntoView({ behavior: 'smooth' });
             }
+
+
 
             // Clear filters
             const clearFilters = () => window.location.href = window.location.pathname;
@@ -524,6 +473,26 @@
                     modal.show();
                 });
             });
+
+            // Order button functionality
+            const orderButton = $('#orderButton');
+            const orderIcon = $('#orderIcon');
+            if (orderButton) {
+                // Set initial icon based on current order
+                const currentOrder = orderButton.dataset.order;
+                if (currentOrder === 'uploaded_on') {
+                    orderIcon.className = 'bi bi-sort-up';
+                } else {
+                    orderIcon.className = 'bi bi-sort-down';
+                }
+
+                orderButton.addEventListener('click', () => {
+                    const params = new URLSearchParams(window.location.search);
+                    const newOrder = currentOrder === '-uploaded_on' ? 'uploaded_on' : '-uploaded_on';
+                    params.set('order', newOrder);
+                    window.location.search = params.toString();
+                });
+            }
 
             // Like button functionality - TOGGLE SUPPORT
             $$('.like-btn').forEach(btn => {

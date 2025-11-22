@@ -7,13 +7,14 @@ from django.core.paginator import Paginator
 #=============HOME PAGE===============#
 #============= DISPLAY HOME PAGE ===============#
 def home_page(request):
-    mod_set = Modsinfo.objects.filter(is_public = True).order_by('-uploaded_on')
+    order = request.GET.get('order', '-uploaded_on')
+    mod_set = Modsinfo.objects.filter(is_public = True).order_by(order)
     mods_filter = PublicModsFilter(request.GET,queryset=mod_set)
     filtered_mods = mods_filter.qs
     paginator = Paginator(filtered_mods,5)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
-    return render(request,'main/index.html',{"public_mods":page_obj,"filter":mods_filter,"page_obj":page_obj})
+    return render(request,'main/index.html',{"public_mods":page_obj,"filter":mods_filter,"page_obj":page_obj,"current_order":order})
 
 def download_count(request,pk):
     mod = get_object_or_404(Modsinfo,pk=pk)
