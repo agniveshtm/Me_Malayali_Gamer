@@ -43,3 +43,5 @@ def like_count(request,pk):
 
     return JsonResponse({'success':True,'likes':mod.likes,'liked':liked})
     
+def youtube_video(request):
+    pass

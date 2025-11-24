@@ -41,3 +41,6 @@ def user_login(request):
 def user_logout(request):
     logout(request)
     return redirect('home_page')
+
+def forgot_password(request):
+    pass

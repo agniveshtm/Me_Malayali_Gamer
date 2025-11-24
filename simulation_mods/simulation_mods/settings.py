@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -131,5 +134,5 @@ MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR/'media'
 
 # YOUTUBE_API_KEY = 'your-youtube-api-key-here'
-# YOUTUBE_CHANNEL_ID = 'UCYourChannelIDHere' 
+YOUTUBE_CHANNEL_ID = os.environ.get('YOUTUBE_CHANNEL_ID', '')
 
