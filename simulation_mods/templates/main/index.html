@@ -8,6 +8,7 @@
 {% endblock extra_head %}
 
 {% block content %}
+    {% csrf_token %}
     <section class="banner-section">
         <img src="{% static 'img/me_malayali_gamer_logo.jpg' %}" class="img-fluid" alt="ETS2 Hero Banner Image">
     </section>
@@ -306,36 +307,46 @@
         <a id="youtube-section" class="anchor-link" style="position: relative; top: calc(-1 * var(--navbar-height)); display: block; height: 0; visibility: hidden;"></a>
         
         <div class="container">
+            {% if latest_video %}
             <div class="row g-4">
-                <div class="col-md-6">
+                <div class="col-md-12">
                     <h5 class="text-center mb-3"><b>Latest Video</b></h5>
-                    <div class="card bg-light text-dark">
+                    <div class="card bg-light text-dark" style="max-width: 800px; margin: 0 auto;">
                         <div class="video-embed">
-                            <iframe src="https://www.youtube.com/embed/qKahpf1Kr4s" title="Dangerous MAP Mod with overloaded BUS in Ets2 |Ets2 Multiplayer Live| Me Malayali Gamer" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                            <iframe src="https://www.youtube.com/embed/{{ latest_video.id }}" 
+                                    title="{{ latest_video.snippet.title }}" 
+                                    frameborder="0" 
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                    referrerpolicy="strict-origin-when-cross-origin" 
+                                    allowfullscreen></iframe>
                         </div>
                         <div class="card-body">
-                            <h6 class="card-title">Dangerous MAP Mod with overloaded BUS in Ets2</h6>
-                            <p class="card-text small">Streamed Jun 28, 2025 | 447 views | ETS2 Multiplayer Live</p>
-                            <a href="https://www.youtube.com/watch?v=qKahpf1Kr4s" class="btn btn-outline-primary btn-sm" target="_blank">Watch on YouTube</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <h5 class="text-center mb-3"><b>Trending Video</b></h5>
-                    <div class="card bg-light text-dark">
-                        <div class="video-embed">
-                            <iframe src="https://www.youtube.com/embed/TI6ERyxv0Ao" title="Private bus driving |Me Malayali Gamer" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-                        </div>
-                        <div class="card-body">
-                            <h6 class="card-title">Private Bus Driving</h6>
-                            <p class="card-text small">Published Nov 18, 2024 | 419 views | ETS2 Bus Sim</p>
-                            <a href="https://www.youtube.com/watch?v=TI6ERyxv0Ao" class="btn btn-outline-primary btn-sm" target="_blank">Watch on YouTube</a>
+                            <h6 class="card-title">{{ latest_video.snippet.title }}</h6>
+                            <p class="card-text small">
+                                Published {{ latest_video.snippet.publishedAt|date:"M d, Y" }} | 
+                                {{ latest_video.statistics.viewCount }} views
+                            </p>
+                            <a href="https://www.youtube.com/watch?v={{ latest_video.id }}" 
+                               class="btn btn-outline-primary btn-sm" 
+                               target="_blank">Watch on YouTube</a>
                         </div>
                     </div>
                 </div>
             </div>
+            {% else %}
+            <div class="row g-4">
+                <div class="col-md-12">
+                    <div class="alert alert-info text-center" role="alert">
+                        <h5>No videos available at the moment</h5>
+                        <p class="mb-0">Check back later for the latest content!</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
             <div class="text-center mt-3">
-                <a href="https://www.youtube.com/@MeMalayaliGamer/videos" class="btn btn-primary" target="_blank">View All Videos</a>
+                <a href="https://www.youtube.com/@MeMalayaliGamer/videos" 
+                   class="btn btn-primary" 
+                   target="_blank">View All Videos</a>
             </div>
         </div>
     </section>
