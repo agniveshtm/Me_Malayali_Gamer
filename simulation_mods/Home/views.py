@@ -7,6 +7,113 @@ from django.core.paginator import Paginator
 from django.conf import settings
 from googleapiclient.discovery import build
 #=============HOME PAGE===============#
+def youtube_video(request):
+    try:
+        youtube = build('youtube', 'v3', developerKey=settings.YOUTUBE_API_KEY)
+        
+        # Get uploads playlist ID
+        channel_response = youtube.channels().list(
+            part='contentDetails',
+            id=settings.YOUTUBE_CHANNEL_ID
+        ).execute()
+        
+        if not channel_response.get('items'):
+            return {'latest_video': None, 'trending_video': None}
+        
+        uploads_playlist_id = channel_response['items'][0]['contentDetails']['relatedPlaylists']['uploads']
+        
+        # Get recent videos from playlist
+        videos_response = youtube.playlistItems().list(
+            part='snippet',
+            playlistId=uploads_playlist_id,
+            maxResults=15  # Increased to get more videos
+        ).execute()
+        
+        if not videos_response.get('items'):
+            return {'latest_video': None, 'trending_video': None}
+        
+        # Find first regular video (not live, not shorts)
+        latest_video = _get_first_regular_video(youtube, videos_response['items'])
+        
+        return {
+            'latest_video': latest_video,
+            'trending_video': None
+        }
+    
+    except Exception as e:
+        print(f"YouTube API Error: {e}")
+        return {'latest_video': None, 'trending_video': None}
+
+
+def _get_first_regular_video(youtube, video_items):
+    """Extract first non-live, non-shorts video from playlist items."""
+    for item in video_items:
+        video_id = item['snippet']['resourceId']['videoId']
+        video_title = item['snippet']['title']
+        
+        stats_response = youtube.videos().list(
+            part='statistics,snippet,liveStreamingDetails,contentDetails',
+            id=video_id
+        ).execute()
+        
+        if not stats_response.get('items'):
+            continue
+        
+        video = stats_response['items'][0]
+        
+        # Skip live streams
+        if 'liveStreamingDetails' in video:
+            print(f"Skipping LIVE: {video_title}")
+            continue
+        
+        # Get duration info for debugging
+        duration_str = video.get('contentDetails', {}).get('duration', '')
+        duration_seconds = _parse_duration(duration_str)
+        
+        print(f"Video: {video_title}")
+        print(f"  Duration: {duration_str} ({duration_seconds} seconds)")
+        
+        # Skip YouTube Shorts (duration <= 90 seconds to be safe)
+        if duration_seconds <= 90:
+            print(f"  -> Skipping SHORT (≤90s)")
+            continue
+        
+        print(f"  -> Selected as regular video!")
+        return video
+    
+    print("No regular videos found in the fetched items")
+    return None
+
+
+def _parse_duration(duration_str):
+    """Parse ISO 8601 duration and return total seconds."""
+    if not duration_str:
+        return 0
+    
+    import re
+    
+    # Extract hours, minutes, seconds
+    match = re.match(r'PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?', duration_str)
+    
+    if not match:
+        return 0
+    
+    hours = int(match.group(1) or 0)
+    minutes = int(match.group(2) or 0)
+    seconds = int(match.group(3) or 0)
+    
+    total_seconds = hours * 3600 + minutes * 60 + seconds
+    
+    return total_seconds
+
+
+def _is_short_video(video):
+    """Check if video is a YouTube Short based on duration."""
+    duration_str = video.get('contentDetails', {}).get('duration', '')
+    duration_seconds = _parse_duration(duration_str)
+    
+    # YouTube Shorts can be up to 90 seconds (increased from 60)
+    return duration_seconds <= 90
 #============= DISPLAY HOME PAGE ===============#
 def home_page(request):
     order = request.GET.get('order', '-uploaded_on')
@@ -47,34 +154,3 @@ def like_count(request,pk):
     request.session.modified = True
     return JsonResponse({'success':True,'likes':mod.likes,'liked':liked})
     
-def youtube_video(request):
-    try:
-        youtube = build('youtube','v3',developerKey = settings.YOUTUBE_API_KEY)
-        channel_response = youtube.channels().list(part = 'contentDetails',id = settings.YOUTUBE_CHANNEL_ID).execute()
-        uploads_playlist_id = channel_response['items'][0]['contentDetails']['relatedPlaylists']['uploads']
-
-        videos_response = youtube.playlistItems().list(
-            part = 'snippet',
-            playlistId = uploads_playlist_id,
-            maxResults = 1
-        ).execute()
-
-        if videos_response['items']:
-            video_id = videos_response['items'][0]['snippet']['resourceId']['videoId']
-            stats_response = youtube.videos().list(
-                part='statistics,snippet',
-                id=video_id
-            ).execute()
-                
-            latest_video = stats_response['items'][0] if stats_response['items'] else None
-                
-            return {
-                    'latest_video': latest_video,
-                    'trending_video': None   
-            }
-            
-        return {'latest_video': None, 'trending_video': None}
-    
-    except Exception as e:
-        print(f"Youtube API Error:: {e}")
-        return {'latest_video':None,'trending_video':None}
