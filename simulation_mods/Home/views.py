@@ -6,8 +6,25 @@ from django.views.decorators.http import require_POST
 from django.core.paginator import Paginator
 from django.conf import settings
 from googleapiclient.discovery import build
+from django.core.cache import cache
+import re
+#=============HOME PAGE===============#
+# Cache timeout in seconds (15 minutes)
+YOUTUBE_CACHE_TIMEOUT = 900
+
 #=============HOME PAGE===============#
 def youtube_video(request):
+    """Fetch YouTube video with caching."""
+    cache_key = 'youtube_latest_video'
+    
+    # Try to get cached data
+    cached_data = cache.get(cache_key)
+    if cached_data is not None:
+        print("✓ Returning cached YouTube video data")
+        return cached_data
+    
+    # If not in cache, fetch from API
+    print("→ Fetching fresh YouTube video data from API")
     try:
         youtube = build('youtube', 'v3', developerKey=settings.YOUTUBE_API_KEY)
         
@@ -18,7 +35,9 @@ def youtube_video(request):
         ).execute()
         
         if not channel_response.get('items'):
-            return {'latest_video': None, 'trending_video': None}
+            result = {'latest_video': None, 'trending_video': None}
+            cache.set(cache_key, result, 300)  # Cache failures for 5 minutes
+            return result
         
         uploads_playlist_id = channel_response['items'][0]['contentDetails']['relatedPlaylists']['uploads']
         
@@ -30,19 +49,29 @@ def youtube_video(request):
         ).execute()
         
         if not videos_response.get('items'):
-            return {'latest_video': None, 'trending_video': None}
+            result = {'latest_video': None, 'trending_video': None}
+            cache.set(cache_key, result, 300)
+            return result
         
         # Find first regular video (not live, not shorts)
         latest_video = _get_first_regular_video(youtube, videos_response['items'])
         
-        return {
+        result = {
             'latest_video': latest_video,
             'trending_video': None
         }
+        
+        # Cache the result for 15 minutes
+        cache.set(cache_key, result, YOUTUBE_CACHE_TIMEOUT)
+        print(f"✓ Cached YouTube data for {YOUTUBE_CACHE_TIMEOUT} seconds")
+        return result
     
     except Exception as e:
         print(f"YouTube API Error: {e}")
-        return {'latest_video': None, 'trending_video': None}
+        result = {'latest_video': None, 'trending_video': None}
+        # Cache errors for shorter time (5 minutes)
+        cache.set(cache_key, result, 300)
+        return result
 
 
 def _get_first_regular_video(youtube, video_items):
@@ -50,6 +79,19 @@ def _get_first_regular_video(youtube, video_items):
     for item in video_items:
         video_id = item['snippet']['resourceId']['videoId']
         video_title = item['snippet']['title']
+        
+        # Try to get from cache first
+        video_cache_key = f'youtube_video_{video_id}'
+        cached_video = cache.get(video_cache_key)
+        
+        if cached_video is not None:
+            # Check if it's a valid regular video
+            if cached_video.get('is_regular_video'):
+                print(f"  ✓ Using cached video: {video_title}")
+                return cached_video.get('video_data')
+            else:
+                print(f"  ✗ Skipping cached non-regular video: {video_title}")
+                continue
         
         stats_response = youtube.videos().list(
             part='statistics,snippet,liveStreamingDetails,contentDetails',
@@ -64,6 +106,7 @@ def _get_first_regular_video(youtube, video_items):
         # Skip live streams
         if 'liveStreamingDetails' in video:
             print(f"Skipping LIVE: {video_title}")
+            cache.set(video_cache_key, {'is_regular_video': False}, 3600)
             continue
         
         # Get duration info for debugging
@@ -76,9 +119,15 @@ def _get_first_regular_video(youtube, video_items):
         # Skip YouTube Shorts (duration <= 90 seconds to be safe)
         if duration_seconds <= 90:
             print(f"  -> Skipping SHORT (≤90s)")
+            cache.set(video_cache_key, {'is_regular_video': False}, 3600)
             continue
         
         print(f"  -> Selected as regular video!")
+        # Cache this video as valid for 1 hour
+        cache.set(video_cache_key, {
+            'is_regular_video': True,
+            'video_data': video
+        }, 3600)
         return video
     
     print("No regular videos found in the fetched items")
@@ -89,8 +138,6 @@ def _parse_duration(duration_str):
     """Parse ISO 8601 duration and return total seconds."""
     if not duration_str:
         return 0
-    
-    import re
     
     # Extract hours, minutes, seconds
     match = re.match(r'PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?', duration_str)
