@@ -4,6 +4,7 @@ from .forms import ModUserCreationForm
 from django.contrib import messages
 from django.contrib.auth import authenticate,login,logout
 from django.views.decorators.http import require_POST
+from django.contrib.auth.forms import PasswordResetForm
 # Create your views here.
 def user_signup(request):
     if request.method == "POST":
@@ -43,4 +44,8 @@ def user_logout(request):
     return redirect('home_page')
 
 def forgot_password(request):
-    pass
+    if request.method == "POST":
+        email = request.POST['email']
+        if User.objects.filter(email=email).exists():
+            return render(request,'users/otp.html')
+    return render(request,'users/password_reset.html')
