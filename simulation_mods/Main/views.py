@@ -3,6 +3,7 @@ from .forms import modform
 from .models import Modsinfo
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
 from .filters import ModsFilter
 import os
@@ -52,9 +53,11 @@ def edit_mods(request,pk):
     return render(request,"main/create_edit.html",{"frm": frm,"mod": edited_mods,"is_edit":is_edit })
 
 #=============== DELETE =================
+@require_POST
 @login_required(login_url="user_login")
 def delete_mods(request,pk):
     deleted_mods = get_object_or_404(Modsinfo,pk=pk,user=request.user)
+    mod_title = deleted_mods.title
     title_folder = os.path.dirname(deleted_mods.thumbnail_img.path)
     for field in ["thumbnail_img","img_1","img_2","img_3"]:
         img = getattr(deleted_mods,field)
@@ -65,5 +68,5 @@ def delete_mods(request,pk):
     except OSError:
         pass
     deleted_mods.delete()
-    mod_list = Modsinfo.objects.filter(user=request.user)
-    return render(request,"main/dashboard.html",{"mods":mod_list})
+    messages.success(request, f"'{mod_title}' has been deleted successfully!")
+    return redirect("dashboard_page")

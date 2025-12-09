@@ -158,9 +158,18 @@
                                                 <span class="like-count-display" data-mod-id="{{ m.pk }}">{{ m.likes|default:0 }}</span> likes
                                             </span>
                                             <span class="d-flex align-items-center gap-1">
-                                                <i class="bi bi-person-circle"></i>
-                                                by <strong>{{ m.user.username }}</strong>
-
+                                                {%if m.user %}
+                                                    {%if m.user.is_superuser%}
+                                                        <i class="bi bi-shield-fill-check text-danger"></i>
+                                                        by <strong>{{ m.user.username }}</strong> <span class="badge bg-danger">Admin</span>
+                                                    {%elif m.user.is_staff%}
+                                                        <i class="bi bi-person-badge"></i>
+                                                        by <strong>{{ m.user.username }}</strong> <span class="badge bg-primary">Staff</span>
+                                                    {%else%}
+                                                        <i class="bi bi-person-circle"></i>
+                                                        by <strong>{{ m.user.username }}</strong>
+                                                    {% endif %}
+                                                {%endif%}
                                             </span>
                                         </div>
 

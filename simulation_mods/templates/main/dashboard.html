@@ -217,6 +217,11 @@
   </div>
 </div>
 
+<!-- Hidden Delete Form -->
+<form id="deleteForm" method="post" style="display: none;">
+  {% csrf_token %}
+</form>
+
 <!-- No Results Modal -->
 <div class="modal fade" id="noResultsModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
@@ -314,7 +319,11 @@
     });
 
     $('#confirmDeleteBtn').addEventListener('click', () => {
-      if (deleteUrl) window.location.href = deleteUrl;
+      if (deleteUrl) {
+        const form = $('#deleteForm');
+        form.action = deleteUrl;
+        form.submit();
+      }
     });
 
     // Search

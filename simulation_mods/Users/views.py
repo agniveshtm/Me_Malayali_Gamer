@@ -48,4 +48,6 @@ def forgot_password(request):
         email = request.POST['email']
         if User.objects.filter(email=email).exists():
             return render(request,'users/otp.html')
+        else:
+            messages.error(request,"No account found with this email address. Please check and try again.")
     return render(request,'users/password_reset.html')
