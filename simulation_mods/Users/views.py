@@ -59,7 +59,6 @@ def forgot_password(request):
             request.session['otp_created_at']=datetime.now().isoformat()
             success,error = send_otp_email(email,otp)
             if success:
-                messages.success(request,f"OTP has been sent to {email}")
                 return redirect('otp_verify')
             else:
                 messages.error(request,"Failed to send OTP. Please try again.")
