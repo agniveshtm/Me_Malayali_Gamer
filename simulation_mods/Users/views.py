@@ -4,8 +4,12 @@ from .forms import ModUserCreationForm
 from django.contrib import messages
 from django.contrib.auth import authenticate,login,logout
 from django.views.decorators.http import require_POST
-from django.contrib.auth.forms import PasswordResetForm
+from django.views.decorators.cache import never_cache
+from django.contrib.auth.forms import SetPasswordForm
+from .utils import generate_otp,send_otp_email,is_otp_expired,clear_otp_session
+from datetime import datetime
 # Create your views here.
+@never_cache
 def user_signup(request):
     if request.method == "POST":
         frm = ModUserCreationForm(request.POST)
@@ -19,6 +23,7 @@ def user_signup(request):
         frm = ModUserCreationForm()
     return render(request,"users/signup.html",{"frm":frm})
 
+@never_cache
 def user_login(request):
     if request.method == "POST":
         username = request.POST["username"]
@@ -43,11 +48,66 @@ def user_logout(request):
     logout(request)
     return redirect('home_page')
 
+@never_cache
 def forgot_password(request):
     if request.method == "POST":
         email = request.POST['email']
         if User.objects.filter(email=email).exists():
-            return render(request,'users/otp.html')
+            otp = generate_otp()
+            request.session['reset_email']=email
+            request.session['reset_otp']=otp
+            request.session['otp_created_at']=datetime.now().isoformat()
+            success,error = send_otp_email(email,otp)
+            if success:
+                messages.success(request,f"OTP has been sent to {email}")
+                return redirect('otp_verify')
+            else:
+                messages.error(request,"Failed to send OTP. Please try again.")
+                return redirect('forgot_password')
         else:
             messages.error(request,"No account found with this email address. Please check and try again.")
+            return redirect("forgot_password")
     return render(request,'users/password_reset.html')
+
+@never_cache
+def otp_verify(request):
+    email = request.session.get('reset_email')
+    otp_created_at=request.session.get('otp_created_at')
+    if not email or not otp_created_at:
+        messages.error(request,"Session expired. Please start the password reset process again.")
+        return redirect('forgot_password')
+    if is_otp_expired(otp_created_at):
+        clear_otp_session(request)
+        messages.error(request,"OTP has expired. Please request a new one.")
+        return redirect('forgot_password')
+    if request.method == "POST":
+        entered_otp=request.POST.get('otp')
+        stored_otp=request.session.get('reset_otp')
+        if entered_otp==stored_otp:
+            messages.success(request,"OTP verified successfully!")
+            return redirect('reset_password')
+        else:
+            messages.error(request,"Invalid OTP. Please try again.")
+            return redirect('otp_verify')
+    return render(request,'users/otp.html',{'email':email})
+
+def reset_password(request):
+    email = request.session.get('reset_email')
+    if not email:
+        messages.error(request,"Session expired. Please start the password reset process again.")
+        return redirect('forgot_password')
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        messages.error(request,"User not found.")
+        return redirect('forgot_password')
+    if request.method == "POST":
+        frm = SetPasswordForm(user,request.POST)
+        if frm.is_valid():
+            frm.save()
+            clear_otp_session(request)
+            messages.success(request,"Password reset successfully! Please log in with your new password.")
+            return redirect('user_login')
+    else:
+        frm = SetPasswordForm(user)
+    return render(request,'users/reset_password.html',{'frm':frm,'email':email})
