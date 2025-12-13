@@ -1,6 +1,6 @@
 from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
-from .forms import ModUserCreationForm
+from .forms import ModUserCreationForm,ModAuthenticationForm
 from django.contrib import messages
 from django.contrib.auth import authenticate,login,logout
 from django.views.decorators.http import require_POST
@@ -26,8 +26,8 @@ def user_signup(request):
 @never_cache
 def user_login(request):
     if request.method == "POST":
-        username = request.POST["username"]
-        password = request.POST["password"]
+        username = request.POST.get("username","")
+        password = request.POST.get("password","")
         user = authenticate(username=username,password=password)
         if user is None:
             try:
@@ -51,7 +51,7 @@ def user_logout(request):
 @never_cache
 def forgot_password(request):
     if request.method == "POST":
-        email = request.POST['email']
+        email = request.POST.get("email","")
         if User.objects.filter(email=email).exists():
             otp = generate_otp()
             request.session['reset_email']=email

@@ -14,3 +14,6 @@ class ModUserCreationForm(UserCreationForm):
         if User.objects.filter(email=email).exists():
             raise forms.ValidationError("Account with this email already exists, Please use another email")
         return email
+
+class ModAuthenticationForm(AuthenticationForm):
+    pass
