@@ -26,22 +26,16 @@ def user_signup(request):
 @never_cache
 def user_login(request):
     if request.method == "POST":
-        username = request.POST.get("username","")
-        password = request.POST.get("password","")
-        user = authenticate(username=username,password=password)
-        if user is None:
-            try:
-                user_obj = User.objects.get(email=username)
-                user = authenticate(username=user_obj.username,password=password)
-            except User.DoesNotExist:
-                pass
-        if user is not None:
+        frm = ModAuthenticationForm(request,request.POST)
+        if frm.is_valid():
+            user = frm.get_user()
             login(request,user)
             return redirect('create')
         else:
             messages.error(request,"Invalid username/email or password")
-            return redirect('user_login')
-    return render(request,'users/login.html')
+    else:
+        frm = ModAuthenticationForm(request)
+    return render(request,'users/login.html',{"frm":frm})
 
 @require_POST
 def user_logout(request):
