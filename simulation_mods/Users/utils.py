@@ -30,6 +30,16 @@ def is_otp_expired(otp_created_at,expiry_minutes=10):
     otp_time = datetime.fromisoformat(otp_created_at)
     return datetime.now() - otp_time > timedelta(minutes=expiry_minutes)
 
+def send_reset_otp(request):
+    email = request.session.get('reset_email')
+    if not email:
+        return False
+    otp = generate_otp()
+    request.session['reset_otp'] = otp
+    request.session['otp_created_at'] = datetime.now().isoformat()
+    success, _ = send_otp_email(email, otp)
+    return success
+
 def clear_otp_session(request):
     request.session.pop('reset_email',None)
     request.session.pop('reset_otp',None)

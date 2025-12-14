@@ -18,7 +18,7 @@
             {% endif %}">
             
             <label for="email">Email</label>
-            <input type="email" class="form-control" id="email" name="email" value="{{ frm.email.value|default_if_none:'' }}" placeholder="Enter your email" required>
+            <input type="email" class="form-control" id="email" name="email" value="{{ frm.email.value|default_if_none:'' }}" placeholder="Enter your email address" required>
             
             {% if frm.email.errors %}
                 {% for error in frm.email.errors %}

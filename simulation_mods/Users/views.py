@@ -2,11 +2,12 @@ from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
 from .forms import ModUserCreationForm,ModAuthenticationForm
 from django.contrib import messages
-from django.contrib.auth import authenticate,login,logout
+from django.contrib.auth import login,logout
 from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.forms import SetPasswordForm
-from .utils import generate_otp,send_otp_email,is_otp_expired,clear_otp_session
+from django.http import JsonResponse
+from .utils import generate_otp,send_otp_email,is_otp_expired,clear_otp_session,send_reset_otp
 from datetime import datetime
 # Create your views here.
 @never_cache
@@ -22,6 +23,9 @@ def user_signup(request):
     else:
         frm = ModUserCreationForm()
     return render(request,"users/signup.html",{"frm":frm})
+
+def email_verification(request):
+    pass
 
 @never_cache
 def user_login(request):
@@ -47,11 +51,8 @@ def forgot_password(request):
     if request.method == "POST":
         email = request.POST.get("email","")
         if User.objects.filter(email=email).exists():
-            otp = generate_otp()
-            request.session['reset_email']=email
-            request.session['reset_otp']=otp
-            request.session['otp_created_at']=datetime.now().isoformat()
-            success,error = send_otp_email(email,otp)
+            request.session['reset_email'] = email
+            success = send_reset_otp(request)
             if success:
                 return redirect('otp_verify')
             else:
@@ -83,6 +84,15 @@ def otp_verify(request):
             messages.error(request,"Invalid OTP. Please try again.")
             return redirect('otp_verify')
     return render(request,'users/otp.html',{'email':email})
+
+@require_POST
+def resend_otp(request):
+    success = send_reset_otp(request)
+    if success:
+        messages.success(request, 'OTP resent successfully.')
+    else:
+        messages.error(request, 'Failed to resend OTP. Please try again.')
+    return redirect('otp_verify')
 
 def reset_password(request):
     email = request.session.get('reset_email')
