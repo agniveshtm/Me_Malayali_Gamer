@@ -28,8 +28,8 @@
         {% csrf_token %}
 
         <div class="form-group {% if frm.username.errors or frm.non_field_errors %}input-error{% endif %}">
-            <label for="username">Username or Email Address</label>
-            <input type="text" class="form-control" id="username" name="username" value="{{ frm.username.value|default_if_none:'' }}" placeholder="Enter your username or email address" required>
+            <label for="id_username">Username or Email Address</label>
+            <input type="text" class="form-control" id="id_username" name="username" value="{{ frm.username.value|default_if_none:'' }}" placeholder="Enter your username or email address" required>
             {% if frm.username.errors %}
                 {% for error in frm.username.errors %}
                     <div class="error-message">{{ error }}</div>
@@ -43,9 +43,9 @@
         </div>
 
         <div class="form-group {% if frm.password.errors or frm.non_field_errors %}input-error{% endif %}">
-            <label for="password">Password</label>
+            <label for="id_password">Password</label>
             <div class="input-group">
-                <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
+                <input type="password" class="form-control" id="id_password" name="password" placeholder="Enter your password" required>
                 <button class="btn btn-outline-secondary" type="button" id="togglePassword" style="border-left: 0; border-color: #ddd;">
                     <i class="bi bi-eye-slash" id="eyeIcon"></i>
                 </button>
@@ -72,7 +72,7 @@
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const passwordInput = document.getElementById('password');
+        const passwordInput = document.getElementById('id_password');
         const toggleBtn = document.getElementById('togglePassword');
         const eyeIcon = document.getElementById('eyeIcon');
 

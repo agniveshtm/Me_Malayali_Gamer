@@ -17,8 +17,8 @@
                 input-error
             {% endif %}">
             
-            <label for="email">Email</label>
-            <input type="email" class="form-control" id="email" name="email" value="{{ frm.email.value|default_if_none:'' }}" placeholder="Enter your email address" required>
+            <label for="id_email">Email</label>
+            <input type="email" class="form-control" id="id_email" name="email" value="{{ frm.email.value|default_if_none:'' }}" placeholder="Enter your email address" required>
             
             {% if frm.email.errors %}
                 {% for error in frm.email.errors %}
@@ -32,8 +32,8 @@
                 input-error
             {% endif %}">
             
-            <label for="username">Username</label>
-            <input type="text" class="form-control" id="username" name="username" value="{{ frm.username.value|default_if_none:'' }}" placeholder="Enter your username" required>
+            <label for="id_username">Username</label>
+            <input type="text" class="form-control" id="id_username" name="username" value="{{ frm.username.value|default_if_none:'' }}" placeholder="Enter your username" required>
             
             {% if frm.username.errors %}
                 {% for error in frm.username.errors %}
@@ -47,9 +47,9 @@
                 input-error
             {% endif %}">
             
-            <label for="password">Password</label>
+            <label for="id_password1">Password</label>
             <div class="input-group">
-                <input type="password" class="form-control" id="password" name="password1" placeholder="Enter your password" required>
+                <input type="password" class="form-control" id="id_password1" name="password1" placeholder="Enter your password" required>
                 <button class="btn btn-outline-secondary" type="button" id="togglePassword" style="border-left: 0; border-color: #ddd;">
                     <i class="bi bi-eye-slash" id="eyeIcon"></i>
                 </button>
@@ -72,9 +72,9 @@
                 input-error
             {% endif %}">
             
-            <label for="confirm_password">Confirm Password</label>
+            <label for="id_password2">Confirm Password</label>
             <div class="input-group">
-                <input type="password" class="form-control" id="confirm_password" name="password2" placeholder="Re-enter your password" required>
+                <input type="password" class="form-control" id="id_password2" name="password2" placeholder="Re-enter your password" required>
                 <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword" style="border-left: 0; border-color: #ddd;">
                     <i class="bi bi-eye-slash" id="eyeIconConfirm"></i>
                 </button>
@@ -101,8 +101,8 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Unified toggle for both password fields
         const toggles = [
-            { inputId: 'password', toggleId: 'togglePassword', iconId: 'eyeIcon' },
-            { inputId: 'confirm_password', toggleId: 'toggleConfirmPassword', iconId: 'eyeIconConfirm' }
+            { inputId: 'id_password1', toggleId: 'togglePassword', iconId: 'eyeIcon' },
+            { inputId: 'id_password2', toggleId: 'toggleConfirmPassword', iconId: 'eyeIconConfirm' }
         ];
 
         toggles.forEach(({ inputId, toggleId, iconId }) => {

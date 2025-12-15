@@ -120,63 +120,62 @@
                         <div class="thumb-placeholder">M</div>
                       {% endif %}
                     </div>
-                  </td>
+                </td>
 
-                  <!-- TITLE + META -->
-                  <td class="p-3 p-md-4 align-top">
-                    <h3 class="h2 fw-black mod-title d-flex align-items-center flex-wrap gap-2 mb-2">
-                      {{ m.title }}
-                      <span class="px-2 py-1 fs-6 fw-bold bg-gradient-to-r from-cyan-100 via-blue-100 to-indigo-100 text-cyan-900 rounded-pill">
-                        v{{ m.version }}
-                      </span>
-                      {% if m.is_fresh %}
-                      <span class="px-2 py-1 fs-6 fw-black bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-700 text-white rounded-pill shadow animate-pulse">
-                        FRESH
-                      </span>
-                      {% endif %}
-                      <span class="visibility-badge {% if m.is_public %}public{% else %}private{% endif %}">
-                        <i class="bi {% if m.is_public %}bi-globe{% else %}bi-lock-fill{% endif %}"></i>
-                        {% if m.is_public %}Public{% else %}Private{% endif %}
-                      </span>
-                    </h3>
+                <!-- TITLE + META -->
+                <td class="p-3 p-md-4 align-top">
+                  <h3 class="h2 fw-black mod-title d-flex align-items-center flex-wrap gap-2 mb-2">
+                    {{ m.title }}
+                    <span class="px-2 py-1 fs-6 fw-bold bg-gradient-to-r from-cyan-100 via-blue-100 to-indigo-100 text-cyan-900 rounded-pill">
+                      v{{ m.version }}
+                    </span>
+                    {% if m.is_fresh %}
+                    <span class="px-2 py-1 fs-6 fw-black bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-700 text-white rounded-pill shadow animate-pulse">
+                      FRESH
+                    </span>
+                    {% endif %}
+                    <span class="visibility-badge {% if m.is_public %}public{% else %}private{% endif %}">
+                      <i class="bi {% if m.is_public %}bi-globe{% else %}bi-lock-fill{% endif %}"></i>
+                      {% if m.is_public %}Public{% else %}Private{% endif %}
+                    </span>
+                  </h3>
 
-                    <div class="text-muted d-flex flex-column gap-2 meta-stats mb-3" style="font-size: 1.1rem;">
-                      <span class="d-flex align-items-center gap-1">
-                        <i class="bi bi-box text-cyan-700"></i>
-                        <strong>{{ m.category }}</strong>
-                      </span>
-                      <span class="d-flex align-items-center gap-1">
-                        <i class="bi bi-tag text-cyan-700"></i>
-                        <strong>{{ m.type }}</strong>
-                      </span>
-                      <span class="d-flex align-items-center gap-1">
-                        <i class="bi bi-calendar text-muted"></i>
-                        {{ m.uploaded_on|date:"M d, Y" }}
-                      </span>
-                      <span class="d-flex align-items-center gap-1">
-                        <i class="bi bi-download text-muted"></i>
-                        {{ m.downloads|default:0 }} downloads
-                      </span>
-                      <span class="d-flex align-items-center gap-1">
-                        <i class="bi bi-hand-thumbs-up text-muted"></i>
-                        {{ m.likes|default:0 }} likes
-                      </span>
-                    </div>
-                  </td>
+                  <div class="text-muted d-flex flex-column gap-2 meta-stats mb-3" style="font-size: 1.1rem;">
+                    <span class="d-flex align-items-center gap-1">
+                      <i class="bi bi-box text-cyan-700"></i>
+                      <strong>{{ m.category }}</strong>
+                    </span>
+                    <span class="d-flex align-items-center gap-1">
+                      <i class="bi bi-tag text-cyan-700"></i>
+                      <strong>{{ m.type }}</strong>
+                    </span>
+                    <span class="d-flex align-items-center gap-1">
+                      <i class="bi bi-calendar text-muted"></i>
+                      {{ m.uploaded_on|date:"M d, Y" }}
+                    </span>
+                    <span class="d-flex align-items-center gap-1">
+                      <i class="bi bi-download text-muted"></i>
+                      {{ m.downloads|default:0 }} downloads
+                    </span>
+                    <span class="d-flex align-items-center gap-1">
+                      <i class="bi bi-hand-thumbs-up text-muted"></i>
+                      {{ m.likes|default:0 }} likes
+                    </span>
+                  </div>
+                </td>
 
-                  <!-- ACTIONS -->
-                  <td class="p-3 p-md-4 text-end align-middle" style="width: 30%;">
-                    <div class="d-flex flex-column gap-2">
-                      <a href="{% url 'edit' m.pk %}" class="btn btn-success btn-lg fw-bold rounded-pill shadow">EDIT MOD</a>
-                      <button class="btn btn-danger btn-lg fw-bold rounded-pill shadow delete-btn"
-                              data-url="{% url 'delete' m.pk %}" data-title="{{ m.title|escapejs }}">DELETE MOD</button>
-                    </div>
-                  </td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
+                <!-- ACTIONS -->
+                <td class="p-3 p-md-4 text-end align-middle" style="width: 30%;">
+                  <div class="d-flex flex-column gap-2">
+                    <a href="{% url 'edit' m.pk %}" class="btn btn-success btn-lg fw-bold rounded-pill shadow">EDIT MOD</a>
+                    <button class="btn btn-danger btn-lg fw-bold rounded-pill shadow delete-btn"
+                            data-url="{% url 'delete' m.pk %}" data-title="{{ m.title|escapejs }}">DELETE MOD</button>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
       </div>
 
