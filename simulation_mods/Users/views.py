@@ -2,12 +2,14 @@ from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
 from .forms import ModUserCreationForm,ModAuthenticationForm
 from django.contrib import messages
-from django.contrib.auth import login,logout
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth import login,logout,get_user_model
+from django.utils.http import urlsafe_base64_decode
+from django.utils.encoding import force_str
 from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.forms import SetPasswordForm
-from django.http import JsonResponse
-from .utils import generate_otp,send_otp_email,is_otp_expired,clear_otp_session,send_reset_otp
+from .utils import is_otp_expired,clear_otp_session,send_reset_otp,send_verification_email
 from datetime import datetime
 # Create your views here.
 @never_cache
@@ -15,17 +17,42 @@ def user_signup(request):
     if request.method == "POST":
         frm = ModUserCreationForm(request.POST)
         if frm.is_valid():
-            frm.save()
-            messages.success(request,"You have Successfully Registered!! Please Log In")
-            return redirect('user_login')
+            user = frm.save()
+            user.is_active = False
+            user.save()
+            request.session['verification_email']=user.email
+            return redirect('email_verification')
         else:
             pass
     else:
         frm = ModUserCreationForm()
     return render(request,"users/signup.html",{"frm":frm})
 
-def email_verification(request):
-    pass
+def email_verification(request,uidb64=None,token=None):
+    if uidb64 and token:
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except(TypeError,ValueError,OverflowError,User.DoesNotExist):
+            user = None
+        if user is not None and default_token_generator.check_token(user,token):
+            user.is_active = True
+            user.save()
+            messages.success(request, 'Your email has been verified successfully! You can now login.')
+            return redirect('user_login')
+        else:
+            messages.error(request,'Verification link is invalid or has expired.')
+            return redirect('user_signup')
+    email = request.session.get('verification_email')
+    if email:
+        try:
+            user = User.objects.get(email=email)
+            success,error = send_verification_email(user,request)
+            if not success:
+                messages.error(request,'Failed to send verification email. Please try again.')
+        except User.DoesNotExist:
+            pass
+    return render(request,"users/email_verification_sent.html",{'email':email})
 
 @never_cache
 def user_login(request):
@@ -35,8 +62,6 @@ def user_login(request):
             user = frm.get_user()
             login(request,user)
             return redirect('create')
-        else:
-            messages.error(request,"Invalid username/email or password")
     else:
         frm = ModAuthenticationForm(request)
     return render(request,'users/login.html',{"frm":frm})
@@ -114,3 +139,5 @@ def reset_password(request):
     else:
         frm = SetPasswordForm(user)
     return render(request,'users/reset_password.html',{'frm':frm,'email':email})
+
+# messages.success(request,"You have Successfully Registered!! Please Log In")
