@@ -139,5 +139,3 @@ def reset_password(request):
     else:
         frm = SetPasswordForm(user)
     return render(request,'users/reset_password.html',{'frm':frm,'email':email})
-
-# messages.success(request,"You have Successfully Registered!! Please Log In")

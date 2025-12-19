@@ -28,10 +28,7 @@ SECRET_KEY = 'django-insecure-h@7lb6tq)(ydg88#_479cn9)7zu+!k+ne%ze+28h&pi0xrujvu
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['1nn7tdx4-8000.euw.devtunnels.ms', 'localhost', '127.0.0.1']
-SITE_DOMAIN = '1nn7tdx4-8000.euw.devtunnels.ms'
-SITE_PROTOCOL = 'https'
-CSRF_TRUSTED_ORIGINS = ['https://1nn7tdx4-8000.euw.devtunnels.ms']
+ALLOWED_HOSTS = []
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'

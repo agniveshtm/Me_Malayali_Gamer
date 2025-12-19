@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
-from django_resized import ResizedImageField
 import uuid
 from .utils import image_directory_path
 # Create your models here.
@@ -28,38 +27,25 @@ class Modsinfo(models.Model):
     download_link = models.URLField(max_length=500,blank=True,null=True)
     is_public = models.BooleanField(default = True)
     type = models.ForeignKey('Modtype',on_delete=models.SET_NULL,null=True,blank=True)
-    thumbnail_img = ResizedImageField(
-        size=[1280, 720], # The desired size: [width, height]
-        crop=['middle', 'center'], # Optional: ensures the image covers the area, cropping as needed
+    thumbnail_img = models.ImageField(
         upload_to=image_directory_path,
         verbose_name="Thumbnail_Image",
         default="img/default_placeholder.jpg",
-        blank=False, null=False,
-        keep_meta = False
     )
-    img_1 = ResizedImageField(
-        size=[1280, 720], 
-        crop=['middle', 'center'],
+    img_1 = models.ImageField(
         upload_to=image_directory_path,
         verbose_name="Image_1",
         blank=True, null=False,
-        keep_meta = False
     )
-    img_2 = ResizedImageField(
-        size=[1280, 720],
-        crop=['middle', 'center'],
+    img_2 = models.ImageField(
         upload_to=image_directory_path,
         verbose_name="Image_2",
         blank=True, null=False,
-        keep_meta = False
     )
-    img_3 = ResizedImageField(
-        size=[1280, 720],
-        crop=['middle', 'center'],
+    img_3 = models.ImageField(
         upload_to=image_directory_path,
         verbose_name="Image_3",
         blank=True, null=False,
-        keep_meta = False
     )
     downloads= models.IntegerField(default=0)
     likes = models.IntegerField(default=0)

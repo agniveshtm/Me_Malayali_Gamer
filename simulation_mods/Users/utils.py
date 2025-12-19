@@ -11,8 +11,7 @@ def send_verification_email(user,request):
     try:
         token = default_token_generator.make_token(user)
         uid = urlsafe_base64_encode(force_bytes(user.pk))
-        path = f'/user/verify-email/{uid}/{token}/'
-        verification_url = f"{settings.SITE_PROTOCOL}://{settings.SITE_DOMAIN}{path}"
+        verification_url  = request.build_absolute_uri(f'/user/verify-email/{uid}/{token}/')#f"{settings.SITE_PROTOCOL}://{settings.SITE_DOMAIN}{path}"
         html_message = render_to_string('emails/verification_email.html',{
             'user':user,
             'verification_url':verification_url,
@@ -20,7 +19,7 @@ def send_verification_email(user,request):
         })
         plain_message=strip_tags(html_message)
         send_mail(
-            subject='Verify Your Email - Modub',
+            subject='Verify Your Email - ModHub',
             message=plain_message,
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[user.email],
