@@ -3,42 +3,18 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.conf import settings
 import random
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
 from datetime import datetime,timedelta
-def send_verification_email(user,request):
-    try:
-        token = default_token_generator.make_token(user)
-        uid = urlsafe_base64_encode(force_bytes(user.pk))
-        verification_url  = request.build_absolute_uri(f'/user/verify-email/{uid}/{token}/')#f"{settings.SITE_PROTOCOL}://{settings.SITE_DOMAIN}{path}"
-        html_message = render_to_string('emails/verification_email.html',{
-            'user':user,
-            'verification_url':verification_url,
-            'request':request
-        })
-        plain_message=strip_tags(html_message)
-        send_mail(
-            subject='Verify Your Email - ModHub',
-            message=plain_message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email],
-            html_message=html_message,
-            fail_silently=False,
-        )
-        return True,None
-    except Exception as e:
-        return False,str(e)
 
 def generate_otp():
     return str(random.randint(100000,999999))
 
-def send_otp_email(email,otp):
+def send_otp_email(email,otp,is_verification=False):
     try:
-        html_message = render_to_string('emails/otp_email.html',{'otp':otp})
+        html_message = render_to_string('emails/otp_email.html',{'otp':otp,'is_verification':is_verification})
         plain_message = strip_tags(html_message)
+        subject= 'Email Verification OTP - ModHub' if is_verification else 'Password Reset OTP - ModHub'
         send_mail(
-            subject='Password Reset OTP - ModHub',
+            subject=subject,
             message = plain_message,
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[email],
@@ -55,6 +31,16 @@ def is_otp_expired(otp_created_at,expiry_minutes=10):
     otp_time = datetime.fromisoformat(otp_created_at)
     return datetime.now() - otp_time > timedelta(minutes=expiry_minutes)
 
+def send_verify_email_otp(request):
+    email = request.session.get('verify_email')
+    if not email:
+        return False
+    otp = generate_otp()
+    request.session['verify_otp']=otp
+    request.session['verify_otp_created_at']=datetime.now().isoformat()
+    success, _ = send_otp_email(email, otp, is_verification=True)
+    return success
+
 def send_reset_otp(request):
     email = request.session.get('reset_email')
     if not email:
@@ -62,10 +48,15 @@ def send_reset_otp(request):
     otp = generate_otp()
     request.session['reset_otp'] = otp
     request.session['otp_created_at'] = datetime.now().isoformat()
-    success, _ = send_otp_email(email, otp)
+    success, _ = send_otp_email(email, otp,is_verification=False)
     return success
 
 def clear_otp_session(request):
     request.session.pop('reset_email',None)
     request.session.pop('reset_otp',None)
     request.session.pop('otp_created_at',None)
+
+def clear_verify_otp_session(request):
+    request.session.pop('verify_email', None)
+    request.session.pop('verify_otp', None)
+    request.session.pop('verify_otp_created_at', None)

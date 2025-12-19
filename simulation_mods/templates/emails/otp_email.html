@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Password Reset OTP</title>
+    <title>{% if is_verification %}Email Verification OTP{% else %}Password Reset OTP{% endif %}</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
         .email-container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #dddddd; }
@@ -24,12 +24,22 @@
         </tr>
         <tr>
             <td class="content">
-                <h2>Password Reset Request</h2>
-                <p>Hi there,</p>
-                <p>You requested to reset your password. Use the OTP below:</p>
+                {%if is_verification %}
+                    <h2>Welcome to ModHub!</h2>
+                    <p>Hi there,</p>
+                    <p>Thank you for signing up! Please verify your email address using the OTP below:</p>
+                {% else %}
+                    <h2>Password Reset Request</h2>
+                    <p>Hi there,</p>
+                    <p>You requested to reset your password. Use the OTP below:</p>
+                {% endif %}
                 <div class="otp-box">{{ otp }}</div>
                 <p><strong>Valid for 10 minutes.</strong></p>
-                <p>If you didn't request this, please ignore this email.</p>
+                {%if is_verification %}
+                    <p>If you didn't sign up for an account, please ignore this email.</p>
+                {% else %}
+                    <p>If you didn't request this, please ignore this email.</p>
+                {% endif %}
             </td>
         </tr>
         <tr>

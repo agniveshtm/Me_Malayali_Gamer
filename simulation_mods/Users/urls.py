@@ -19,7 +19,7 @@ from . import views
 urlpatterns = [
     path('signup/',views.user_signup,name="user_signup"),
     path('email-verification/',views.email_verification,name="email_verification"),
-    path('verify-email/<uidb64>/<token>/',views.email_verification,name="verify_email"),
+    path('resend-verification-otp/',views.resend_verification_otp, name="resend_verification_otp"),
     path('login/',views.user_login,name="user_login"),
     path('logout/',views.user_logout,name="user_logout"),
     path('forgot-password/',views.forgot_password,name="forgot_password"),

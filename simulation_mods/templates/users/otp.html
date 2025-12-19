@@ -6,13 +6,17 @@
 
 {% block content %}
     <div class="auth-header text-center">
-        <h1><b>Enter OTP</b></h1>
+        <h1><b>{% if is_verification %}Verify Your Email{% else %}Enter OTP{% endif %}</b></h1>
     </div>
 
     <div class="text-center">
         <i class="bi bi-check-circle-fill" style="font-size: 3rem; color: green;"></i>
         <p class="mt-3">
-            Enter the 6-digit OTP sent to <strong>{{ email }}</strong>
+            {% if is_verification %}
+                Enter the 6-digit OTP sent to <strong>{{ email }}</strong> to verify your account.
+            {% else %}
+                Enter the 6-digit OTP sent to <strong>{{ email }}</strong> to reset your password.
+            {% endif %}
             <small class="text-muted d-block mt-2">Don't see it? Check your spam folder.</small>
         </p>
     </div>
@@ -37,8 +41,12 @@
     </div>
 
     <div class="link-text text-center mt-3">
-        Remember your password? <a href="{% url 'user_login' %}">Log in</a><br>
-        Don't have an account? <a href="{% url 'user_signup' %}">Sign up</a>
+        {% if is_verification %}
+            Already verified? <a href="{% url 'user_login' %}">Log in</a>
+        {% else %}
+            Remember your password? <a href="{% url 'user_login' %}">Log in</a><br>
+            Don't have an account? <a href="{% url 'user_signup' %}">Sign up</a>
+        {% endif %}
     </div>
 {% endblock content %}
 
@@ -52,7 +60,6 @@
         // OTP Box Navigation
         otpBoxes.forEach((box, index) => {
             box.addEventListener('input', function() {
-                // Only allow numbers
                 this.value = this.value.replace(/[^0-9]/g, '');
                 
                 if (this.value.length === 1 && index < otpBoxes.length - 1) {
@@ -67,7 +74,6 @@
                 }
             });
             
-            // Paste functionality
             box.addEventListener('paste', function(e) {
                 e.preventDefault();
                 const pastedData = e.clipboardData.getData('text').replace(/[^0-9]/g, '');
@@ -88,7 +94,6 @@
             });
         });
         
-        // Update hidden input with complete OTP
         function updateHiddenInput() {
             let otp = '';
             otpBoxes.forEach(box => {
@@ -97,7 +102,6 @@
             hiddenInput.value = otp;
         }
         
-        // Form submission
         form.addEventListener('submit', function(e) {
             updateHiddenInput();
             if (hiddenInput.value.length !== 6) {
@@ -131,32 +135,16 @@
 
         // Resend OTP functionality
         resendBtn.addEventListener('click', function() {
-            fetch('{% url "resend_otp" %}', {
+            fetch('{% url resend_url %}', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/x-www-form-urlencoded',
                     'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                 }
             })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-                if (data.success) {
-                    // Reset timer
-                    countdown = 120;
-                    countdownElement.textContent = formatTime(countdown);
-                    timerText.style.display = 'block';
-                    resendBtn.style.display = 'none';
-                    // Restart timer
-                    const newTimer = setInterval(() => {
-                        countdown--;
-                        countdownElement.textContent = formatTime(countdown);
-                        if (countdown <= 0) {
-                            clearInterval(newTimer);
-                            timerText.style.display = 'none';
-                            resendBtn.style.display = 'inline-block';
-                        }
-                    }, 1000);
+            .then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url;
                 }
             })
             .catch(error => {

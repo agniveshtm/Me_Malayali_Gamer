@@ -2,57 +2,59 @@ from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
 from .forms import ModUserCreationForm,ModAuthenticationForm
 from django.contrib import messages
-from django.contrib.auth.tokens import default_token_generator
-from django.contrib.auth import login,logout,get_user_model
-from django.utils.http import urlsafe_base64_decode
-from django.utils.encoding import force_str
+from django.contrib.auth import login,logout
 from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.forms import SetPasswordForm
-from .utils import is_otp_expired,clear_otp_session,send_reset_otp,send_verification_email
-from datetime import datetime
+from .utils import (is_otp_expired,clear_otp_session,send_reset_otp,send_verify_email_otp,clear_verify_otp_session)
 # Create your views here.
 @never_cache
 def user_signup(request):
     if request.method == "POST":
         frm = ModUserCreationForm(request.POST)
         if frm.is_valid():
-            user = frm.save()
+            user = frm.save(commit=False)
             user.is_active = False
             user.save()
-            request.session['verification_email']=user.email
-            return redirect('email_verification')
-        else:
-            pass
+            request.session['verify_email']=user.email
+            success = send_verify_email_otp(request)
+            if success:
+                return redirect('email_verification')
+            else:
+                messages.error(request, "Failed to send verification OTP. Please try again.")
+                return redirect('user_signup')
     else:
         frm = ModUserCreationForm()
     return render(request,"users/signup.html",{"frm":frm})
 
-def email_verification(request,uidb64=None,token=None):
-    if uidb64 and token:
-        try:
-            uid = force_str(urlsafe_base64_decode(uidb64))
-            user = User.objects.get(pk=uid)
-        except(TypeError,ValueError,OverflowError,User.DoesNotExist):
-            user = None
-        if user is not None and default_token_generator.check_token(user,token):
-            user.is_active = True
-            user.save()
-            messages.success(request, 'Your email has been verified successfully! You can now login.')
-            return redirect('user_login')
+def email_verification(request):
+    email = request.session.get('verify_email')
+    otp_created_at = request.session.get('verify_otp_created_at')
+    if not email or not otp_created_at:
+        messages.error(request, "Session expired. Please sign up again.")
+        return redirect('user_signup')
+    if is_otp_expired(otp_created_at):
+        clear_verify_otp_session(request)
+        messages.error(request, "OTP has expired. Please sign up again.")
+        return redirect('user_signup')
+    if request.method == "POST":
+        entered_otp = request.POST.get('otp')
+        stored_otp = request.session.get('verify_otp')
+        if entered_otp == stored_otp:
+            try:
+                user = User.objects.get(email=email)
+                user.is_active = True
+                user.save()
+                clear_verify_otp_session(request)
+                messages.success(request, 'Your email has been verified successfully! You can now login.')
+                return redirect('user_login')
+            except User.DoesNotExist:
+                messages.error(request, "User not found.")
+                return redirect('user_signup')
         else:
-            messages.error(request,'Verification link is invalid or has expired.')
-            return redirect('user_signup')
-    email = request.session.get('verification_email')
-    if email:
-        try:
-            user = User.objects.get(email=email)
-            success,error = send_verification_email(user,request)
-            if not success:
-                messages.error(request,'Failed to send verification email. Please try again.')
-        except User.DoesNotExist:
-            pass
-    return render(request,"users/email_verification_sent.html",{'email':email})
+            messages.error(request, "Invalid OTP. Please try again.")
+            return redirect('email_verification')
+    return render(request,"users/otp.html",{'email':email,'is_verification': True,'resend_url': 'resend_verification_otp'})
 
 @never_cache
 def user_login(request):
@@ -108,7 +110,7 @@ def otp_verify(request):
         else:
             messages.error(request,"Invalid OTP. Please try again.")
             return redirect('otp_verify')
-    return render(request,'users/otp.html',{'email':email})
+    return render(request,'users/otp.html',{'email':email, 'resend_url': 'resend_otp'})
 
 @require_POST
 def resend_otp(request):
@@ -118,6 +120,15 @@ def resend_otp(request):
     else:
         messages.error(request, 'Failed to resend OTP. Please try again.')
     return redirect('otp_verify')
+
+@require_POST
+def resend_verification_otp(request):
+    success = send_verify_email_otp(request)
+    if success:
+        messages.success(request, 'Verification OTP resent successfully.')
+    else:
+        messages.error(request, 'Failed to resend OTP. Please try again.')
+    return redirect('email_verification')
 
 def reset_password(request):
     email = request.session.get('reset_email')
