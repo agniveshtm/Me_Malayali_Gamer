@@ -552,6 +552,22 @@ section {
 }
 
 /* ============== RESPONSIVE ADJUSTMENTS ============== */
+
+/* Large tablets and small desktops */
+@media (max-width: 1200px) {
+    .container {
+        max-width: 100%;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .thumb-container {
+        width: 400px !important;
+        height: 225px !important;
+    }
+}
+
+/* Tablets */
 @media (max-width: 992px) {
     .bg-dark-gaming {
         min-height: 80px;
@@ -561,12 +577,49 @@ section {
         padding-top: 80px;
     }
 
+    .navbar-brand h2 {
+        font-size: 1.25rem;
+    }
+
     .navbar-nav .nav-link {
-        margin-right: 0;
+        margin-right: 0.5rem;
         margin-left: 0;
+        font-size: 0.9rem;
+        padding: 0.4rem 0.5rem !important;
+    }
+
+    .thumb-container {
+        width: 350px !important;
+        height: 197px !important;
+    }
+
+    .hero-section h1 {
+        font-size: 2.75rem !important;
+    }
+
+    .hero-section p {
+        font-size: 1.15rem !important;
+    }
+
+    .hero-section .btn {
+        font-size: 1.1rem !important;
+        padding: 0.8rem 1.6rem !important;
+    }
+
+    .video-embed {
+        height: 300px;
+    }
+
+    .card-body h6 {
+        font-size: 1.1rem !important;
+    }
+
+    .card-body p {
+        font-size: 0.9rem !important;
     }
 }
 
+/* Small tablets and large phones */
 @media (max-width: 768px) {
     .banner-section {
         padding-bottom: 45%;
@@ -576,6 +629,7 @@ section {
         width: 100% !important;
         height: auto !important;
         aspect-ratio: 16/9 !important;
+        margin-bottom: 1rem;
     }
 
     .meta-stats {
@@ -585,6 +639,10 @@ section {
     }
 
     /* Hero section responsive */
+    .hero-section {
+        padding: 60px 0 !important;
+    }
+
     .hero-section h1 {
         font-size: 2.5rem !important;
     }
@@ -687,9 +745,62 @@ section {
     .card-body p {
         font-size: 0.8rem !important;
     }
+
+    /* Navbar adjustments */
+    .navbar-toggler {
+        border: none;
+        padding: 0.5rem;
+    }
+
+    .navbar-toggler-icon {
+        width: 1.5em;
+        height: 1.5em;
+    }
+
+    .navbar-collapse {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        margin-top: 1rem;
+        padding-top: 1rem;
+    }
+
+    .navbar-nav {
+        text-align: center;
+    }
+
+    .navbar-nav .nav-item {
+        margin-bottom: 0.5rem;
+    }
+
+    .d-flex.align-items-center {
+        justify-content: center !important;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .theme-toggle {
+        order: -1;
+    }
+
+    /* Footer responsive */
+    footer .row {
+        text-align: center;
+    }
+
+    footer .col-md-6 {
+        margin-bottom: 2rem;
+    }
+
+    footer .text-md-end {
+        text-align: center !important;
+    }
+
+    .social-label {
+        display: none;
+    }
 }
 
-@media (max-width: 480px) {
+/* Phones */
+@media (max-width: 576px) {
     .banner-section {
         padding-bottom: 55%;
     }
@@ -742,6 +853,7 @@ section {
     /* Modal responsive */
     .modal-dialog {
         margin: 0.5rem !important;
+        max-width: calc(100vw - 1rem) !important;
     }
 
     .modal-body {
@@ -754,5 +866,106 @@ section {
 
     .no-results-subtitle {
         font-size: 0.9rem !important;
+    }
+
+    /* Form responsive */
+    .form-control {
+        font-size: 1rem !important;
+        padding: 0.75rem !important;
+    }
+
+    .btn-lg {
+        padding: 0.75rem 1.5rem !important;
+        font-size: 1rem !important;
+    }
+
+    /* Table improvements for mobile */
+    .table-responsive {
+        border: none;
+    }
+
+    .table thead {
+        display: none;
+    }
+
+    .table tbody tr {
+        display: block;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+        padding: 1rem;
+    }
+
+    .table tbody td {
+        display: block;
+        border: none;
+        padding: 0.5rem 0 !important;
+        text-align: left !important;
+    }
+
+    .table tbody td:before {
+        content: attr(data-label) ": ";
+        font-weight: bold;
+        display: inline-block;
+        min-width: 100px;
+    }
+
+    .thumb-container {
+        margin-bottom: 1rem;
+    }
+
+    .d-flex.gap-2 {
+        flex-direction: column !important;
+        gap: 0.5rem !important;
+    }
+
+    .d-flex.gap-2 .btn {
+        width: 100% !important;
+    }
+}
+
+/* Extra small phones */
+@media (max-width: 480px) {
+    .container {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+
+    .hero-section h1 {
+        font-size: 1.75rem !important;
+    }
+
+    .hero-section p {
+        font-size: 0.95rem !important;
+    }
+
+    .display-4 {
+        font-size: 2rem !important;
+    }
+
+    .thumb-container {
+        height: 160px !important;
+    }
+
+    .video-embed {
+        height: 180px;
+    }
+
+    .carousel-item img {
+        height: 180px !important;
+    }
+
+    .navbar-brand h2 {
+        font-size: 1.1rem;
+    }
+
+    .navbar-nav .nav-link {
+        font-size: 0.85rem;
+        padding: 0.3rem 0.4rem !important;
+    }
+
+    .btn-custom-primary, .btn-custom-outline {
+        font-size: 0.9rem !important;
+        padding: 0.5rem 1rem !important;
     }
 }

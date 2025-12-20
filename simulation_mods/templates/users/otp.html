@@ -104,9 +104,20 @@
         
         form.addEventListener('submit', function(e) {
             updateHiddenInput();
-            if (hiddenInput.value.length !== 6) {
+            console.log('OTP value:', hiddenInput.value, 'Length:', hiddenInput.value.length);
+
+            // Check if all boxes are filled
+            let allFilled = true;
+            otpBoxes.forEach(box => {
+                if (box.value.trim() === '') {
+                    allFilled = false;
+                }
+            });
+
+            if (!allFilled || hiddenInput.value.length !== 6) {
                 e.preventDefault();
-                alert('Please enter all 6 digits');
+                alert('Please enter all 6 digits of the OTP. Current length: ' + hiddenInput.value.length);
+                return false;
             }
         });
 

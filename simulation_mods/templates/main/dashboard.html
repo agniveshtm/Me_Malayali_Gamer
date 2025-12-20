@@ -116,7 +116,7 @@
                 {% for m in mods %}
                 <tr class="border-bottom border-light">
                   <!-- THUMBNAIL -->
-                    <td class="p-3 p-md-4 align-top" style="width: 40%; min-width: 280px;">
+                    <td class="p-3 p-md-4 align-top" style="width: 40%; min-width: 280px;" data-label="Thumbnail">
                     <div class="thumb-container group position-relative overflow-hidden" data-url="{{ m.thumbnail_img.url|default:''|escape }}" data-title="{{ m.title|escape }}">
                       {% if m.thumbnail_img %}
                         <img src="{{ m.thumbnail_img.url }}" alt="{{ m.title }}" class="thumb-img">
@@ -130,7 +130,7 @@
                 </td>
 
                 <!-- TITLE + META -->
-                <td class="p-3 p-md-4 align-top">
+                <td class="p-3 p-md-4 align-top" data-label="Details">
                   <h3 class="h2 fw-black mod-title d-flex align-items-center flex-wrap gap-2 mb-2">
                     {{ m.title }}
                     <span class="px-2 py-1 fs-6 fw-bold bg-gradient-to-r from-cyan-100 via-blue-100 to-indigo-100 text-cyan-900 rounded-pill">
@@ -172,7 +172,7 @@
                 </td>
 
                 <!-- ACTIONS -->
-                <td class="p-3 p-md-4 text-end align-middle" style="width: 30%;">
+                <td class="p-3 p-md-4 text-end align-middle" style="width: 30%;" data-label="Actions">
                   <div class="d-flex flex-column gap-2">
                     <a href="{% url 'edit' m.pk %}" class="btn btn-success btn-lg fw-bold rounded-pill shadow">EDIT MOD</a>
                     <button class="btn btn-danger btn-lg fw-bold rounded-pill shadow delete-btn"
