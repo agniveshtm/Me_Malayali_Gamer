@@ -1,53 +1,96 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% if is_verification %}Email Verification OTP{% else %}Password Reset OTP{% endif %}</title>
+    <meta name="x-apple-disable-message-reformatting">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>{% if is_verification %}Verify Your Email{% else %}Reset Your Password{% endif %}</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
-        .email-container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #dddddd; }
-        .header { background-color: #007bff; padding: 20px; text-align: center; }
-        .header img { max-width: 150px; height: auto; }
-        .content { padding: 30px; text-align: center; }
-        .otp-box { background-color: #007bff; color: #ffffff; font-size: 32px; font-weight: bold; padding: 15px; text-align: center; border-radius: 5px; letter-spacing: 5px; margin: 20px 0; display: inline-block; }
-        .footer { background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #6c757d; }
-        .footer a { color: #007bff; text-decoration: none; }
+        /* Base Styles */
+        body { margin: 0; padding: 0; width: 100% !important; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; background-color: #f8fafc; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        img { border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+        table { border-collapse: collapse !important; }
+        
+        /* Layout */
+        .wrapper { width: 100%; table-layout: fixed; background-color: #f8fafc; padding-bottom: 40px; }
+        .main-card { max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0; }
+        
+        /* Branding */
+        .header { background: linear-gradient(135deg, #0062ff 0%, #0046b8 100%); padding: 40px 20px; text-align: center; }
+        .logo { width: 180px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); }
+        
+        /* Content */
+        .content { padding: 40px 30px; color: #1e293b; line-height: 1.6; text-align: center; }
+        h1 { margin: 0 0 15px; font-size: 24px; font-weight: 700; color: #0f172a; }
+        p { margin: 0 0 20px; font-size: 16px; color: #475569; }
+        
+        /* OTP Box */
+        .otp-container { margin: 30px 0; }
+        .otp-code { display: inline-block; padding: 16px 32px; background-color: #f1f5f9; border: 2px dashed #cbd5e1; border-radius: 8px; font-size: 36px; font-weight: 800; color: #0062ff; letter-spacing: 8px; font-family: 'Courier New', monospace; }
+        
+        /* Footer */
+        .footer { padding: 0 30px 40px; text-align: center; font-size: 13px; color: #94a3b8; }
+        .footer a { color: #0062ff; text-decoration: none; font-weight: 600; }
+        .divider { border-top: 1px solid #e2e8f0; margin: 20px 0; }
+
+        /* Mobile Adjustments */
+        @media screen and (max-width: 600px) {
+            .main-card { margin: 0 !important; border-radius: 0 !important; width: 100% !important; }
+            .content { padding: 30px 20px !important; }
+            .otp-code { font-size: 28px !important; letter-spacing: 4px !important; }
+        }
     </style>
 </head>
 <body>
-    <table class="email-container" align="center" cellpadding="0" cellspacing="0" width="100%">
-        <tr>
-            <td class="header">
-                <img src="https://yourdomain.com/static/img/me_malayali_gamer_logo.jpg" alt="Me Malayali Gamer Logo">
-            </td>
-        </tr>
-        <tr>
-            <td class="content">
-                {%if is_verification %}
-                    <h2>Welcome to ModHub!</h2>
-                    <p>Hi there,</p>
-                    <p>Thank you for signing up! Please verify your email address using the OTP below:</p>
-                {% else %}
-                    <h2>Password Reset Request</h2>
-                    <p>Hi there,</p>
-                    <p>You requested to reset your password. Use the OTP below:</p>
-                {% endif %}
-                <div class="otp-box">{{ otp }}</div>
-                <p><strong>Valid for 10 minutes.</strong></p>
-                {%if is_verification %}
-                    <p>If you didn't sign up for an account, please ignore this email.</p>
-                {% else %}
-                    <p>If you didn't request this, please ignore this email.</p>
-                {% endif %}
-            </td>
-        </tr>
-        <tr>
-            <td class="footer">
-                <p>This email was sent by Me Malayali Gamer. If you have any questions, contact us at <a href="mailto:support@memalayaligamer.com">support@memalayaligamer.com</a>.</p>
-                <p>&copy; 2023 Me Malayali Gamer. All rights reserved.</p>
-            </td>
-        </tr>
-    </table>
+    <div class="wrapper">
+        <table class="main-card" role="presentation" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+                <td class="header">
+                    <img src="https://yourdomain.com/static/img/me_malayali_gamer_logo.jpg" alt="Me Malayali Gamer" class="logo">
+                </td>
+            </tr>
+            
+            <tr>
+                <td class="content">
+                    {% if is_verification %}
+                        <h1>Welcome to ModHub!</h1>
+                        <p>We're excited to have you join our gaming community. To finish setting up your account, please use the verification code below:</p>
+                    {% else %}
+                        <h1>Password Reset</h1>
+                        <p>We received a request to reset your password. If this was you, use the code below to proceed:</p>
+                    {% endif %}
+
+                    <div class="otp-container">
+                        <div class="otp-code">{{ otp }}</div>
+                    </div>
+
+                    <p style="font-size: 14px; font-weight: 600; color: #ef4444;">
+                        This code expires in 10 minutes.
+                    </p>
+                    
+                    <div class="divider"></div>
+                    
+                    <p style="font-size: 13px; margin-bottom: 0;">
+                        {% if is_verification %}
+                            If you didn't sign up for ModHub, you can safely ignore this email.
+                        {% else %}
+                            If you didn't request a password reset, please secure your account or contact support.
+                        {% endif %}
+                    </p>
+                </td>
+            </tr>
+
+            <tr>
+                <td class="footer">
+                    <p>
+                        Questions? We're here to help at <br>
+                        <a href="mailto:support@memalayaligamer.com">support@memalayaligamer.com</a>
+                    </p>
+                    <p>&copy; 2025 Me Malayali Gamer. All rights reserved.</p>
+                </td>
+            </tr>
+        </table>
+    </div>
 </body>
 </html>

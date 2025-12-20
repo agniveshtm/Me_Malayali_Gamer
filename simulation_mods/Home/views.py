@@ -200,4 +200,6 @@ def like_count(request,pk):
         liked = True
     request.session.modified = True
     return JsonResponse({'success':True,'likes':mod.likes,'liked':liked})
-    
+
+def about_page(request):
+    return render(request,'main/about.html')
