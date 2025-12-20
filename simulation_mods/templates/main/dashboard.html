@@ -1,5 +1,6 @@
 {% extends "main/base.html" %}
 {% load static %}
+{% load django_bootstrap5 %}
 
 {% block title %}Dashboard{% endblock title %}
 
@@ -26,9 +27,15 @@
 
       <!-- Header + Search + Filter -->
       <div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
-        <h1 class="display-3 fw-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 drop-shadow-lg mb-0 mb-md-0">
-          UPLOADED MODS
-        </h1>
+        <div class="d-flex align-items-center gap-3">
+          <h1 class="display-3 fw-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 drop-shadow-lg mb-0 mb-md-0">
+            UPLOADED MODS
+          </h1>
+          <a href="{% url 'create' %}" class="btn btn-lg rounded-pill shadow-lg d-flex align-items-center justify-content-center gap-2" style="background: linear-gradient(to right, #06b6d4, #3b82f6); border: none;" title="Upload New Mod">
+            <i class="bi bi-plus-lg fs-5 text-white"></i>
+            <span class="text-white fw-bold">Upload Mods</span>
+          </a>
+        </div>
         <div class="d-flex align-items-center gap-2 mt-2 mt-md-0" style="width: 100%; max-width: 450px;">
           <input type="text" id="searchInput" placeholder="Search your mods..."
                  class="form-control form-control-lg px-4 py-2 border-2 border-secondary rounded-pill focus:outline-none focus:ring-4 focus:ring-cyan-400 transition-all shadow-lg flex-grow-1">

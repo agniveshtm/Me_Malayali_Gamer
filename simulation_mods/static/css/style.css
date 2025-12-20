@@ -519,6 +519,24 @@ section {
     background: linear-gradient(to right, #059669, #047857) !important;
 }
 
+/* View Mods button styling */
+.view-mods-btn {
+    background: linear-gradient(to right, #0ea5e9, #0284c7) !important;
+    border: none !important;
+    color: white !important;
+    font-weight: 700 !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3) !important;
+    padding: 0.75rem 1.5rem !important;
+    min-height: 3rem !important;
+}
+
+.view-mods-btn:hover {
+    transform: translateY(-2px) scale(1.05) !important;
+    box-shadow: 0 8px 20px rgba(14, 165, 233, 0.4) !important;
+    background: linear-gradient(to right, #0284c7, #0369a1) !important;
+}
+
 [data-bs-theme="dark"] .download-btn {
     background: linear-gradient(to right, #059669, #047857) !important;
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4) !important;
