@@ -21,23 +21,39 @@
         </p>
     </div>
 
+    {% if messages %}
+        {% for message in messages %}
+            <div class="login-message {% if message.tags == 'success' %}login-success{% else %}login-error{% endif %}">
+                {% if message.tags == 'success' %}
+                    <span class="checkmark">✔</span>
+                {% else %}
+                    <span class="crossmark">✖</span>
+                {% endif %}
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
     <form method="post" id="otpForm" class="text-center">
         {% csrf_token %}
         <input type="hidden" name="otp" id="hiddenOtpInput">
         <div class="otp-inputs d-flex justify-content-center mb-3">
-            <input type="text" maxlength="1" class="form-control otp-box mx-1" style="width: 50px; height: 50px; text-align: center; font-size: 1.5rem;" required>
-            <input type="text" maxlength="1" class="form-control otp-box mx-1" style="width: 50px; height: 50px; text-align: center; font-size: 1.5rem;" required>
-            <input type="text" maxlength="1" class="form-control otp-box mx-1" style="width: 50px; height: 50px; text-align: center; font-size: 1.5rem;" required>
-            <input type="text" maxlength="1" class="form-control otp-box mx-1" style="width: 50px; height: 50px; text-align: center; font-size: 1.5rem;" required>
-            <input type="text" maxlength="1" class="form-control otp-box mx-1" style="width: 50px; height: 50px; text-align: center; font-size: 1.5rem;" required>
-            <input type="text" maxlength="1" class="form-control otp-box mx-1" style="width: 50px; height: 50px; text-align: center; font-size: 1.5rem;" required>
+            <input type="text" maxlength="1" class="form-control otp-box mx-1" inputmode="numeric" pattern="[0-9]" style="width: 50px; height: 50px; text-align: center; font-size: 1.5rem;" required>
+            <input type="text" maxlength="1" class="form-control otp-box mx-1" inputmode="numeric" pattern="[0-9]" style="width: 50px; height: 50px; text-align: center; font-size: 1.5rem;" required>
+            <input type="text" maxlength="1" class="form-control otp-box mx-1" inputmode="numeric" pattern="[0-9]" style="width: 50px; height: 50px; text-align: center; font-size: 1.5rem;" required>
+            <input type="text" maxlength="1" class="form-control otp-box mx-1" inputmode="numeric" pattern="[0-9]" style="width: 50px; height: 50px; text-align: center; font-size: 1.5rem;" required>
+            <input type="text" maxlength="1" class="form-control otp-box mx-1" inputmode="numeric" pattern="[0-9]" style="width: 50px; height: 50px; text-align: center; font-size: 1.5rem;" required>
+            <input type="text" maxlength="1" class="form-control otp-box mx-1" inputmode="numeric" pattern="[0-9]" style="width: 50px; height: 50px; text-align: center; font-size: 1.5rem;" required>
         </div>
         <button type="submit" class="btn btn-primary" id="verifyBtn">Verify OTP</button>
     </form>
 
     <div class="text-center mt-3">
         <p id="timerText">Resend OTP in <strong><span id="countdown" style="color: green;">02:00</span></strong></p>
-        <button type="button" class="btn btn-secondary" id="resendBtn" style="display: none;">Resend OTP</button>
+        <form method="post" action="{% url resend_url %}" id="resendForm" style="display: none;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary" id="resendBtn">Resend OTP</button>
+        </form>
     </div>
 
     <div class="link-text text-center mt-3">
@@ -59,7 +75,8 @@
         
         // OTP Box Navigation
         otpBoxes.forEach((box, index) => {
-            box.addEventListener('input', function() {
+            box.addEventListener('input', function(e) {
+                // Only allow digits
                 this.value = this.value.replace(/[^0-9]/g, '');
                 
                 if (this.value.length === 1 && index < otpBoxes.length - 1) {
@@ -71,13 +88,14 @@
             box.addEventListener('keydown', function(e) {
                 if (e.key === 'Backspace' && this.value === '' && index > 0) {
                     otpBoxes[index - 1].focus();
+                    e.preventDefault();
                 }
             });
             
             box.addEventListener('paste', function(e) {
                 e.preventDefault();
                 const pastedData = e.clipboardData.getData('text').replace(/[^0-9]/g, '');
-                const digits = pastedData.split('');
+                const digits = pastedData.split('').slice(0, 6);
                 
                 digits.forEach((digit, i) => {
                     if (index + i < otpBoxes.length) {
@@ -85,11 +103,8 @@
                     }
                 });
                 
-                if (index + digits.length < otpBoxes.length) {
-                    otpBoxes[index + digits.length].focus();
-                } else {
-                    otpBoxes[otpBoxes.length - 1].focus();
-                }
+                const nextIndex = Math.min(index + digits.length, otpBoxes.length - 1);
+                otpBoxes[nextIndex].focus();
                 updateHiddenInput();
             });
         });
@@ -104,9 +119,8 @@
         
         form.addEventListener('submit', function(e) {
             updateHiddenInput();
-            console.log('OTP value:', hiddenInput.value, 'Length:', hiddenInput.value.length);
 
-            // Check if all boxes are filled
+            // Validate all boxes are filled
             let allFilled = true;
             otpBoxes.forEach(box => {
                 if (box.value.trim() === '') {
@@ -116,7 +130,7 @@
 
             if (!allFilled || hiddenInput.value.length !== 6) {
                 e.preventDefault();
-                alert('Please enter all 6 digits of the OTP. Current length: ' + hiddenInput.value.length);
+                alert('Please enter all 6 digits of the OTP.');
                 return false;
             }
         });
@@ -125,7 +139,8 @@
         let countdown = 120;
         const countdownElement = document.getElementById('countdown');
         const timerText = document.getElementById('timerText');
-        const resendBtn = document.getElementById('resendBtn');
+        const resendForm = document.getElementById('resendForm');
+        let timerInterval;
 
         function formatTime(seconds) {
             const minutes = Math.floor(seconds / 60);
@@ -133,35 +148,34 @@
             return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
         }
 
-        const timer = setInterval(() => {
-            countdown--;
-            countdownElement.textContent = formatTime(countdown);
+        function startTimer() {
+            countdown = 120;
+            timerText.style.display = 'block';
+            resendForm.style.display = 'none';
+            
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                countdown--;
+                countdownElement.textContent = formatTime(countdown);
 
-            if (countdown <= 0) {
-                clearInterval(timer);
-                timerText.style.display = 'none';
-                resendBtn.style.display = 'inline-block';
-            }
-        }, 1000);
+                if (countdown <= 0) {
+                    clearInterval(timerInterval);
+                    timerText.style.display = 'none';
+                    resendForm.style.display = 'inline-block';
+                }
+            }, 1000);
+        }
 
-        // Resend OTP functionality
-        resendBtn.addEventListener('click', function() {
-            fetch('{% url resend_url %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                }
-            })
-            .then(response => {
-                if (response.redirected) {
-                    window.location.href = response.url;
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred. Please try again.');
-            });
+        startTimer();
+
+        // Auto-hide messages after 5 seconds
+        const messages = document.querySelectorAll('.login-message');
+        messages.forEach((msg) => {
+            setTimeout(() => {
+                msg.style.transition = "opacity 0.5s ease";
+                msg.style.opacity = "0";
+                setTimeout(() => msg.remove(), 500);
+            }, 5000);
         });
     });
 </script>

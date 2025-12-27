@@ -28,9 +28,24 @@ def send_otp_email(email,otp,is_verification=False):
 def is_otp_expired(otp_created_at,expiry_minutes=10):
     if not otp_created_at:
         return True
-    otp_time = datetime.fromisoformat(otp_created_at)
-    return datetime.now() - otp_time > timedelta(minutes=expiry_minutes)
-
+    try:
+        otp_time = datetime.fromisoformat(otp_created_at)
+        return datetime.now() - otp_time > timedelta(minutes=expiry_minutes)
+    except (ValueError,TypeError):
+        return True
+    
+def can_resend_otp(request, timestamp_key, min_interval_seconds=60):
+    last_sent = request.session.get(timestamp_key)
+    if not last_sent:
+        return True
+    
+    try:
+        last_sent_time = datetime.fromisoformat(last_sent)
+        time_since = datetime.now() - last_sent_time
+        return time_since.total_seconds() >= min_interval_seconds
+    except (ValueError, TypeError):
+        return True
+    
 def send_verify_email_otp(request):
     email = request.session.get('verify_email')
     if not email:
@@ -38,7 +53,8 @@ def send_verify_email_otp(request):
     otp = generate_otp()
     request.session['verify_otp']=otp
     request.session['verify_otp_created_at']=datetime.now().isoformat()
-    success, _ = send_otp_email(email, otp, is_verification=True)
+    request.session.modified=True
+    success, error = send_otp_email(email, otp, is_verification=True)
     return success
 
 def send_reset_otp(request):
@@ -48,15 +64,18 @@ def send_reset_otp(request):
     otp = generate_otp()
     request.session['reset_otp'] = otp
     request.session['otp_created_at'] = datetime.now().isoformat()
-    success, _ = send_otp_email(email, otp,is_verification=False)
+    request.session.modified=True
+    success, error = send_otp_email(email, otp,is_verification=False)
     return success
 
 def clear_otp_session(request):
-    request.session.pop('reset_email',None)
-    request.session.pop('reset_otp',None)
-    request.session.pop('otp_created_at',None)
+    keys_to_remove = ['reset_email', 'reset_otp', 'otp_created_at', 'otp_verified']
+    for key in keys_to_remove:
+        request.session.pop(key, None)
+    request.session.modified = True
 
 def clear_verify_otp_session(request):
-    request.session.pop('verify_email', None)
-    request.session.pop('verify_otp', None)
-    request.session.pop('verify_otp_created_at', None)
+    keys_to_remove = ['verify_email', 'verify_otp', 'verify_otp_created_at', 'verify_user_id']
+    for key in keys_to_remove:
+        request.session.pop(key, None)
+    request.session.modified = True
