@@ -2,6 +2,7 @@ from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
 from .forms import ModUserCreationForm,ModAuthenticationForm
 from django.contrib import messages
+from django_ratelimit.decorators import ratelimit
 from django.contrib.auth import login,logout
 from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
@@ -9,6 +10,7 @@ from django.contrib.auth.forms import SetPasswordForm
 from .utils import (is_otp_expired,clear_otp_session,send_reset_otp,send_verify_email_otp,clear_verify_otp_session,can_resend_otp)
 # Create your views here.
 @never_cache
+@ratelimit(key='ip',rate='10/h',method='POST',block=True)
 def user_signup(request):
     if request.method == "POST":
         frm = ModUserCreationForm(request.POST)
@@ -71,6 +73,7 @@ def email_verification(request):
     return render(request,"users/otp.html",{'email':email,'is_verification': True,'resend_url': 'resend_verification_otp'})
 
 @never_cache
+@ratelimit(key='ip',rate='5/m',method='POST',block=True)
 def user_login(request):
     if request.method == "POST":
         frm = ModAuthenticationForm(request,request.POST)
@@ -88,6 +91,7 @@ def user_logout(request):
     return redirect('home_page')
 
 @never_cache
+@ratelimit(key='post:email', rate='3/h', method='POST', block=True)
 def forgot_password(request):
     if request.method == "POST":
         email = request.POST.get("email","").strip()
@@ -106,6 +110,7 @@ def forgot_password(request):
     return render(request,'users/forgot_password.html')
 
 @never_cache
+@ratelimit(key='ip', rate='5/10m', method='POST', block=True)
 def otp_verify(request):
     email = request.session.get('reset_email')
     otp_created_at=request.session.get('otp_created_at')
