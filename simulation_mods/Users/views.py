@@ -103,7 +103,7 @@ def forgot_password(request):
         else:
             messages.error(request,"No account found with this email address. Please check and try again.")
             return redirect("forgot_password")
-    return render(request,'users/password_reset.html')
+    return render(request,'users/forgot_password.html')
 
 @never_cache
 def otp_verify(request):
