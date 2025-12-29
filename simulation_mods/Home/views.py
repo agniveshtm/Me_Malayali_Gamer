@@ -202,6 +202,6 @@ def like_count(request,pk):
     return JsonResponse({'success':True,'likes':mod.likes,'liked':liked})
 def view_mods(request,pk):
     mod = get_object_or_404(Modsinfo,pk=pk)
-    return render(request,'general/mod_viewer.html')
+    return render(request,'general/mod_viewer.html',{'mod':mod})
 def about_page(request):
     return render(request,'main/about.html')
