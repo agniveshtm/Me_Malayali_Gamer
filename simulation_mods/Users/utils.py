@@ -10,7 +10,7 @@ def generate_otp():
 
 def send_otp_email(email,otp,is_verification=False):
     try:
-        html_message = render_to_string('emails/otp_email.html',{'otp':otp,'is_verification':is_verification})
+        html_message = render_to_string('messages/otp_email.html',{'otp':otp,'is_verification':is_verification})
         plain_message = strip_tags(html_message)
         subject= 'Email Verification OTP - ModHub' if is_verification else 'Password Reset OTP - ModHub'
         send_mail(

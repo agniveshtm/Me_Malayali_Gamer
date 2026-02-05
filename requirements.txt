@@ -3,7 +3,6 @@ cachetools==6.2.1
 certifi==2025.10.5
 charset-normalizer==3.4.4
 Django==5.2.7
-django-bootstrap5==25.3
 django-browser-reload==1.21.0
 django-filter==25.2
 django-ratelimit==4.1.0

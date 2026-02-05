@@ -51,7 +51,6 @@ INSTALLED_APPS = [
     'Users',
     'Home',
     'django_browser_reload',
-    'django_bootstrap5',
 ]
 
 MIDDLEWARE = [

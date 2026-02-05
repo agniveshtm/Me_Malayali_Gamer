@@ -1,5 +1,4 @@
 {% extends 'main/base.html' %}
-{% load django_bootstrap5 %}
 
 {% block content %}
 <style>
@@ -127,7 +126,9 @@
                 </div>
             {% else %}
                 <div class="text-center">
-                    {% bootstrap_alert "No additional images available for this mod." alert_type="info" %}
+                    <div class="alert alert-info" role="alert">
+                        No additional images available for this mod.
+                    </div>
                 </div>
             {% endif %}
         </div>
