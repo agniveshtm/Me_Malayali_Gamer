@@ -1,4 +1,4 @@
-{% extends 'main/base.html' %}
+{% extends 'common/base.html' %}
 
 {% block content %}
 <style>
@@ -41,8 +41,10 @@
     <div class="row mb-5">
         <div class="col-12">
             <h1 class="text-center mb-4 display-4 fw-bold floating-animation" style="background: linear-gradient(to right, #06b6d4, #3b82f6, #8b5cf6); -webkit-background-clip: text; background-clip: text; color: transparent;">{{ mod.title }}</h1>
-            <div class="position-relative shadow-lg rounded-3 overflow-hidden">
-                <img src="{{ mod.thumbnail_img.url }}" alt="{{ mod.title }}" class="img-fluid w-100" style="max-height: 400px; object-fit: cover; object-position: top; border: 3px solid transparent; border-image: linear-gradient(45deg, #06b6d4, #3b82f6, #8b5cf6) 1;">
+            <div class="shadow-lg rounded-3">
+                <div class="position-relative rounded-3 overflow-hidden p-1" style="background: linear-gradient(45deg, #06b6d4, #3b82f6, #8b5cf6);">
+                    <img src="{{ mod.thumbnail_img.url }}" alt="{{ mod.title }}" class="img-fluid w-100 rounded-2" style="max-height: 400px; object-fit: cover; object-position: top; display: block;">
+                </div>
             </div>
         </div>
     </div>
@@ -92,37 +94,39 @@
         <div class="col-12">
             <h2 class="text-center mb-4 display-5 fw-bold" style="background: linear-gradient(to right, #06b6d4, #3b82f6, #8b5cf6); -webkit-background-clip: text; background-clip: text; color: transparent;">Additional Images</h2>
             {% if mod.img_1 or mod.img_2 or mod.img_3 %}
-                <div id="modImagesCarousel" class="carousel slide shadow-lg rounded-3 overflow-hidden" data-bs-ride="carousel">
-                    <div class="carousel-indicators">
-                        {% if mod.img_1 %}<button type="button" data-bs-target="#modImagesCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>{% endif %}
-                        {% if mod.img_2 %}<button type="button" data-bs-target="#modImagesCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>{% endif %}
-                        {% if mod.img_3 %}<button type="button" data-bs-target="#modImagesCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>{% endif %}
+                <div class="shadow-lg rounded-3">
+                    <div id="modImagesCarousel" class="carousel slide rounded-3 overflow-hidden" data-bs-ride="carousel">
+                        <div class="carousel-indicators">
+                            {% if mod.img_1 %}<button type="button" data-bs-target="#modImagesCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>{% endif %}
+                            {% if mod.img_2 %}<button type="button" data-bs-target="#modImagesCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>{% endif %}
+                            {% if mod.img_3 %}<button type="button" data-bs-target="#modImagesCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>{% endif %}
+                        </div>
+                        <div class="carousel-inner">
+                            {% if mod.img_1 %}
+                                <div class="carousel-item active">
+                                    <img src="{{ mod.img_1.url }}" class="d-block w-100" alt="Additional image 1" style="max-height: 500px; object-fit: cover;">
+                                </div>
+                            {% endif %}
+                            {% if mod.img_2 %}
+                                <div class="carousel-item">
+                                    <img src="{{ mod.img_2.url }}" class="d-block w-100" alt="Additional image 2" style="max-height: 500px; object-fit: cover;">
+                                </div>
+                            {% endif %}
+                            {% if mod.img_3 %}
+                                <div class="carousel-item">
+                                    <img src="{{ mod.img_3.url }}" class="d-block w-100" alt="Additional image 3" style="max-height: 500px; object-fit: cover;">
+                                </div>
+                            {% endif %}
+                        </div>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#modImagesCarousel" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#modImagesCarousel" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
                     </div>
-                    <div class="carousel-inner">
-                        {% if mod.img_1 %}
-                            <div class="carousel-item active">
-                                <img src="{{ mod.img_1.url }}" class="d-block w-100" alt="Additional image 1" style="max-height: 500px; object-fit: cover;">
-                            </div>
-                        {% endif %}
-                        {% if mod.img_2 %}
-                            <div class="carousel-item">
-                                <img src="{{ mod.img_2.url }}" class="d-block w-100" alt="Additional image 2" style="max-height: 500px; object-fit: cover;">
-                            </div>
-                        {% endif %}
-                        {% if mod.img_3 %}
-                            <div class="carousel-item">
-                                <img src="{{ mod.img_3.url }}" class="d-block w-100" alt="Additional image 3" style="max-height: 500px; object-fit: cover;">
-                            </div>
-                        {% endif %}
-                    </div>
-                    <button class="carousel-control-prev" type="button" data-bs-target="#modImagesCarousel" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Previous</span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#modImagesCarousel" data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Next</span>
-                    </button>
                 </div>
             {% else %}
                 <div class="text-center">

@@ -2,15 +2,17 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.conf import settings
-import random
+import secrets
+import string
 from datetime import datetime,timedelta
 
-def generate_otp():
-    return str(random.randint(100000,999999))
+def generate_otp(length=6):
+    """Generate a cryptographically secure numeric OTP."""
+    return ''.join(secrets.choice(string.digits) for _ in range(length))
 
 def send_otp_email(email,otp,is_verification=False):
     try:
-        html_message = render_to_string('messages/otp_email.html',{'otp':otp,'is_verification':is_verification})
+        html_message = render_to_string('common/otp_email.html',{'otp':otp,'is_verification':is_verification})
         plain_message = strip_tags(html_message)
         subject= 'Email Verification OTP - ModHub' if is_verification else 'Password Reset OTP - ModHub'
         send_mail(

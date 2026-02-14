@@ -1,11 +1,9 @@
 {% extends "common/base.html" %}
 {% load static %}
 
-{% block title %}ModHub - Euro Truck Simulator Mods Community{% endblock %}
+{% block title %}Me Malayali Gamer{% endblock %}
 
-{% block extra_head %}
-<script src="https://unpkg.com/htmx.org@1.9.12"></script>
-{% endblock extra_head %}
+
 
 {% block content %}
     {% csrf_token %}
@@ -30,7 +28,7 @@
     <section class="py-5" id="public-mods-section">
         <div class="container-fluid px-3">
             <h2 class="text-center mb-5 display-4 fw-black" style="background: linear-gradient(to right, #06b6d4, #3b82f6, #8b5cf6); -webkit-background-clip: text; background-clip: text; color: transparent;">
-                PUBLIC MODS
+                MODS
             </h2>
 
             <!-- Search Box -->
@@ -93,107 +91,108 @@
             </div>
 
             {% if public_mods %}
-            <div class="card bg-white rounded-3 shadow-lg overflow-hidden border-0" style="max-width: 1200px; margin: 0 auto;">
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <tbody>
-                                {% for m in public_mods %}
-                                <tr class="border-bottom border-light">
-                                    <!-- THUMBNAIL -->
-                                    <td class="p-2 p-md-3 align-top" style="width: 30%; min-width: 200px;">
-                                        <div class="thumb-container group position-relative overflow-hidden" data-url="{{ m.thumbnail_img.url|default:''|escape }}" data-title="{{ m.title|escape }}">
-                                            {% if m.thumbnail_img %}
-                                                <img src="{{ m.thumbnail_img.url }}" alt="{{ m.title }}" class="thumb-img">
-                                                <div class="position-absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 d-flex align-items-end p-3 p-md-4">
-                                                    <p class="text-white fw-bold fs-3 drop-shadow-2xl mb-0">Click to view full</p>
-                                                </div>
-                                            {% else %}
-                                                <div class="thumb-placeholder">M</div>
-                                            {% endif %}
-                                        </div>
-                                    </td>
+            <div class="container-fluid px-3">
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                    {% for m in public_mods %}
+                    <div class="col">
+                        <div class="card h-100 shadow-lg border-0 rounded-4 overflow-hidden mod-card">
+                            <!-- THUMBNAIL -->
+                            <div class="thumb-container position-relative overflow-hidden m-0" style="height: 200px; cursor: pointer;" data-url="{{ m.thumbnail_img.url|default:''|escape }}" data-title="{{ m.title|escape }}">
+                                {% if m.thumbnail_img %}
+                                    <img src="{{ m.thumbnail_img.url }}" alt="{{ m.title }}" class="w-100 h-100" style="object-fit: cover;">
+                                {% else %}
+                                    <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-gradient-to-r from-cyan-100 to-blue-100">
+                                        <span class="display-4 fw-bold text-cyan-700">M</span>
+                                    </div>
+                                {% endif %}
+                                {% if m.is_fresh %}
+                                <span class="position-absolute px-2 py-1 fs-6 fw-black bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-700 text-white rounded-pill shadow animate-pulse" style="top: 10px; right: 10px;">
+                                    FRESH
+                                </span>
+                                {% endif %}
+                            </div>
 
-                                    <!-- TITLE + META -->
-                                    <td class="p-2 p-md-3 align-top" style="width: 40%;">
-                                        <h3 class="h2 fw-black mod-title d-flex align-items-center flex-wrap gap-2 mb-2">
-                                            {{ m.title }}
-                                            <span class="px-2 py-1 fs-6 fw-bold bg-gradient-to-r from-cyan-100 via-blue-100 to-indigo-100 text-cyan-900 rounded-pill">
-                                                v{{ m.version }}
-                                            </span>
-                                            {% if m.is_fresh %}
-                                            <span class="px-2 py-1 fs-6 fw-black bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-700 text-white rounded-pill shadow animate-pulse">
-                                                FRESH
-                                            </span>
-                                            {% endif %}
-                                            <span class="visibility-badge public">
-                                                <i class="bi bi-globe"></i>
-                                                Public
-                                            </span>
-                                        </h3>
 
-                                        <div class="text-muted d-flex flex-column gap-2 meta-stats mb-3" style="font-size: 1.1rem;">
-                                            <span class="d-flex align-items-center gap-1">
-                                                <i class="bi bi-box text-cyan-700"></i>
-                                                <strong>{{ m.category }}</strong>
-                                            </span>
-                                            <span class="d-flex align-items-center gap-1">
-                                                <i class="bi bi-tag text-cyan-700"></i>
-                                                <strong>{{ m.type }}</strong>
-                                            </span>
-                                            <span class="d-flex align-items-center gap-1">
-                                                <i class="bi bi-calendar text-muted"></i>
-                                                {{ m.uploaded_on|timesince }} ago [{{m.uploaded_on|date:"M d, Y"}}]
-                                            </span>
-                                            <span class="d-flex align-items-center gap-1">
-                                                <i class="bi bi-download text-muted"></i>
-                                                {{ m.downloads|default:0 }} downloads
-                                            </span>
-                                            <span class="d-flex align-items-center gap-1">
-                                                <i class="bi bi-hand-thumbs-up-fill text-primary"></i>
-                                                <span class="like-count-display" data-mod-id="{{ m.pk }}">{{ m.likes|default:0 }}</span> likes
-                                            </span>
-                                            <span class="d-flex align-items-center gap-1">
-                                                {%if m.user %}
-                                                    {%if m.user.is_superuser%}
-                                                        <i class="bi bi-shield-fill-check text-danger"></i>
-                                                        by <strong>{{ m.user.username }}</strong> <span class="badge bg-danger">Admin</span>
-                                                    {%elif m.user.is_staff%}
-                                                        <i class="bi bi-person-badge"></i>
-                                                        by <strong>{{ m.user.username }}</strong> <span class="badge bg-primary">Staff</span>
-                                                    {%else%}
-                                                        <i class="bi bi-person-circle"></i>
-                                                        by <strong>{{ m.user.username }}</strong>
-                                                    {% endif %}
-                                                {%endif%}
-                                            </span>
-                                        </div>
+                            <div class="card-body p-4">
+                                <!-- TITLE -->
+                                <h5 class="card-title fw-bold mb-2 d-flex align-items-center flex-wrap gap-2">
+                                    {{ m.title }}
+                                    <span class="px-2 py-1 fs-6 fw-bold bg-gradient-to-r from-cyan-100 via-blue-100 to-indigo-100 text-cyan-900 rounded-pill">
+                                        v{{ m.version }}
+                                    </span>
+                                </h5>
 
-                                        <!-- LIKE BUTTON -->
-                                        <button class="like-btn" data-mod-id="{{ m.pk }}">
-                                            <i class="bi bi-hand-thumbs-up"></i>
-                                            Like
+                                <!-- META INFO -->
+                                <div class="text-muted small mb-3">
+                                    <div class="d-flex flex-wrap gap-3 mb-2">
+                                        <span class="d-flex align-items-center gap-1">
+                                            <i class="fas fa-box text-warning"></i>
+                                            {{ m.category }}
+                                        </span>
+                                        <span class="d-flex align-items-center gap-1">
+                                            <i class="fas fa-tag text-danger"></i>
+                                            {{ m.type }}
+                                        </span>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-3">
+                                        <span class="d-flex align-items-center gap-1">
+                                            <i class="fas fa-calendar text-info"></i>
+                                            {{ m.uploaded_on|timesince }} ago
+                                        </span>
+                                        <span class="d-flex align-items-center gap-1">
+                                            <i class="fas fa-download text-success"></i>
+                                            {{ m.downloads|default:0 }}
+                                        </span>
+                                        <span class="d-flex align-items-center gap-1">
+                                            <i class="fas fa-thumbs-up text-primary"></i>
+                                            <span class="like-count-display" data-mod-id="{{ m.pk }}">{{ m.likes|default:0 }}</span>
+                                        </span>
+                                    </div>
+                                </div>
+
+
+                                <!-- USER INFO -->
+                                <div class="d-flex align-items-center gap-2 mb-3 p-2 bg-body-tertiary rounded-3">
+                                    {%if m.user %}
+                                        {%if m.user.is_superuser%}
+                                            <i class="fas fa-shield-alt text-danger"></i>
+                                            <span class="small text-secondary"><strong>{{ m.user.username }}</strong> <span class="badge bg-danger">Admin</span></span>
+                                        {%elif m.user.is_staff%}
+                                            <i class="fas fa-id-badge text-primary"></i>
+                                            <span class="small text-secondary"><strong>{{ m.user.username }}</strong> <span class="badge bg-primary">Staff</span></span>
+                                        {%else%}
+                                            <i class="fas fa-user-circle text-secondary"></i>
+                                            <span class="small text-secondary"><strong>{{ m.user.username }}</strong></span>
+                                        {% endif %}
+                                    {%endif%}
+                                </div>
+
+
+                                <!-- ACTIONS -->
+                                <div class="d-flex flex-column gap-2">
+                                    <div class="d-flex gap-2">
+                                        <a href="{% url 'download_count' m.pk %}"
+                                            class="btn btn-success w-50 fw-bold rounded-pill shadow-sm download-btn"
+                                            target="_blank">
+                                            <i class="fas fa-download"></i> DOWNLOAD
+                                        </a>
+                                        <button class="like-btn btn btn-outline-primary w-50 rounded-pill d-flex align-items-center justify-content-center" data-mod-id="{{ m.pk }}">
+                                            <i class="fas fa-thumbs-up"></i>
                                         </button>
-                                    </td>
 
-                                    <!-- ACTIONS -->
-                                    <td class="p-2 p-md-3 text-end align-middle" style="width: 30%;">
-                                        <div class="d-flex flex-column gap-2 justify-content-center">
-                                            <a href="{% url 'download_count' m.pk %}"
-                                                class="btn btn-success btn-lg fw-bold rounded-pill shadow download-btn"
-                                                target="_blank">
-                                                    <i class="bi bi-download"></i> DOWNLOAD MOD
-                                            </a>
-                                            <a href="{% url 'view_mods' m.pk %}" class="btn btn-info btn-lg fw-bold rounded-pill shadow">
-                                                <i class="bi bi-eye"></i> View Mods
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                                    </div>
+                                    <a href="{% url 'view_mods' m.pk %}" class="btn btn-info fw-bold rounded-pill shadow-sm">
+                                        <i class="fas fa-eye"></i> View Mod
+                                    </a>
+                                </div>
+
+
+                            </div>
+                        </div>
                     </div>
+                    {% endfor %}
+                </div>
+
                     <div class="d-flex justify-content-center mt-4">
                         <nav>
                             <ul class="pagination">
@@ -435,11 +434,11 @@
             // Search function
             const performSearch = () => {
                 const term = searchInput.value.toLowerCase();
-                const rows = $$('tbody tr');
+                const cards = $$('.mod-card');
                 let visibleCount = 0;
-                rows.forEach(row => {
-                    const isVisible = row.textContent.toLowerCase().includes(term);
-                    row.style.display = isVisible ? '' : 'none';
+                cards.forEach(card => {
+                    const isVisible = card.textContent.toLowerCase().includes(term);
+                    card.closest('.col').style.display = isVisible ? '' : 'none';
                     if (isVisible) visibleCount++;
                 });
                 const noResults = $('#noResults');
@@ -448,6 +447,7 @@
                 }
             };
 
+
             // Search
             const searchInput = $('#searchInput');
             const searchButton = $('#searchButton');
@@ -455,14 +455,15 @@
             if (searchInput) {
               searchInput.addEventListener('input', () => {
                 if (searchInput.value === '') {
-                  // Show all rows when input is cleared
-                  const rows = $$('tbody tr');
-                  rows.forEach(row => row.style.display = '');
+                  // Show all cards when input is cleared
+                  const cards = $$('.mod-card');
+                  cards.forEach(card => card.closest('.col').style.display = '');
                   const noResults = $('#noResults');
                   if (noResults) noResults.style.display = 'none';
                 }
               });
             }
+
             if (searchForm) {
               searchForm.addEventListener('submit', (e) => {
                 e.preventDefault();
@@ -517,8 +518,9 @@
 
                 if (wasLiked) {
                     btn.classList.add('liked');
-                    btn.querySelector('i').className = 'bi bi-hand-thumbs-up-fill';
+                    btn.querySelector('i').className = 'fas fa-thumbs-up';
                 }
+
 
                 btn.addEventListener('click', async function(e) {
                     e.preventDefault();
@@ -554,13 +556,14 @@
                             // Toggle button style and icon
                             if (data.liked) {
                                 this.classList.add('liked');
-                                this.querySelector('i').className = 'bi bi-hand-thumbs-up-fill';
+                                this.querySelector('i').className = 'fas fa-thumbs-up';
                                 sessionStorage.setItem(`liked_mod_${modId}`, 'true');
                             } else {
                                 this.classList.remove('liked');
-                                this.querySelector('i').className = 'bi bi-hand-thumbs-up';
+                                this.querySelector('i').className = 'far fa-thumbs-up';
                                 sessionStorage.setItem(`liked_mod_${modId}`, 'false');
                             }
+
 
                             // Show feedback
                             console.log(data.liked ? `Liked! Total: ${data.likes}` : `Unliked! Total: ${data.likes}`);
