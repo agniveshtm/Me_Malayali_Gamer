@@ -58,7 +58,12 @@
                             </button>
                             <div class="dropdown-menu dropdown-menu-end p-4 shadow-lg border-0 rounded-3" style="min-width: 320px;" aria-labelledby="filterDropdown">
                               <h5 class="fw-bold mb-3 text-center" style="color: #06b6d4;">Filter Mods</h5>
-                              <form method="get" id="filterForm">
+                              <form method="get" id="filterForm"
+                                    hx-get="."
+                                    hx-target="#mod-records-container"
+                                    hx-swap="innerHTML"
+                                    hx-push-url="true">
+                                <input type="hidden" name="order" value="{{ current_order }}">
                                 <div class="mb-3">
                                   <label for="categoryFilter" class="form-label fw-bold small">Category</label>
                                   <input type="text" class="form-control rounded-pill" id="categoryFilter" name="category" placeholder="Enter category...">
@@ -90,150 +95,9 @@
                 </div>
             </div>
 
-            {% if public_mods %}
-            <div class="container-fluid px-3">
-                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                    {% for m in public_mods %}
-                    <div class="col">
-                        <div class="card h-100 shadow-lg border-0 rounded-4 overflow-hidden mod-card">
-                            <!-- THUMBNAIL -->
-                            <div class="thumb-container position-relative overflow-hidden m-0" style="height: 200px; cursor: pointer;" data-url="{{ m.thumbnail_img.url|default:''|escape }}" data-title="{{ m.title|escape }}">
-                                {% if m.thumbnail_img %}
-                                    <img src="{{ m.thumbnail_img.url }}" alt="{{ m.title }}" class="w-100 h-100" style="object-fit: cover;">
-                                {% else %}
-                                    <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-gradient-to-r from-cyan-100 to-blue-100">
-                                        <span class="display-4 fw-bold text-cyan-700">M</span>
-                                    </div>
-                                {% endif %}
-                                {% if m.is_fresh %}
-                                <span class="position-absolute px-2 py-1 fs-6 fw-black bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-700 text-white rounded-pill shadow animate-pulse" style="top: 10px; right: 10px;">
-                                    FRESH
-                                </span>
-                                {% endif %}
-                            </div>
-
-
-                            <div class="card-body p-4">
-                                <!-- TITLE -->
-                                <h5 class="card-title fw-bold mb-2 d-flex align-items-center flex-wrap gap-2">
-                                    {{ m.title }}
-                                    <span class="px-2 py-1 fs-6 fw-bold bg-gradient-to-r from-cyan-100 via-blue-100 to-indigo-100 text-cyan-900 rounded-pill">
-                                        v{{ m.version }}
-                                    </span>
-                                </h5>
-
-                                <!-- META INFO -->
-                                <div class="text-muted small mb-3">
-                                    <div class="d-flex flex-wrap gap-3 mb-2">
-                                        <span class="d-flex align-items-center gap-1">
-                                            <i class="fas fa-box text-warning"></i>
-                                            {{ m.category }}
-                                        </span>
-                                        <span class="d-flex align-items-center gap-1">
-                                            <i class="fas fa-tag text-danger"></i>
-                                            {{ m.type }}
-                                        </span>
-                                    </div>
-                                    <div class="d-flex flex-wrap gap-3">
-                                        <span class="d-flex align-items-center gap-1">
-                                            <i class="fas fa-calendar text-info"></i>
-                                            {{ m.uploaded_on|timesince }} ago
-                                        </span>
-                                        <span class="d-flex align-items-center gap-1">
-                                            <i class="fas fa-download text-success"></i>
-                                            {{ m.downloads|default:0 }}
-                                        </span>
-                                        <span class="d-flex align-items-center gap-1">
-                                            <i class="fas fa-thumbs-up text-primary"></i>
-                                            <span class="like-count-display" data-mod-id="{{ m.pk }}">{{ m.likes|default:0 }}</span>
-                                        </span>
-                                    </div>
-                                </div>
-
-
-                                <!-- USER INFO -->
-                                <div class="d-flex align-items-center gap-2 mb-3 p-2 bg-body-tertiary rounded-3">
-                                    {%if m.user %}
-                                        {%if m.user.is_superuser%}
-                                            <i class="fas fa-shield-alt text-danger"></i>
-                                            <span class="small text-secondary"><strong>{{ m.user.username }}</strong> <span class="badge bg-danger">Admin</span></span>
-                                        {%elif m.user.is_staff%}
-                                            <i class="fas fa-id-badge text-primary"></i>
-                                            <span class="small text-secondary"><strong>{{ m.user.username }}</strong> <span class="badge bg-primary">Staff</span></span>
-                                        {%else%}
-                                            <i class="fas fa-user-circle text-secondary"></i>
-                                            <span class="small text-secondary"><strong>{{ m.user.username }}</strong></span>
-                                        {% endif %}
-                                    {%endif%}
-                                </div>
-
-
-                                <!-- ACTIONS -->
-                                <div class="d-flex flex-column gap-2">
-                                    <div class="d-flex gap-2">
-                                        <a href="{% url 'download_count' m.pk %}"
-                                            class="btn btn-success w-50 fw-bold rounded-pill shadow-sm download-btn"
-                                            target="_blank">
-                                            <i class="fas fa-download"></i> DOWNLOAD
-                                        </a>
-                                        <button class="like-btn btn btn-outline-primary w-50 rounded-pill d-flex align-items-center justify-content-center" data-mod-id="{{ m.pk }}">
-                                            <i class="fas fa-thumbs-up"></i>
-                                        </button>
-
-                                    </div>
-                                    <a href="{% url 'view_mods' m.pk %}" class="btn btn-info fw-bold rounded-pill shadow-sm">
-                                        <i class="fas fa-eye"></i> View Mod
-                                    </a>
-                                </div>
-
-
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-
-                    <div class="d-flex justify-content-center mt-4">
-                        <nav>
-                            <ul class="pagination">
-                                {% if public_mods.has_previous %}
-                                <li class="page-item">
-                                    <a class="page-link"
-                                       href="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ public_mods.previous_page_number }}">
-                                        Previous
-                                    </a>
-                                </li>
-                                {% endif %}
-                                <li class="page-item disabled">
-                                    <span class="page-link">
-                                        Page {{ public_mods.number }} of {{ public_mods.paginator.num_pages }}
-                                    </span>
-                                </li>
-                                {% if public_mods.has_next %}
-                                <li class="page-item">
-                                    <a class="page-link"
-                                       href="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ public_mods.next_page_number }}">
-                                        Next
-                                    </a>
-                                </li>
-                                {% endif %}
-                            </ul>
-                        </nav>
-                    </div>
-                </div>
+            <div id="mod-records-container">
+                {% include "partials/mod_records_partial.html" %}
             </div>
-            <div id="noResults" class="text-center py-5" style="display:none;">
-                <p class="h4 fw-bold text-info">No mods found matching your search.</p>
-            </div>
-            {% else %}
-            {% if request.GET.category or request.GET.type or request.GET.uploaded_on_after or request.GET.uploaded_on_before %}
-                <div id="noResultsIndicator" style="display: none;"></div>
-            {% else %}
-                <div class="text-center py-5">
-                    <p class="lead text-muted">No public mods available yet. Be the first to upload!</p>
-                </div>
-            {% endif %}
-            {% endif %}
         </div>
     </section>
 
@@ -427,7 +291,20 @@
             }
 
             // Clear filters
-            const clearFilters = () => window.location.href = window.location.pathname;
+            const clearFilters = () => {
+                const form = $('#filterForm');
+                form.reset();
+                const orderInput = form.querySelector('input[name="order"]');
+                if (orderInput) orderInput.value = '-uploaded_on';
+                
+                const orderButton = $('#orderButton');
+                if (orderButton) {
+                    orderButton.dataset.order = '-uploaded_on';
+                    $('#orderIcon').className = 'bi bi-sort-down';
+                }
+                
+                htmx.trigger(form, 'submit');
+            };
             $('#clearFilters')?.addEventListener('click', clearFilters);
             $('#clearFiltersFromModal')?.addEventListener('click', clearFilters);
 
@@ -447,6 +324,12 @@
                 }
             };
 
+            // Re-apply search filter after HTMX swap
+            document.body.addEventListener('htmx:afterSwap', function(evt) {
+                if (evt.detail.target.id === 'mod-records-container') {
+                    performSearch();
+                }
+            });
 
             // Search
             const searchInput = $('#searchInput');
@@ -475,19 +358,20 @@
             }
 
             // Image modal for thumbnails
-            $$('.thumb-container').forEach(container => {
-                container.addEventListener('click', () => {
+            document.body.addEventListener('click', function(e) {
+                const container = e.target.closest('.thumb-container');
+                if (container) {
                     const imageUrl = container.dataset.url;
                     const title = container.dataset.title;
-                    if (!imageUrl) return;
-
-                    const modal = new bootstrap.Modal($('#imageModal'), { backdrop: 'static' });
-                    const img = $('#fullscreenImage');
-                    img.src = imageUrl;
-                    img.alt = title;
-                    img.style.display = 'block';
-                    modal.show();
-                });
+                    if (imageUrl) {
+                        const modal = new bootstrap.Modal($('#imageModal'), { backdrop: 'static' });
+                        const img = $('#fullscreenImage');
+                        img.src = imageUrl;
+                        img.alt = title;
+                        img.style.display = 'block';
+                        modal.show();
+                    }
+                }
             });
 
             // Order button functionality
@@ -503,34 +387,42 @@
                 }
 
                 orderButton.addEventListener('click', () => {
-                    const params = new URLSearchParams(window.location.search);
+                    const currentOrder = orderButton.dataset.order;
                     const newOrder = currentOrder === '-uploaded_on' ? 'uploaded_on' : '-uploaded_on';
-                    params.set('order', newOrder);
-                    window.location.search = params.toString();
+                    
+                    const filterForm = $('#filterForm');
+                    const orderInput = filterForm.querySelector('input[name="order"]');
+                    if (orderInput) orderInput.value = newOrder;
+                    
+                    orderButton.dataset.order = newOrder;
+                    orderIcon.className = newOrder === 'uploaded_on' ? 'bi bi-sort-up' : 'bi bi-sort-down';
+                    
+                    htmx.trigger(filterForm, 'submit');
                 });
             }
 
             // Like button functionality - TOGGLE SUPPORT
-            $$('.like-btn').forEach(btn => {
-                // Check session storage to see if this mod was liked
-                const modId = btn.dataset.modId;
-                const wasLiked = sessionStorage.getItem(`liked_mod_${modId}`) === 'true';
+            const initializeLikeButtons = () => {
+                $$('.like-btn').forEach(btn => {
+                    const modId = btn.dataset.modId;
+                    const wasLiked = sessionStorage.getItem(`liked_mod_${modId}`) === 'true';
+                    if (wasLiked) {
+                        btn.classList.add('liked');
+                        btn.querySelector('i').className = 'fas fa-thumbs-up';
+                    }
+                });
+            };
+            initializeLikeButtons();
+            document.body.addEventListener('htmx:afterSwap', initializeLikeButtons);
 
-                if (wasLiked) {
-                    btn.classList.add('liked');
-                    btn.querySelector('i').className = 'fas fa-thumbs-up';
-                }
-
-
-                btn.addEventListener('click', async function(e) {
+            document.body.addEventListener('click', async function(e) {
+                const btn = e.target.closest('.like-btn');
+                if (btn) {
                     e.preventDefault();
-
                     // Prevent spam clicking
-                    if (this.disabled) return;
-                    this.disabled = true;
-
-                    const modId = this.dataset.modId;
-
+                    if (btn.disabled) return;
+                    btn.disabled = true;
+                    const modId = btn.dataset.modId;
                     try {
                         // Get CSRF token
                         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
@@ -555,12 +447,12 @@
 
                             // Toggle button style and icon
                             if (data.liked) {
-                                this.classList.add('liked');
-                                this.querySelector('i').className = 'fas fa-thumbs-up';
+                                btn.classList.add('liked');
+                                btn.querySelector('i').className = 'fas fa-thumbs-up';
                                 sessionStorage.setItem(`liked_mod_${modId}`, 'true');
                             } else {
-                                this.classList.remove('liked');
-                                this.querySelector('i').className = 'far fa-thumbs-up';
+                                btn.classList.remove('liked');
+                                btn.querySelector('i').className = 'far fa-thumbs-up';
                                 sessionStorage.setItem(`liked_mod_${modId}`, 'false');
                             }
 
@@ -574,10 +466,10 @@
                     } finally {
                         // Re-enable button after delay
                         setTimeout(() => {
-                            this.disabled = false;
+                            btn.disabled = false;
                         }, 300);
                     }
-                });
+                }
             });
         });
     </script>

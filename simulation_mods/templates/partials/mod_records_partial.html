@@ -1,0 +1,168 @@
+<div hx-get="?{{ request.GET.urlencode }}" hx-trigger="every 5s" hx-target="this" hx-swap="outerHTML">
+{% if public_mods %}
+<div class="container-fluid px-3">
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for m in public_mods %}
+        <div class="col">
+            <div class="card h-100 shadow-lg border-0 rounded-4 overflow-hidden mod-card">
+                <!-- THUMBNAIL -->
+                <div class="thumb-container position-relative overflow-hidden m-0" style="height: 200px; cursor: pointer;" data-url="{{ m.thumbnail_img.url|default:''|escape }}" data-title="{{ m.title|escape }}">
+                    {% if m.thumbnail_img %}
+                        <img src="{{ m.thumbnail_img.url }}" alt="{{ m.title }}" class="w-100 h-100" style="object-fit: cover; object-position: top;">
+                    {% else %}
+                        <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-gradient-to-r from-cyan-100 to-blue-100">
+                            <span class="display-4 fw-bold text-cyan-700">M</span>
+                        </div>
+                    {% endif %}
+                    {% with elapsed=m.uploaded_on|timesince %}
+                    {% if "day" not in elapsed and "week" not in elapsed and "month" not in elapsed and "year" not in elapsed %}
+                    <span class="position-absolute px-2 py-1 fs-6 fw-bold text-white rounded-pill shadow" style="top: 10px; right: 10px; z-index: 10; background: linear-gradient(to right, #06b6d4, #2563eb, #4338ca);">
+                        New
+                    </span>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+
+
+                <div class="card-body p-4">
+                    <!-- TITLE -->
+                    <h5 class="card-title fw-bold mb-2 d-flex align-items-center flex-wrap gap-2">
+                        {{ m.title }}
+                        <span class="px-2 py-1 fs-6 fw-bold bg-gradient-to-r from-cyan-100 via-blue-100 to-indigo-100 text-cyan-900 rounded-pill">
+                            v{{ m.version }}
+                        </span>
+                    </h5>
+
+                    <!-- META INFO -->
+                    <div class="text-muted small mb-3">
+                        <div class="d-flex flex-wrap gap-3 mb-2">
+                            <span class="d-flex align-items-center gap-1">
+                                <i class="fas fa-box text-warning"></i>
+                                {{ m.category }}
+                            </span>
+                            <span class="d-flex align-items-center gap-1">
+                                <i class="fas fa-tag text-danger"></i>
+                                {{ m.type }}
+                            </span>
+                        </div>
+                        <div class="d-flex flex-wrap gap-3">
+                            <span class="d-flex align-items-center gap-1">
+                                <i class="fas fa-calendar text-info"></i>
+                                {{ m.uploaded_on|timesince }} ago
+                            </span>
+                            <span class="d-flex align-items-center gap-1">
+                                <i class="fas fa-download text-success"></i>
+                                {{ m.downloads|default:0 }}
+                            </span>
+                            <span class="d-flex align-items-center gap-1">
+                                <i class="fas fa-thumbs-up text-primary"></i>
+                                <span class="like-count-display" data-mod-id="{{ m.pk }}">{{ m.likes|default:0 }}</span>
+                            </span>
+                        </div>
+                    </div>
+
+
+                    <!-- USER INFO -->
+                    <div class="d-flex align-items-center gap-2 mb-3 p-2 bg-body-tertiary rounded-3">
+                        {%if m.user %}
+                            {%if m.user.is_superuser%}
+                                <i class="fas fa-shield-alt text-danger"></i>
+                                <span class="small text-secondary"><strong>{{ m.user.username }}</strong> <span class="badge bg-danger">Admin</span></span>
+                            {%elif m.user.is_staff%}
+                                <i class="fas fa-id-badge text-primary"></i>
+                                <span class="small text-secondary"><strong>{{ m.user.username }}</strong> <span class="badge bg-primary">Staff</span></span>
+                            {%else%}
+                                <i class="fas fa-user-circle text-secondary"></i>
+                                <span class="small text-secondary"><strong>{{ m.user.username }}</strong></span>
+                            {% endif %}
+                        {%endif%}
+                    </div>
+
+
+                    <!-- ACTIONS -->
+                    <div class="d-flex flex-column gap-2">
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'download_count' m.pk %}"
+                                class="btn btn-success w-50 fw-bold rounded-pill shadow-sm download-btn"
+                                target="_blank">
+                                <i class="fas fa-download"></i> DOWNLOAD
+                            </a>
+                            <button class="like-btn btn btn-outline-primary w-50 rounded-pill d-flex align-items-center justify-content-center" data-mod-id="{{ m.pk }}">
+                                <i class="fas fa-thumbs-up"></i>
+                            </button>
+
+                        </div>
+                        <a href="{% url 'view_mods' m.pk %}" class="btn btn-info fw-bold rounded-pill shadow-sm">
+                            <i class="fas fa-eye"></i> View Mod
+                        </a>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="d-flex justify-content-center mt-4">
+        <nav>
+            <ul class="pagination">
+                {% if public_mods.has_previous %}
+                <li class="page-item">
+                    <a class="page-link"
+                       href="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ public_mods.previous_page_number }}"
+                       hx-get="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ public_mods.previous_page_number }}"
+                       hx-target="#mod-records-container"
+                       hx-swap="innerHTML"
+                       hx-push-url="true">
+                        Previous
+                    </a>
+                </li>
+                {% endif %}
+                {% for i in public_mods.paginator.page_range %}
+                    {% if i == public_mods.number %}
+                        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                    {% elif i == 1 or i == public_mods.paginator.num_pages or i >= public_mods.number|add:'-2' and i <= public_mods.number|add:'2' %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ i }}"
+                               hx-get="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ i }}"
+                               hx-target="#mod-records-container"
+                               hx-swap="innerHTML"
+                               hx-push-url="true">{{ i }}</a>
+                        </li>
+                    {% elif i == public_mods.number|add:'-3' and public_mods.number > 4 %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% elif i == public_mods.number|add:'3' and public_mods.number < public_mods.paginator.num_pages|add:'-3' %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+                {% if public_mods.has_next %}
+                <li class="page-item">
+                    <a class="page-link"
+                       href="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ public_mods.next_page_number }}"
+                       hx-get="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ public_mods.next_page_number }}"
+                       hx-target="#mod-records-container"
+                       hx-swap="innerHTML"
+                       hx-push-url="true">
+                        Next
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+<div id="noResults" class="text-center py-5" style="display:none;">
+    <p class="h4 fw-bold text-info">No mods found matching your search.</p>
+</div>
+{% else %}
+{% if request.GET.category or request.GET.type or request.GET.uploaded_on_after or request.GET.uploaded_on_before %}
+    <div id="noResultsIndicator" style="display: none;"></div>
+{% else %}
+    <div class="text-center py-5">
+        <p class="lead text-muted">No public mods available yet. Be the first to upload!</p>
+    </div>
+{% endif %}
+{% endif %}
+</div>

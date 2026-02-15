@@ -167,12 +167,16 @@ def home_page(request):
     mod_set = Modsinfo.objects.filter(is_public = True).order_by(order)
     mods_filter = PublicModsFilter(request.GET,queryset=mod_set)
     filtered_mods = mods_filter.qs
-    paginator = Paginator(filtered_mods,5)
+    paginator = Paginator(filtered_mods,6)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
+    context = {"public_mods":page_obj,"filter":mods_filter,"page_obj":page_obj,"current_order":order}
+    if request.headers.get('HX-Request'):
+        return render(request, 'partials/mod_records_partial.html', context)
     youtube_data = youtube_video(request)
-    return render(request,'main/index.html',{"public_mods":page_obj,"filter":mods_filter,"page_obj":page_obj,"current_order":order,
-                                             "latest_video":youtube_data['latest_video'],"trending_video":youtube_data['trending_video']})
+    context.update({"latest_video":youtube_data['latest_video'],"trending_video":youtube_data['trending_video']})
+    return render(request,'main/index.html',context)
+
 def download_count(request,pk):
     mod = get_object_or_404(Modsinfo,pk=pk)
     session_key = f'downloaded_mod_{pk}'

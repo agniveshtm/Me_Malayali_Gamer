@@ -90,8 +90,9 @@
                             {% else %}
                                 <i class="fas fa-plus"></i>
                             {% endif %}
-                            <input type="file" id="id_thumbnail_img" name="thumbnail_img" class="image-input" accept="image/*" required>
+                            <input type="file" id="id_thumbnail_img" name="thumbnail_img" class="image-input" accept="image/*" {% if not is_edit %}required{% endif %}>
                         </label>
+
 
                         <label for="id_img_1" class="image-placeholder" data-index="1">
                             {% if mod.img_1 %}
