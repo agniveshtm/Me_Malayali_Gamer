@@ -1,5 +1,5 @@
 from django.shortcuts import render,get_object_or_404,redirect
-from Main.models import Modsinfo
+from Main.models import Modsinfo,Modtype
 from .filters import PublicModsFilter
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
@@ -7,6 +7,8 @@ from django.core.paginator import Paginator
 from django.conf import settings
 from googleapiclient.discovery import build
 from django.core.cache import cache
+from django.utils import timezone
+from datetime import timedelta
 import re
 #=============HOME PAGE===============#
 # Cache timeout in seconds (15 minutes)
@@ -170,7 +172,13 @@ def home_page(request):
     paginator = Paginator(filtered_mods,6)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
-    context = {"public_mods":page_obj,"filter":mods_filter,"page_obj":page_obj,"current_order":order}
+    categories = Modtype.objects.all()
+    
+    # Logic for carousel: Fetch mods uploaded in the last 24 hours
+    time_threshold = timezone.now() - timedelta(days=1)
+    carousel_mods = Modsinfo.objects.filter(is_public=True, uploaded_on__gte=time_threshold).order_by('-uploaded_on')
+
+    context = {"public_mods":page_obj,"filter":mods_filter,"page_obj":page_obj,"current_order":order,"categories":categories, "carousel_mods": carousel_mods}
     if request.headers.get('HX-Request'):
         return render(request, 'partials/mod_records_partial.html', context)
     youtube_data = youtube_video(request)
@@ -209,3 +217,5 @@ def view_mods(request,pk):
     return render(request,'common/mod_viewer.html',{'mod':mod})
 def about_page(request):
     return render(request,'main/about.html')
+def categories_page(request):
+    pass

@@ -106,54 +106,49 @@
             <h2 class="text-center mb-4">Latest Mod Uploads</h2>
             <div id="latestModsCarousel" class="carousel slide" data-bs-ride="carousel">
                 <div class="carousel-inner">
+                    {% for mod in carousel_mods %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <div class="row align-items-center justify-content-center">
+                            <div class="col-md-4">
+                                {% if mod.thumbnail_img %}
+                                    <img src="{{ mod.thumbnail_img.url }}" class="d-block w-100 rounded" alt="{{ mod.title }}" style="height: 250px; object-fit: cover;">
+                                {% else %}
+                                    <div class="d-flex align-items-center justify-content-center bg-light rounded" style="height: 250px;">
+                                        <span class="text-muted">No Image</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <h3>{{ mod.title }} <span class="badge bg-info fs-6">v{{ mod.version }}</span></h3>
+                                <p class="text-muted">
+                                    <i class="fas fa-box text-warning"></i> {{ mod.category }} | 
+                                    <i class="fas fa-user text-danger"></i> {{ mod.user.username }} |
+                                    <i class="fas fa-calendar text-info"></i> {{ mod.uploaded_on|timesince }} ago
+                                </p>
+                                <a href="{% url 'view_mods' mod.pk %}" class="btn btn-primary">View Mod</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
                     <div class="carousel-item active">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <img src="https://via.placeholder.com/300x200?text=Volvo+FH16" class="d-block w-100 rounded" alt="Volvo FH16 Interior">
-                            </div>
-                            <div class="col-md-8">
-                                <h3>Volvo FH16 Interior Overhaul</h3>
-                                <p>By TruckModderPro | Uploaded 2 hours ago</p>
-                                <p>Complete interior redesign with new textures and animations for realistic cab experience.</p>
-                                <a href="/mods/volvo-fh16" class="btn btn-primary">Download Mod</a>
-                            </div>
+                        <div class="text-center py-5">
+                            <h3>No new mods uploaded in the last 24 hours.</h3>
+                            <p>Be the first to upload one!</p>
+                            <a href="{% url 'create' %}" class="btn btn-outline-primary">Upload Mod</a>
                         </div>
                     </div>
-                    <div class="carousel-item">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <img src="https://via.placeholder.com/300x200?text=Scania+Map" class="d-block w-100 rounded" alt="Scania Map Addon">
-                            </div>
-                            <div class="col-md-8">
-                                <h3>Scania R Series Map Addon</h3>
-                                <p>By MapMaster | Uploaded 1 day ago</p>
-                                <p>Expansive new routes and cities tailored for Scania trucks in ETS2.</p>
-                                <a href="/mods/scania-map" class="btn btn-primary">Download Mod</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="carousel-item">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <img src="https://via.placeholder.com/300x200?text=Weather+Pack" class="d-block w-100 rounded" alt="Realistic Weather">
-                            </div>
-                            <div class="col-md-8">
-                                <h3>Realistic Weather Pack</h3>
-                                <p>By WeatherWizard | Uploaded 3 days ago</p>
-                                <p>Dynamic weather effects including rain, snow, and fog for immersive driving.</p>
-                                <a href="/mods/weather-pack" class="btn btn-primary">Download Mod</a>
-                            </div>
-                        </div>
-                    </div>
+                    {% endfor %}
                 </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#latestModsCarousel" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                {% if carousel_mods %}
+                <button class="carousel-control-prev" type="button" data-bs-target="#latestModsCarousel" data-bs-slide="prev" style="width: 8%;">
+                    <span class="carousel-control-prev-icon" aria-hidden="true" style="background-color: black; border-radius: 50%;"></span>
                     <span class="visually-hidden">Previous</span>
                 </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#latestModsCarousel" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <button class="carousel-control-next" type="button" data-bs-target="#latestModsCarousel" data-bs-slide="next" style="width: 8%;">
+                    <span class="carousel-control-next-icon" aria-hidden="true" style="background-color: black; border-radius: 50%;"></span>
                     <span class="visually-hidden">Next</span>
                 </button>
+                {% endif %}
             </div>
         </div>
     </section>
@@ -162,12 +157,11 @@
         <div class="container">
             <h2 class="text-center mb-4">Categories</h2>
             <div class="row text-center">
+                {% for category in categories %}
                 <div class="col-md-4 mb-3">
-                    <a href="/category/trucks" class="btn btn-outline-primary btn-lg">Trucks & Skins</a>
+                    <a href="/category/{{ category }}" class="btn btn-outline-primary btn-lg">{{ category }}</a>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <a href="/category/maps" class="btn btn-outline-primary btn-lg">Maps & Routes</a>
-                </div>
+                {% endfor %}
             </div>
         </div>
     </section>
