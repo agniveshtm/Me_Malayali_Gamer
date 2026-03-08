@@ -1,8 +1,9 @@
 from django.shortcuts import render,get_object_or_404,redirect
-from Main.models import Modsinfo,Modtype
-from .filters import PublicModsFilter
+from Main.models import Modsinfo,ModCategory
+from .filters import *
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from django.views.decorators.cache import never_cache
 from django.core.paginator import Paginator
 from django.conf import settings
 from googleapiclient.discovery import build
@@ -164,6 +165,7 @@ def _is_short_video(video):
     # YouTube Shorts can be up to 90 seconds (increased from 60)
     return duration_seconds <= 90
 #============= DISPLAY HOME PAGE ===============#
+@never_cache
 def home_page(request):
     order = request.GET.get('order', '-uploaded_on')
     mod_set = Modsinfo.objects.filter(is_public = True).order_by(order)
@@ -172,7 +174,7 @@ def home_page(request):
     paginator = Paginator(filtered_mods,6)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
-    categories = Modtype.objects.all()
+    categories = ModCategory.objects.all()
     
     # Logic for carousel: Fetch mods uploaded in the last 24 hours
     time_threshold = timezone.now() - timedelta(days=1)
@@ -212,10 +214,36 @@ def like_count(request,pk):
         liked = True
     request.session.modified = True
     return JsonResponse({'success':True,'likes':mod.likes,'liked':liked})
+
 def view_mods(request,pk):
     mod = get_object_or_404(Modsinfo,pk=pk)
     return render(request,'common/mod_viewer.html',{'mod':mod})
+
 def about_page(request):
     return render(request,'main/about.html')
-def categories_page(request):
-    pass
+
+def categories_page(request, category):
+    """Display mods filtered by category."""
+    order = request.GET.get('order', '-uploaded_on')
+    mod_set = Modsinfo.objects.filter(category__mod_category=category, is_public=True).order_by(order)
+    mods_filter = CategoryPageFilter(request.GET, queryset=mod_set)
+    filtered_mods = mods_filter.qs
+    paginator = Paginator(filtered_mods, 6)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    # Get all categories for the category navigation (Modtype)
+    categories = ModCategory.objects.all()
+    context = {
+        "public_mods": page_obj,
+        "filter": mods_filter,
+        "page_obj": page_obj,
+        "current_order": order,
+        "categories": categories,
+        "current_category": category,  # Pass current category to template
+    }
+    
+    # Handle HTMX request for pagination/filtering
+    if request.headers.get('HX-Request'):
+        return render(request, 'partials/mod_records_partial.html', context)
+    
+    return render(request, 'common/category_viewer.html', context)

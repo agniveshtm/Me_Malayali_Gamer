@@ -5,17 +5,17 @@ import uuid
 from .utils import image_directory_path
 # Create your models here.
 class Vehicle(models.Model):
-    vehicle_category = models.CharField(max_length=20,verbose_name="Vehicle Category",
-                                        help_text="The category of the vehicle (eg: Car, Truck, Bus).")
+    vehicle_type = models.CharField(max_length=20,verbose_name="Vehicle Type",
+                                        help_text="The Type of the vehicle (eg: Car, Truck, Bus).",default=None)
     def __str__(self):
-        return self.vehicle_category
+        return self.vehicle_type
     
-class Modtype(models.Model):
-    mod_type=models.CharField(max_length=20,verbose_name="Mod Type",
-                              help_text="The type of the mod(eg: Maps,Skin,Routes).")
+class ModCategory(models.Model):
+    mod_category=models.CharField(max_length=20,verbose_name="Mod Category",
+                              help_text="The Category of the mod(eg: Maps,Skin,Routes).",default=None)
     
     def __str__(self):
-        return self.mod_type
+        return self.mod_category
 class Modsinfo(models.Model): 
     id = models.UUIDField(primary_key=True,default=uuid.uuid4,editable=False)
     user = models.ForeignKey(User,on_delete=models.CASCADE,null=True,editable=False)
@@ -23,10 +23,10 @@ class Modsinfo(models.Model):
     version = models.CharField(max_length=15)
     description = models.TextField()
     uploaded_on = models.DateTimeField(default=timezone.now)
-    category = models.ForeignKey('Vehicle',on_delete=models.SET_NULL,null=True,blank=True)
+    type = models.ForeignKey('Vehicle',on_delete=models.SET_NULL,null=True,blank=True)
     download_link = models.URLField(max_length=500,blank=True,null=True)
     is_public = models.BooleanField(default = True)
-    type = models.ForeignKey('Modtype',on_delete=models.SET_NULL,null=True,blank=True)
+    category = models.ForeignKey('ModCategory',on_delete=models.SET_NULL,null=True,blank=True)
     thumbnail_img = models.ImageField(
         upload_to=image_directory_path,
         verbose_name="Thumbnail_Image",

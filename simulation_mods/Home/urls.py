@@ -18,6 +18,7 @@ from django.urls import path
 from . import views
 urlpatterns=[
     path('',views.home_page,name="home_page"),
+    path('category/<str:category>',views.categories_page,name="categories_page"),
     path('about/',views.about_page,name="about_page"),
     path('view-mods/<uuid:pk>/',views.view_mods,name="view_mods"),
     path('like/<uuid:pk>/',views.like_count,name="like_count"),
