@@ -1,0 +1,340 @@
+{% extends 'common/base.html' %}
+
+{% block title %}{{ current_category }} - ModHub{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+
+<!-- Category Header -->
+<section class="py-5 bg-light">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold mb-3" style="background: linear-gradient(to right, #06b6d4, #3b82f6, #8b5cf6); -webkit-background-clip: text; background-clip: text; color: transparent;">
+            <i class="bi bi-folder-fill me-2"></i>{{ current_category }}
+        </h1>
+        <p class="lead text-dark">Browse all mods in this category</p>
+        
+        <!-- Back to All Mods -->
+        <a href="/" class="btn btn-outline-primary rounded-pill">
+            <i class="bi bi-arrow-left me-2"></i>Back to All Mods
+        </a>
+    </div>
+</section>
+
+<!-- Search and Filter Section -->
+<section class="py-4">
+    <div class="container-fluid px-3">
+        <div class="row justify-content-center mb-4">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center gap-2">
+                    <form id="searchForm" class="input-group flex-grow-1">
+                        <input type="text" id="searchInput" placeholder="Search mods in {{ current_category }}..."
+                               class="form-control form-control-lg px-4 py-2 border-2 border-secondary rounded-pill focus:outline-none focus:ring-4 focus:ring-cyan-400 transition-all shadow-lg">
+                        <button class="btn btn-primary rounded-pill px-4 py-2 ms-2" type="submit" id="searchButton">
+                            <i class="bi bi-search"></i> Search
+                        </button>
+                    </form>
+                    <button class="btn btn-lg rounded-circle shadow-lg d-flex align-items-center justify-content-center ms-2"
+                            type="button" id="orderButton" data-order="{{ current_order }}"
+                            style="background: linear-gradient(to right, #06b6d4, #3b82f6); border: none;">
+                        <i class="bi bi-sort-down" id="orderIcon"></i>
+                    </button>
+                    <div class="dropdown">
+                        <button class="btn btn-lg rounded-circle shadow-lg d-flex align-items-center justify-content-center position-relative"
+                                type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false"
+                                style="background: linear-gradient(to right, #06b6d4, #3b82f6); border: none;">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" viewBox="0 0 24 24">
+                            <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/>
+                          </svg>
+                          <span id="filterBadge" class="badge bg-danger position-absolute top-0 start-100 translate-middle" style="display: none;"></span>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end p-4 shadow-lg border-0 rounded-3" style="min-width: 320px;" aria-labelledby="filterDropdown">
+                          <h5 class="fw-bold mb-3 text-center" style="color: #06b6d4;">Filter Mods</h5>
+                          <form method="get" id="filterForm"
+                                hx-get="/category/{{ current_category }}"
+                                hx-target="#mod-records-container"
+                                hx-swap="innerHTML"
+                                hx-push-url="true">
+                            <input type="hidden" name="order" value="{{ current_order }}">
+                            <div class="mb-3">
+                              <label for="typeFilter" class="form-label fw-bold small">Vehicle Type</label>
+                              <input type="text" class="form-control rounded-pill" id="typeFilter" name="type" placeholder="Enter Type...">
+                            </div>
+                            <div class="mb-3">
+                              <label class="form-label fw-bold small">Uploaded Between</label>
+                              <div class="d-flex gap-2 align-items-center">
+                                <input type="date" class="form-control rounded-pill" name="uploaded_on_after" placeholder="From">
+                                <span class="text-muted">to</span>
+                                <input type="date" class="form-control rounded-pill" name="uploaded_on_before" placeholder="To">
+                              </div>
+                            </div>
+                            <!-- Keep category filter hidden but preselected -->
+                            <input type="hidden" name="category" value="{{ current_category }}">
+                            <div class="d-flex gap-2">
+                              <button type="submit" class="btn btn-primary rounded-pill fw-bold flex-grow-1" style="background: linear-gradient(to right, #06b6d4, #3b82f6); border: none;">
+                                Apply Filters
+                              </button>
+                              <button type="button" class="btn btn-secondary rounded-pill fw-bold" id="clearFilters">
+                                Clear
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category Navigation -->
+        <div class="text-center mb-4">
+            <div class="d-flex flex-wrap justify-content-center gap-2">
+                {% for category in categories %}
+                    <a href="/category/{{ category }}" 
+                       class="btn {% if category == current_category %}btn-primary{% else %}btn-outline-primary{% endif %} rounded-pill">
+                        {{ category }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Mod Records Container -->
+<section class="pb-5">
+    <div class="container-fluid px-3">
+        <div id="mod-records-container">
+            {% include "partials/mod_records_partial.html" %}
+        </div>
+    </div>
+</section>
+
+<!-- No Results Modal -->
+<div class="modal fade" id="noResultsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-white rounded-3 shadow-4xl">
+            <div class="modal-body text-center p-5">
+                <div class="no-results-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="#dc3545" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                    </svg>
+                </div>
+                <h3 class="no-results-title">No Matching Mods Found</h3>
+                <p class="no-results-subtitle">No mods match your current filter criteria in this category.</p>
+                <div class="d-flex gap-2 justify-content-center">
+                    <button type="button" class="btn btn-secondary px-4 py-2 fw-bold rounded-pill" data-bs-dismiss="modal">OK</button>
+                    <button type="button" class="btn btn-primary px-4 py-2 fw-bold rounded-pill" id="clearFiltersFromModal" style="background: linear-gradient(to right, #06b6d4, #3b82f6); border: none;">
+                        Clear Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const $ = (sel) => document.querySelector(sel);
+        const $$ = (sel) => document.querySelectorAll(sel);
+
+        // Show no results modal if filters applied but no results
+        if ($('#noResultsIndicator')) {
+          new bootstrap.Modal($('#noResultsModal')).show();
+        }
+
+        // Populate filter form from URL
+        const params = new URLSearchParams(window.location.search);
+        const formInputs = {
+          type: $('#typeFilter'),
+          uploaded_on_after: $('input[name="uploaded_on_after"]'),
+          uploaded_on_before: $('input[name="uploaded_on_before"]')
+        };
+
+        Object.entries(formInputs).forEach(([key, input]) => {
+          const value = params.get(key);
+          if (value && input) {
+            input.value = value;
+            input.classList.add('highlight-filter');
+          }
+        });
+
+        // Clear filters
+        const clearFilters = () => {
+            const form = $('#filterForm');
+            form.reset();
+            const orderInput = form.querySelector('input[name="order"]');
+            if (orderInput) orderInput.value = '-uploaded_on';
+            
+            const orderButton = $('#orderButton');
+            if (orderButton) {
+                orderButton.dataset.order = '-uploaded_on';
+                $('#orderIcon').className = 'bi bi-sort-down';
+            }
+            
+            // Hide modal if open
+            const modalEl = $('#noResultsModal');
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+            
+            htmx.trigger(form, 'submit');
+        };
+        $('#clearFilters')?.addEventListener('click', clearFilters);
+        $('#clearFiltersFromModal')?.addEventListener('click', clearFilters);
+
+        // Search function
+        const performSearch = () => {
+            const term = searchInput.value.toLowerCase();
+            const cards = $$('.mod-card');
+            let visibleCount = 0;
+            cards.forEach(card => {
+                const isVisible = card.textContent.toLowerCase().includes(term);
+                card.closest('.col').style.display = isVisible ? '' : 'none';
+                if (isVisible) visibleCount++;
+            });
+            const noResults = $('#noResults');
+            if (noResults) {
+                noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+            }
+            
+            // Show modal when search returns no results (if search term is not empty)
+            if (term && visibleCount === 0 && $('#noResultsModal')) {
+                new bootstrap.Modal($('#noResultsModal')).show();
+            }
+        };
+
+        // Re-apply search filter after HTMX swap
+        document.body.addEventListener('htmx:afterSwap', function(evt) {
+            if (evt.detail.target.id === 'mod-records-container' || evt.detail.target.id === 'mod-records-partial') {
+                performSearch();
+                // Show no results modal if filters applied but no results
+                if ($('#noResultsIndicator')) {
+                    new bootstrap.Modal($('#noResultsModal')).show();
+                }
+            }
+        });
+
+        // Search
+        const searchInput = $('#searchInput');
+        const searchButton = $('#searchButton');
+        const searchForm = $('#searchForm');
+        if (searchInput) {
+          searchInput.addEventListener('input', () => {
+            if (searchInput.value === '') {
+              // Show all cards when input is cleared
+              const cards = $$('.mod-card');
+              cards.forEach(card => card.closest('.col').style.display = '');
+              const noResults = $('#noResults');
+              if (noResults) noResults.style.display = 'none';
+            }
+          });
+        }
+
+        if (searchForm) {
+          searchForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            performSearch();
+          });
+        }
+        if (searchButton) {
+          searchButton.addEventListener('click', performSearch);
+        }
+
+        // Order button functionality
+        const orderButton = $('#orderButton');
+        const orderIcon = $('#orderIcon');
+        if (orderButton) {
+            // Set initial icon based on current order
+            const currentOrder = orderButton.dataset.order;
+            if (currentOrder === 'uploaded_on') {
+                orderIcon.className = 'bi bi-sort-up';
+            } else {
+                orderIcon.className = 'bi bi-sort-down';
+            }
+
+            orderButton.addEventListener('click', () => {
+                const currentOrder = orderButton.dataset.order;
+                const newOrder = currentOrder === '-uploaded_on' ? 'uploaded_on' : '-uploaded_on';
+                
+                const filterForm = $('#filterForm');
+                const orderInput = filterForm.querySelector('input[name="order"]');
+                if (orderInput) orderInput.value = newOrder;
+                
+                orderButton.dataset.order = newOrder;
+                orderIcon.className = newOrder === 'uploaded_on' ? 'bi bi-sort-up' : 'bi bi-sort-down';
+                
+                htmx.trigger(filterForm, 'submit');
+            });
+        }
+
+        // Like button functionality - TOGGLE SUPPORT
+        const initializeLikeButtons = () => {
+            $$('.like-btn').forEach(btn => {
+                const modId = btn.dataset.modId;
+                const wasLiked = sessionStorage.getItem(`liked_mod_${modId}`) === 'true';
+                if (wasLiked) {
+                    btn.classList.add('liked');
+                    btn.querySelector('i').className = 'fas fa-thumbs-up';
+                }
+            });
+        };
+        initializeLikeButtons();
+        document.body.addEventListener('htmx:afterSwap', initializeLikeButtons);
+
+        document.body.addEventListener('click', async function(e) {
+            const btn = e.target.closest('.like-btn');
+            if (btn) {
+                e.preventDefault();
+                // Prevent spam clicking
+                if (btn.disabled) return;
+                btn.disabled = true;
+                const modId = btn.dataset.modId;
+                try {
+                    // Get CSRF token
+                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+                                    document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+
+                    const response = await fetch(`/like/${modId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
+                        }
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+
+                        // Update like count in the meta stats section
+                        const likeCountDisplay = document.querySelector(`.like-count-display[data-mod-id="${modId}"]`);
+                        if (likeCountDisplay) {
+                            likeCountDisplay.textContent = data.likes;
+                        }
+
+                        // Toggle button style and icon
+                        if (data.liked) {
+                            btn.classList.add('liked');
+                            btn.querySelector('i').className = 'fas fa-thumbs-up';
+                            sessionStorage.setItem(`liked_mod_${modId}`, 'true');
+                        } else {
+                            btn.classList.remove('liked');
+                            btn.querySelector('i').className = 'far fa-thumbs-up';
+                            sessionStorage.setItem(`liked_mod_${modId}`, 'false');
+                        }
+
+                        // Show feedback
+                        console.log(data.liked ? `Liked! Total: ${data.likes}` : `Unliked! Total: ${data.likes}`);
+                    }
+                } catch (error) {
+                    console.error('Error toggling like:', error);
+                    alert('Failed to toggle like. Please try again.');
+                } finally {
+                    // Re-enable button after delay
+                    setTimeout(() => {
+                        btn.disabled = false;
+                    }, 300);
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

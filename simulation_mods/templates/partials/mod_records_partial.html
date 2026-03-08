@@ -1,4 +1,4 @@
-<div hx-get="?{{ request.GET.urlencode }}" hx-trigger="every 5s" hx-target="this" hx-swap="outerHTML">
+<div id="mod-records-partial" hx-get="?{{ request.GET.urlencode }}" hx-trigger="every 5s" hx-target="this" hx-swap="outerHTML">
 {% if public_mods %}
 <div class="container-fluid px-3">
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
@@ -38,11 +38,11 @@
                         <div class="d-flex flex-wrap gap-3 mb-2">
                             <span class="d-flex align-items-center gap-1">
                                 <i class="fas fa-box text-warning"></i>
-                                {{ m.category }}
+                                {{ m.type }}
                             </span>
                             <span class="d-flex align-items-center gap-1">
                                 <i class="fas fa-tag text-danger"></i>
-                                {{ m.type }}
+                                {{ m.category }}
                             </span>
                         </div>
                         <div class="d-flex flex-wrap gap-3">
@@ -157,8 +157,24 @@
     <p class="h4 fw-bold text-info">No mods found matching your search.</p>
 </div>
 {% else %}
-{% if request.GET.category or request.GET.type or request.GET.uploaded_on_after or request.GET.uploaded_on_before %}
+{% if request.GET.category or request.GET.type or request.GET.uploaded_on_after or request.GET.uploaded_on_before or request.GET.search or request.GET.order %}
     <div id="noResultsIndicator" style="display: none;"></div>
+    <script>
+        (function() {
+            var checkAndShow = function() {
+                var modalEl = document.getElementById('noResultsModal');
+                if (modalEl && typeof bootstrap !== 'undefined') {
+                    var modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                    modal.show();
+                    var clearBtn = document.getElementById('clearFiltersFromModal');
+                    if (clearBtn) {
+                        clearBtn.setAttribute('data-bs-dismiss', 'modal');
+                    }
+                }
+            };
+            if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', checkAndShow); } else { checkAndShow(); }
+        })();
+    </script>
 {% else %}
     <div class="text-center py-5">
         <p class="lead text-muted">No public mods available yet. Be the first to upload!</p>
