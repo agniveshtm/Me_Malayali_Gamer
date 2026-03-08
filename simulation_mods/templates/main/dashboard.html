@@ -55,12 +55,12 @@
               <h5 class="fw-bold mb-3 text-center" style="color: #06b6d4;">Filter Mods</h5>
               <form method="get" id="filterForm">
                 <div class="mb-3">
-                  <label for="categoryFilter" class="form-label fw-bold small">Category</label>
-                  <input type="text" class="form-control rounded-pill" id="categoryFilter" name="category" placeholder="Enter category...">
+                  <label for="typeFilter" class="form-label fw-bold small">Vehicle Type</label>
+                  <input type="text" class="form-control rounded-pill" id="typeFilter" name="type" placeholder="Enter type...">
                 </div>
                 <div class="mb-3">
-                  <label for="typeFilter" class="form-label fw-bold small">Type</label>
-                  <input type="text" class="form-control rounded-pill" id="typeFilter" name="type" placeholder="Enter type...">
+                  <label for="categoryFilter" class="form-label fw-bold small">Mod Category</label>
+                  <input type="text" class="form-control rounded-pill" id="categoryFilter" name="category" placeholder="Enter category...">
                 </div>
                 <div class="mb-3">
                   <label class="form-label fw-bold small">Uploaded Between</label>
@@ -149,11 +149,11 @@
                   <div class="text-muted d-flex flex-column gap-2 meta-stats mb-3" style="font-size: 1.1rem;">
                     <span class="d-flex align-items-center gap-1">
                       <i class="bi bi-box text-cyan-700"></i>
-                      <strong>{{ m.category }}</strong>
+                      <strong>{{ m.type }}</strong>
                     </span>
                     <span class="d-flex align-items-center gap-1">
                       <i class="bi bi-tag text-cyan-700"></i>
-                      <strong>{{ m.type }}</strong>
+                      <strong>{{ m.category }}</strong>
                     </span>
                     <span class="d-flex align-items-center gap-1">
                       <i class="bi bi-calendar text-muted"></i>
@@ -285,8 +285,8 @@
     // Populate filter form from URL
     const params = new URLSearchParams(window.location.search);
     const formInputs = {
-      category: $('#categoryFilter'),
       type: $('#typeFilter'),
+      category: $('#categoryFilter'),
       uploaded_on_after: $('input[name="uploaded_on_after"]'),
       uploaded_on_before: $('input[name="uploaded_on_before"]'),
       is_public: $('#visibilityFilter')
