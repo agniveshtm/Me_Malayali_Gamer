@@ -6,13 +6,13 @@ from .utils import image_directory_path
 # Create your models here.
 class Vehicle(models.Model):
     vehicle_type = models.CharField(max_length=20,verbose_name="Vehicle Type",
-                                        help_text="The Type of the vehicle (eg: Car, Truck, Bus).",default=None)
+                                        help_text="The Type of the vehicle (eg: Car, Truck, Bus).",default='')
     def __str__(self):
         return self.vehicle_type
     
 class ModCategory(models.Model):
     mod_category=models.CharField(max_length=20,verbose_name="Mod Category",
-                              help_text="The Category of the mod(eg: Maps,Skin,Routes).",default=None)
+                              help_text="The Category of the mod(eg: Maps,Skin,Routes).",default='')
     
     def __str__(self):
         return self.mod_category
