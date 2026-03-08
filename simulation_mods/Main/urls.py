@@ -21,4 +21,6 @@ urlpatterns = [
     path('create/',views.create_mods,name="create"),
     path('edit/<uuid:pk>',views.edit_mods,name="edit"),
     path('delete/<uuid:pk>',views.delete_mods,name="delete"),
+    path('settings/',views.settings_page,name="settings_page"),
+    path('password-change/',views.password_change,name="password_change")
 ]

@@ -75,7 +75,9 @@
                     {% if user.is_authenticated %}
                         <div class="dropdown">
                             <a class="nav-link p-0 d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <img src="{% static 'img/default_profile.jpg' %}" alt="User Profile" class="rounded-circle border border-2 border-primary" width="36" height="36">
+                                <div class="user-avatar rounded-circle d-flex align-items-center justify-content-center text-white fw-bold border border-2 border-primary" style="width: 36px; height: 36px; font-size: 18px;" data-username="{{ user.username }}">
+                                    {{ user.username|make_list|first|upper }}
+                                </div>
                                 <span class="d-none d-lg-inline text-light small fw-semibold">{{ user.username }}</span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2 p-2">
@@ -83,6 +85,11 @@
                                 <li>
                                     <div class="d-grid px-3 py-2">
                                         <a class="btn btn-outline-primary btn-sm" href="{% url 'dashboard_page' %}"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="d-grid px-3 py-2">
+                                        <a class="btn btn-outline-primary btn-sm" href="{% url 'settings_page' %}"><i class="bi bi-gear me-1"></i>Settings</a>
                                     </div>
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
@@ -111,6 +118,16 @@
     </nav>
 
     <main class="flex-grow-1">
+        <div class="container mt-3">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
         {% block content %}
         {% endblock %}
     </main>
@@ -191,6 +208,26 @@
             }
         }
 
+        function setAvatarColors() {
+            const avatars = document.querySelectorAll('.user-avatar');
+            const colors = [
+                '#DB4437', '#E91E63', '#9C27B0', '#673AB7', '#3F51B5', 
+                '#4285F4', '#039BE5', '#0097A7', '#00897B', '#0F9D58', 
+                '#689F38', '#EF6C00', '#FF5722', '#795548', '#757575', '#607D8B'
+            ];
+            
+            avatars.forEach(avatar => {
+                const username = avatar.getAttribute('data-username');
+                if (username) {
+                    let hash = 0;
+                    for (let i = 0; i < username.length; i++) {
+                        hash = username.charCodeAt(i) + ((hash << 5) - hash);
+                    }
+                    const index = Math.abs(hash % colors.length);
+                    avatar.style.backgroundColor = colors[index];
+                }
+            });
+        }
 
         function toggleTheme() {
             const currentTheme = document.documentElement.getAttribute('data-bs-theme');
@@ -200,6 +237,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             setTheme(getPreferredTheme());
+            setAvatarColors();
         });
     </script>
 </body>

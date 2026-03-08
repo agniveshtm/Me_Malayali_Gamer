@@ -1,0 +1,165 @@
+<div id="mod-dashboard-partial" hx-get="?{{ request.GET.urlencode }}" hx-trigger="every 5s" hx-target="this" hx-swap="outerHTML" hx-select="#mod-dashboard-partial">
+    {% if mods %}
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for m in mods %}
+        <div class="col">
+            <div class="card h-100 shadow-lg border-0 rounded-4 overflow-hidden mod-card">
+                <!-- THUMBNAIL -->
+                <div class="thumb-container position-relative overflow-hidden m-0" style="height: 200px; cursor: pointer;" data-url="{{ m.thumbnail_img.url|default:''|escape }}" data-title="{{ m.title|escape }}">
+                    {% if m.thumbnail_img %}
+                        <img src="{{ m.thumbnail_img.url }}" alt="{{ m.title }}" class="w-100 h-100" style="object-fit: cover; object-position: top;">
+                    {% else %}
+                        <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-gradient-to-r from-cyan-100 to-blue-100">
+                            <span class="display-4 fw-bold text-cyan-700">M</span>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Visibility Badge -->
+                    <span class="position-absolute px-2 py-1 fs-6 fw-bold text-white rounded-pill shadow" style="top: 10px; right: 10px; z-index: 10; background: {% if m.is_public %}linear-gradient(to right, #10b981, #059669){% else %}linear-gradient(to right, #6b7280, #4b5563){% endif %};">
+                        <i class="fas {% if m.is_public %}fa-globe{% else %}fa-lock{% endif %} me-1"></i>
+                        {% if m.is_public %}Public{% else %}Private{% endif %}
+                    </span>
+
+                    {% if m.is_fresh %}
+                    <span class="position-absolute px-2 py-1 fs-6 fw-bold text-white rounded-pill shadow" style="top: 10px; left: 10px; z-index: 10; background: linear-gradient(to right, #06b6d4, #2563eb, #4338ca);">
+                        FRESH
+                    </span>
+                    {% endif %}
+                </div>
+
+                <div class="card-body p-4">
+                    <!-- TITLE -->
+                    <h5 class="card-title fw-bold mb-2 d-flex align-items-center flex-wrap gap-2">
+                        {{ m.title }}
+                        <span class="px-2 py-1 fs-6 fw-bold bg-gradient-to-r from-cyan-100 via-blue-100 to-indigo-100 text-cyan-900 rounded-pill">
+                            v{{ m.version }}
+                        </span>
+                    </h5>
+
+                    <!-- META INFO -->
+                    <div class="text-muted small mb-3">
+                        <div class="d-flex flex-wrap gap-3 mb-2">
+                            <span class="d-flex align-items-center gap-1">
+                                <i class="fas fa-box text-warning"></i>
+                                {{ m.type }}
+                            </span>
+                            <span class="d-flex align-items-center gap-1">
+                                <i class="fas fa-tag text-danger"></i>
+                                {{ m.category }}
+                            </span>
+                        </div>
+                        <div class="d-flex flex-wrap gap-3">
+                            <span class="d-flex align-items-center gap-1">
+                                <i class="fas fa-calendar text-info"></i>
+                                {{ m.uploaded_on|date:"M d, Y" }}
+                            </span>
+                            <span class="d-flex align-items-center gap-1">
+                                <i class="fas fa-download text-success"></i>
+                                {{ m.downloads|default:0 }}
+                            </span>
+                            <span class="d-flex align-items-center gap-1">
+                                <i class="fas fa-thumbs-up text-primary"></i>
+                                {{ m.likes|default:0 }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- ACTIONS -->
+                    <div class="d-flex flex-column gap-2 mt-auto">
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'edit' m.pk %}" class="btn btn-success w-50 fw-bold rounded-pill shadow-sm">
+                                <i class="fas fa-edit"></i> EDIT
+                            </a>
+                            <button class="btn btn-danger w-50 fw-bold rounded-pill shadow-sm delete-btn"
+                                    data-url="{% url 'delete' m.pk %}" data-title="{{ m.title|escapejs }}">
+                                <i class="fas fa-trash-alt"></i> DELETE
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- PAGINATION -->
+      <div class="d-flex justify-content-center mt-4">
+        <nav>
+            <ul class="pagination">
+                {% if mods.has_previous %}
+                <li class="page-item">
+                    <a class="page-link"
+                       href="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ mods.previous_page_number }}"
+                       hx-get="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ mods.previous_page_number }}"
+                       hx-target="#mod-dashboard-container"
+                   hx-select="#mod-dashboard-partial"
+                       hx-swap="innerHTML"
+                       hx-push-url="true">
+                        Previous
+                    </a>
+                </li>
+                {% endif %}
+                {% for i in mods.paginator.page_range %}
+                    {% if i == mods.number %}
+                        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                    {% elif i == 1 or i == mods.paginator.num_pages or i >= mods.number|add:'-2' and i <= mods.number|add:'2' %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ i }}"
+                               hx-get="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ i }}"
+                               hx-target="#mod-dashboard-container"
+                           hx-select="#mod-dashboard-partial"
+                               hx-swap="innerHTML"
+                               hx-push-url="true">{{ i }}</a>
+                        </li>
+                    {% elif i == mods.number|add:'-3' and mods.number > 4 %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% elif i == mods.number|add:'3' and mods.number < mods.paginator.num_pages|add:'-3' %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+                {% if mods.has_next %}
+                <li class="page-item">
+                    <a class="page-link"
+                       href="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ mods.next_page_number }}"
+                       hx-get="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ mods.next_page_number }}"
+                       hx-target="#mod-dashboard-container"
+                   hx-select="#mod-dashboard-partial"
+                       hx-swap="innerHTML"
+                       hx-push-url="true">
+                        Next
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+      </div>
+
+      {% else %}
+      {% if request.GET.category or request.GET.type or request.GET.uploaded_on_after or request.GET.uploaded_on_before or request.GET.is_public %}
+        <div id="noResultsIndicator" style="display: none;"></div>
+        <script>
+            (function() {
+                var checkAndShow = function() {
+                    var modalEl = document.getElementById('noResultsModal');
+                    if (modalEl && typeof bootstrap !== 'undefined') {
+                        var modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                        modal.show();
+                        var clearBtn = document.getElementById('clearFiltersFromModal');
+                        if (clearBtn) {
+                            clearBtn.setAttribute('data-bs-dismiss', 'modal');
+                        }
+                    }
+                };
+                if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', checkAndShow); } else { checkAndShow(); }
+            })();
+        </script>
+      {% else %}
+        <div class="card bg-white rounded-3 shadow-lg border-0 no-mods-container">
+          <h1 class="no-mods-title">NO MODS YET</h1>
+          <p class="no-mods-subtitle">Upload your mod!</p>
+          <a href="{% url 'create' %}" class="upload-btn">UPLOAD MOD</a>
+        </div>
+      {% endif %}
+      {% endif %}
+</div>

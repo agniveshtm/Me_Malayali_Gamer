@@ -6,7 +6,10 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
 from .filters import ModsFilter
+from django.core.paginator import Paginator
 import os
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
 # Create your views here.
 #=============DASHBOARD===============#
 
@@ -33,9 +36,13 @@ def dashboard_page(request):
     count = mods.count()
     mods_filter = ModsFilter(request.GET,queryset=mods)
     filtered_mods = mods_filter.qs
-    filtered_count = filtered_mods.count()
+    paginator = Paginator(filtered_mods,6)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
     has_filters = bool(request.GET and any(request.GET.values()))
-    context = {"mods":filtered_mods,"filter":mods_filter,"count":count,"filtered_count":filtered_count,"has_filters":has_filters,"current_order":order}
+    context = {"mods":page_obj,"page_obj":page_obj,"filter":mods_filter,"count":count,"filtered_count":filtered_mods.count(),"has_filters":has_filters,"current_order":order}
+    if request.headers.get('HX-Request'):
+        return render(request, 'partials/mod_dashboard_partial.html', context)
     return render(request,"main/dashboard.html",context)
 
 #=============== EDIT =================
@@ -70,3 +77,30 @@ def delete_mods(request,pk):
     deleted_mods.delete()
     messages.success(request, f"'{mod_title}' has been deleted successfully!")
     return redirect("dashboard_page")
+
+@login_required(login_url="user_login")
+def settings_page(request):
+    if request.method == "POST":
+        user = request.user
+        user.first_name = request.POST.get('first_name', user.first_name)
+        user.last_name = request.POST.get('last_name', user.last_name)
+        user.save()
+        messages.success(request, "Profile updated successfully!")
+        return redirect("settings_page")
+    return render(request,"main/settings.html")
+
+@login_required(login_url="user_login")
+def password_change(request):
+    if request.method == "POST":
+        password_form = PasswordChangeForm(request.user, request.POST)
+        if password_form.is_valid():
+            user = password_form.save()
+            update_session_auth_hash(request, user)
+            messages.success(request,"Password has been updated successfully!")
+            return redirect("settings_page")
+        else:
+            return render(request, "main/settings.html", {
+                "password_form": password_form,
+                "active_tab": "security"
+            })
+    return redirect("settings_page")

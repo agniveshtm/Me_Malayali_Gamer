@@ -5,6 +5,7 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 {% endblock extra_head %}
 
 {% block content %}
@@ -53,7 +54,13 @@
             </button>
             <div class="dropdown-menu dropdown-menu-end p-4 shadow-lg border-0 rounded-3" style="min-width: 320px;" aria-labelledby="filterDropdown">
               <h5 class="fw-bold mb-3 text-center" style="color: #06b6d4;">Filter Mods</h5>
-              <form method="get" id="filterForm">
+              <form method="get" id="filterForm"
+                    hx-get="."
+                    hx-target="#mod-dashboard-container"
+                    hx-select="#mod-dashboard-partial"
+                    hx-swap="innerHTML"
+                    hx-push-url="true">
+                <input type="hidden" name="order" value="{{ current_order }}">
                 <div class="mb-3">
                   <label for="typeFilter" class="form-label fw-bold small">Vehicle Type</label>
                   <input type="text" class="form-control rounded-pill" id="typeFilter" name="type" placeholder="Enter type...">
@@ -106,96 +113,9 @@
       {% endif %}
 
       <!-- MODS TABLE -->
-      {% if mods %}
-      <div class="card bg-white rounded-3 shadow-lg overflow-hidden border-0">
-        <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table table-hover mb-0">
-              <tbody>
-                {% for m in mods %}
-                <tr class="border-bottom border-light">
-                  <!-- THUMBNAIL -->
-                    <td class="p-3 p-md-4 align-top" style="width: 40%; min-width: 280px;" data-label="Thumbnail">
-                    <div class="thumb-container group position-relative overflow-hidden" data-url="{{ m.thumbnail_img.url|default:''|escape }}" data-title="{{ m.title|escape }}">
-                      {% if m.thumbnail_img %}
-                        <img src="{{ m.thumbnail_img.url }}" alt="{{ m.title }}" class="thumb-img">
-                        <div class="position-absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 d-flex align-items-end p-3 p-md-4">
-                          <p class="text-white fw-bold fs-3 drop-shadow-2xl mb-0">Click to view full</p>
-                        </div>
-                      {% else %}
-                        <div class="thumb-placeholder">M</div>
-                      {% endif %}
-                    </div>
-                </td>
-
-                <!-- TITLE + META -->
-                <td class="p-3 p-md-4 align-top" data-label="Details">
-                  <h3 class="h2 fw-black mod-title d-flex align-items-center flex-wrap gap-2 mb-2">
-                    {{ m.title }}
-                    <span class="px-2 py-1 fs-6 fw-bold bg-gradient-to-r from-cyan-100 via-blue-100 to-indigo-100 text-cyan-900 rounded-pill">
-                      v{{ m.version }}
-                    </span>
-                    {% if m.is_fresh %}
-                    <span class="px-2 py-1 fs-6 fw-black bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-700 text-white rounded-pill shadow animate-pulse">
-                      FRESH
-                    </span>
-                    {% endif %}
-                    <span class="visibility-badge {% if m.is_public %}public{% else %}private{% endif %}">
-                      <i class="bi {% if m.is_public %}bi-globe{% else %}bi-lock-fill{% endif %}"></i>
-                      {% if m.is_public %}Public{% else %}Private{% endif %}
-                    </span>
-                  </h3>
-
-                  <div class="text-muted d-flex flex-column gap-2 meta-stats mb-3" style="font-size: 1.1rem;">
-                    <span class="d-flex align-items-center gap-1">
-                      <i class="bi bi-box text-cyan-700"></i>
-                      <strong>{{ m.type }}</strong>
-                    </span>
-                    <span class="d-flex align-items-center gap-1">
-                      <i class="bi bi-tag text-cyan-700"></i>
-                      <strong>{{ m.category }}</strong>
-                    </span>
-                    <span class="d-flex align-items-center gap-1">
-                      <i class="bi bi-calendar text-muted"></i>
-                      {{ m.uploaded_on|date:"M d, Y" }}
-                    </span>
-                    <span class="d-flex align-items-center gap-1">
-                      <i class="bi bi-download text-muted"></i>
-                      {{ m.downloads|default:0 }} downloads
-                    </span>
-                    <span class="d-flex align-items-center gap-1">
-                      <i class="bi bi-hand-thumbs-up text-muted"></i>
-                      {{ m.likes|default:0 }} likes
-                    </span>
-                  </div>
-                </td>
-
-                <!-- ACTIONS -->
-                <td class="p-3 p-md-4 text-end align-middle" style="width: 30%;" data-label="Actions">
-                  <div class="d-flex flex-column gap-2">
-                    <a href="{% url 'edit' m.pk %}" class="btn btn-success btn-lg fw-bold rounded-pill shadow">EDIT MOD</a>
-                    <button class="btn btn-danger btn-lg fw-bold rounded-pill shadow delete-btn"
-                            data-url="{% url 'delete' m.pk %}" data-title="{{ m.title|escapejs }}">DELETE MOD</button>
-                  </div>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
+      <div id="mod-dashboard-container">
+        {% include "partials/mod_dashboard_partial.html" %}
       </div>
-
-      {% else %}
-      {% if request.GET.category or request.GET.uploaded_on_after or request.GET.uploaded_on_before or request.GET.is_public %}
-        <div id="noResultsIndicator" style="display: none;"></div>
-      {% else %}
-        <div class="card bg-white rounded-3 shadow-lg border-0 no-mods-container">
-          <h1 class="no-mods-title">NO MODS YET</h1>
-          <p class="no-mods-subtitle">Upload your mod!</p>
-          <a href="{% url 'create' %}" class="upload-btn">UPLOAD MOD</a>
-        </div>
-      {% endif %}
-      {% endif %}
 
     </div>
   </div>
@@ -314,13 +234,14 @@
 
     // Delete modal
     let deleteUrl = '';
-    $$('.delete-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        $('#modTitle').textContent = btn.dataset.title;
-        deleteUrl = btn.dataset.url;
-        new bootstrap.Modal($('#deleteModal')).show();
-      });
+    document.body.addEventListener('click', (e) => {
+        const btn = e.target.closest('.delete-btn');
+        if (btn) {
+            e.preventDefault();
+            $('#modTitle').textContent = btn.dataset.title;
+            deleteUrl = btn.dataset.url;
+            new bootstrap.Modal($('#deleteModal')).show();
+        }
     });
 
     $('#confirmDeleteBtn').addEventListener('click', () => {
@@ -336,16 +257,42 @@
     if (searchInput) {
       searchInput.addEventListener('input', (e) => {
         const term = e.target.value.toLowerCase();
-        $$('tbody tr').forEach(row => {
-          row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
+        $$('.mod-card').forEach(card => {
+          const col = card.closest('.col');
+          if (col) {
+             col.style.display = card.textContent.toLowerCase().includes(term) ? '' : 'none';
+          }
         });
       });
     }
 
     // Clear filters
-    const clearFilters = () => window.location.href = window.location.pathname;
+    const clearFilters = () => {
+        const form = $('#filterForm');
+        form.reset();
+        const orderInput = form.querySelector('input[name="order"]');
+        if (orderInput) orderInput.value = '-uploaded_on';
+        
+        const orderButton = $('#orderButton');
+        if (orderButton) {
+            orderButton.dataset.order = '-uploaded_on';
+            $('#orderIcon').className = 'bi bi-sort-down';
+        }
+        
+        htmx.trigger(form, 'submit');
+    };
     $('#clearFilters')?.addEventListener('click', clearFilters);
     $('#clearFiltersFromModal')?.addEventListener('click', clearFilters);
+    
+    // Re-apply search filter after HTMX swap
+    document.body.addEventListener('htmx:afterSwap', function(evt) {
+        if (evt.detail.target.id === 'mod-dashboard-container') {
+            const searchInput = $('#searchInput');
+            if (searchInput && searchInput.value) {
+                searchInput.dispatchEvent(new Event('input'));
+            }
+        }
+    });
 
     // Order button functionality
     const orderButton = $('#orderButton');
@@ -360,27 +307,35 @@
         }
 
         orderButton.addEventListener('click', () => {
-            const params = new URLSearchParams(window.location.search);
+            const currentOrder = orderButton.dataset.order;
             const newOrder = currentOrder === '-uploaded_on' ? 'uploaded_on' : '-uploaded_on';
-            params.set('order', newOrder);
-            window.location.search = params.toString();
+            
+            const filterForm = $('#filterForm');
+            const orderInput = filterForm.querySelector('input[name="order"]');
+            if (orderInput) orderInput.value = newOrder;
+            
+            orderButton.dataset.order = newOrder;
+            orderIcon.className = newOrder === 'uploaded_on' ? 'bi bi-sort-up' : 'bi bi-sort-down';
+            
+            htmx.trigger(filterForm, 'submit');
         });
     }
 
     // Image modal for thumbnails
-    $$('.thumb-container').forEach(container => {
-      container.addEventListener('click', () => {
-        const imageUrl = container.dataset.url;
-        const title = container.dataset.title;
-        if (!imageUrl) return;
+    document.body.addEventListener('click', (e) => {
+        const container = e.target.closest('.thumb-container');
+        if (container) {
+            const imageUrl = container.dataset.url;
+            const title = container.dataset.title;
+            if (!imageUrl) return;
 
-        const modal = new bootstrap.Modal($('#imageModal'), { backdrop: 'static' });
-        const img = $('#fullscreenImage');
-        img.src = imageUrl;
-        img.alt = title;
-        img.style.display = 'block';
-        modal.show();
-      });
+            const modal = new bootstrap.Modal($('#imageModal'), { backdrop: 'static' });
+            const img = $('#fullscreenImage');
+            img.src = imageUrl;
+            img.alt = title;
+            img.style.display = 'block';
+            modal.show();
+        }
     });
   });
 </script>
