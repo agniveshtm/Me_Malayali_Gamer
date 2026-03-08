@@ -5,8 +5,7 @@
 {% endblock %}
 
 {% block extra_head %}
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/flatpickr.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 {% endblock %}
 
@@ -152,7 +151,7 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="{% static 'js/flatpickr.min.js' %}"></script>
 <script>
     flatpickr("#id_uploaded_on", {
         enableTime: true,              // ✅ Enable time picker
