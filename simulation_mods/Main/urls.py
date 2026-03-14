@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.urls import path
 from . import views
+app_name = "Main"
 urlpatterns = [
     path('dashboard/',views.dashboard_page,name="dashboard_page"),
     path('create/',views.create_mods,name="create"),

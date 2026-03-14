@@ -82,7 +82,7 @@
                     <!-- ACTIONS -->
                     <div class="d-flex flex-column gap-2">
                         <div class="d-flex gap-2">
-                            <a href="{% url 'download_count' m.pk %}"
+                            <a href="{% url 'Home:download_count' m.pk %}"
                                 class="btn btn-success w-50 fw-bold rounded-pill shadow-sm download-btn"
                                 target="_blank">
                                 <i class="fas fa-download"></i> DOWNLOAD
@@ -92,7 +92,7 @@
                             </button>
 
                         </div>
-                        <a href="{% url 'view_mods' m.pk %}" class="btn btn-info fw-bold rounded-pill shadow-sm">
+                        <a href="{% url 'Home:view_mods' m.pk %}" class="btn btn-info fw-bold rounded-pill shadow-sm">
                             <i class="fas fa-eye"></i> View Mod
                         </a>
                     </div>

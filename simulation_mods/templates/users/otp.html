@@ -49,7 +49,7 @@
 
     <div class="text-center mt-3">
         <p id="timerText">Resend OTP in <strong><span id="countdown" style="color: green;">02:00</span></strong></p>
-        <form method="post" action="{% url resend_url %}" id="resendForm" style="display: none;">
+        <form method="post" action="{% url 'Users:resend_otp' %}" id="resendForm" style="display: none;">
             {% csrf_token %}
             <button type="submit" class="btn btn-secondary" id="resendBtn">Resend OTP</button>
         </form>
@@ -57,10 +57,10 @@
 
     <div class="link-text text-center mt-3">
         {% if is_verification %}
-            Already verified? <a href="{% url 'user_login' %}">Log in</a>
+            Already verified? <a href="{% url 'Users:user_login' %}">Log in</a>
         {% else %}
-            Remember your password? <a href="{% url 'user_login' %}">Log in</a><br>
-            Don't have an account? <a href="{% url 'user_signup' %}">Sign up</a>
+            Remember your password? <a href="{% url 'Users:user_login' %}">Log in</a><br>
+            Don't have an account? <a href="{% url 'Users:user_signup' %}">Sign up</a>
         {% endif %}
     </div>
 {% endblock content %}

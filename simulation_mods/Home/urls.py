@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.urls import path
 from . import views
+app_name = "Home"
 urlpatterns=[
     path('',views.home_page,name="home_page"),
     path('category/<str:category>',views.categories_page,name="categories_page"),

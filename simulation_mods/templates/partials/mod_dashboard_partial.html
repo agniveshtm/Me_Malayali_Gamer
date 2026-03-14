@@ -67,11 +67,11 @@
                     <!-- ACTIONS -->
                     <div class="d-flex flex-column gap-2 mt-auto">
                         <div class="d-flex gap-2">
-                            <a href="{% url 'edit' m.pk %}" class="btn btn-success w-50 fw-bold rounded-pill shadow-sm">
+                            <a href="{% url 'Main:edit' m.pk %}" class="btn btn-success w-50 fw-bold rounded-pill shadow-sm">
                                 <i class="fas fa-edit"></i> EDIT
                             </a>
                             <button class="btn btn-danger w-50 fw-bold rounded-pill shadow-sm delete-btn"
-                                    data-url="{% url 'delete' m.pk %}" data-title="{{ m.title|escapejs }}">
+                                    data-url="{% url 'Main:delete' m.pk %}" data-title="{{ m.title|escapejs }}">
                                 <i class="fas fa-trash-alt"></i> DELETE
                             </button>
                         </div>
@@ -158,7 +158,7 @@
         <div class="card bg-white rounded-3 shadow-lg border-0 no-mods-container">
           <h1 class="no-mods-title">NO MODS YET</h1>
           <p class="no-mods-subtitle">Upload your mod!</p>
-          <a href="{% url 'create' %}" class="upload-btn">UPLOAD MOD</a>
+          <a href="{% url 'Main:create' %}" class="upload-btn">UPLOAD MOD</a>
         </div>
       {% endif %}
       {% endif %}

@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'Main',
     'Users',
     'Home',
+    'admin_panel',
     'django_browser_reload',
 ]
 

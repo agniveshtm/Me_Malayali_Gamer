@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.urls import path
 from . import views
+app_name="Users"
 urlpatterns = [
     path('signup/',views.user_signup,name="user_signup"),
     path('email-verification/',views.email_verification,name="email_verification"),

@@ -22,7 +22,7 @@ def create_mods(request):
             frm.instance.user = request.user
             frm.save()
             messages.success(request,"Mod Added Successfully")
-            return redirect('dashboard_page')
+            return redirect('Main:dashboard_page')
     else:
         frm = modform()
     return render(request,"main/create_edit.html",{"frm":frm})
@@ -54,7 +54,7 @@ def edit_mods(request,pk):
         frm = modform(request.POST,request.FILES,instance=edited_mods)
         if frm.is_valid():
             frm.save()
-            return redirect("dashboard_page")
+            return redirect("Main:dashboard_page")
     else:
         frm = modform(instance=edited_mods)
     return render(request,"main/create_edit.html",{"frm": frm,"mod": edited_mods,"is_edit":is_edit })
@@ -76,7 +76,7 @@ def delete_mods(request,pk):
         pass
     deleted_mods.delete()
     messages.success(request, f"'{mod_title}' has been deleted successfully!")
-    return redirect("dashboard_page")
+    return redirect("Main:dashboard_page")
 
 @login_required(login_url="user_login")
 def settings_page(request):

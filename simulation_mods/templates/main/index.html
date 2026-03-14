@@ -17,9 +17,9 @@
             <p class="lead">Your Ultimate Destination for Euro Truck Simulator 2 Mods</p>
             <p>Discover, share, and download mods for ETS2, ATS, and more truck sims. Community-driven and safe!</p>
             {% if user.is_authenticated %}
-                <a href="{% url 'create' %}" class="btn btn-light btn-lg">Upload Your Mods</a>
+                <a href="{% url 'Main:create' %}" class="btn btn-light btn-lg">Upload Your Mods</a>
             {% else %}
-                <a href="{% url 'user_signup' %}" class="btn btn-light btn-lg">Upload Your Mods</a>
+                <a href="{% url 'Users:user_signup' %}" class="btn btn-light btn-lg">Upload Your Mods</a>
             {% endif %}
         </div>
     </section>
@@ -125,7 +125,7 @@
                                     <i class="fas fa-user text-danger"></i> {{ mod.user.username }} |
                                     <i class="fas fa-calendar text-info"></i> {{ mod.uploaded_on|timesince }} ago
                                 </p>
-                                <a href="{% url 'view_mods' mod.pk %}" class="btn btn-primary">View Mod</a>
+                                <a href="{% url 'Home:view_mods' mod.pk %}" class="btn btn-primary">View Mod</a>
                             </div>
                         </div>
                     </div>
@@ -134,7 +134,7 @@
                         <div class="text-center py-5">
                             <h3>No new mods uploaded in the last 24 hours.</h3>
                             <p>Be the first to upload one!</p>
-                            <a href="{% url 'create' %}" class="btn btn-outline-primary">Upload Mod</a>
+                            <a href="{% url 'Main:create' %}" class="btn btn-outline-primary">Upload Mod</a>
                         </div>
                     </div>
                     {% endfor %}

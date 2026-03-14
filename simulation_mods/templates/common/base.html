@@ -37,18 +37,18 @@
                     </li>
                     <li class="nav-item">
                         {% if user.is_authenticated %}
-                            <a class="nav-link" id="nav-upload-mod" href="{% url 'create' %}">
+                            <a class="nav-link" id="nav-upload-mod" href="{% url 'Main:create' %}">
                                 <i class="bi bi-cloud-upload me-1"></i>Upload Mods
                             </a>
                         {% else %}
-                            <a class="nav-link" href="{% url 'user_login' %}">
+                            <a class="nav-link" href="{% url 'Users:user_login' %}">
                                 <i class="bi bi-cloud-upload me-1"></i>Upload Mods
                             </a>
                         {% endif %}
                     </li>
                     {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'dashboard_page' %}">
+                        <a class="nav-link" href="{% url 'Main:dashboard_page' %}">
                             <i class="bi bi-speedometer2 me-1"></i>Dashboard
                         </a>
                     </li>
@@ -84,17 +84,17 @@
                                 <li><h6 class="dropdown-header fw-bold text-primary">Welcome, {{ user.username }}</h6></li>
                                 <li>
                                     <div class="d-grid px-3 py-2">
-                                        <a class="btn btn-outline-primary btn-sm" href="{% url 'dashboard_page' %}"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
+                                        <a class="btn btn-outline-primary btn-sm" href="{% url 'Main:dashboard_page' %}"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
                                     </div>
                                 </li>
                                 <li>
                                     <div class="d-grid px-3 py-2">
-                                        <a class="btn btn-outline-primary btn-sm" href="{% url 'settings_page' %}"><i class="bi bi-gear me-1"></i>Settings</a>
+                                        <a class="btn btn-outline-primary btn-sm" href="{% url 'Main:settings_page' %}"><i class="bi bi-gear me-1"></i>Settings</a>
                                     </div>
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
-                                    <form method="POST" action="{% url 'user_logout' %}" class="d-grid px-3 py-2">
+                                    <form method="POST" action="{% url 'Users:user_logout' %}" class="d-grid px-3 py-2">
                                         {% csrf_token %}
                                         <button type="submit" class="btn btn-outline-danger btn-sm">
                                             <i class="bi bi-box-arrow-right me-1"></i>Logout
@@ -104,10 +104,10 @@
                             </ul>
                         </div>
                     {% else %}
-                        <a class="btn btn-outline-light btn-sm" href="{% url 'user_login' %}">
+                        <a class="btn btn-outline-light btn-sm" href="{% url 'Users:user_login' %}">
                             <i class="bi bi-box-arrow-in-right me-1"></i>Log In
                         </a>
-                        <a class="btn btn-primary btn-sm" href="{% url 'user_signup' %}">
+                        <a class="btn btn-primary btn-sm" href="{% url 'Users:user_signup' %}">
                             <i class="bi bi-person-plus me-1"></i>Sign Up
                         </a>
                     {% endif %}

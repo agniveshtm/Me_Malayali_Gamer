@@ -21,8 +21,9 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',include('Home.urls')),
-    path('',include('Main.urls')),
+    path('mods/',include('Main.urls')),
     path('user/',include('Users.urls')),
+    path('admin-panel/',include('admin_panel.urls')),
     path("__reload__/", include("django_browser_reload.urls")),
 ]
 urlpatterns += static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)

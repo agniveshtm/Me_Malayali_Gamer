@@ -99,7 +99,7 @@
                             <h5 class="card-title mb-3">Change Password</h5>
                             <p class="card-text text-muted mb-4">Ensure your account is using a long, random password to stay secure.</p>
                             
-                            <form method="post" action="{% url 'password_change' %}">
+                            <form method="post" action="{% url 'Main:password_change' %}">
                                 {% csrf_token %}
 
                                 <div class="mb-3">
