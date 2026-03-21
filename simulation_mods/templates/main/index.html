@@ -7,15 +7,85 @@
 
 {% block content %}
     {% csrf_token %}
+    <style>
+        @media (max-width: 768px) {
+            .display-4 {
+                font-size: 1.8rem;
+            }
+            .hero-section .lead {
+                font-size: 1.1rem;
+            }
+            .hero-section p {
+                font-size: 0.95rem;
+            }
+            .hero-section .btn-lg {
+                font-size: 1rem;
+                padding: 0.5rem 1.5rem;
+            }
+            .carousel-control-prev, .carousel-control-next {
+                width: 15% !important;
+            }
+            .banner-section img {
+                height: 200px;
+                object-fit: cover;
+            }
+            #searchInput {
+                font-size: 1rem !important;
+                padding: 0.5rem 1rem !important;
+            }
+            #searchButton {
+                padding: 0.5rem 1rem !important;
+            }
+            #orderButton, #filterDropdown {
+                width: 42px !important;
+                height: 42px !important;
+                padding: 0 !important;
+                min-width: 42px !important;
+            }
+            #filterDropdown svg {
+                width: 20px;
+                height: 20px;
+            }
+            #latestModsCarousel .carousel-item img {
+                height: 150px !important;
+                margin-bottom: 15px;
+            }
+            #latestModsCarousel h3 {
+                font-size: 1.2rem;
+            }
+            #latestModsCarousel p {
+                font-size: 0.8rem;
+            }
+            #latestModsCarousel .btn {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.8rem;
+            }
+            .categories-section .btn-lg {
+                font-size: 0.8rem !important;
+                padding: 0.3rem 0.5rem !important;
+                width: 100%;
+            }
+            section.bg-dark.text-light {
+                padding-top: 1rem !important;
+                padding-bottom: 1rem !important;
+            }
+            section.bg-dark.text-light h5 {
+                font-size: 1rem;
+                margin-bottom: 0.5rem !important;
+            }
+            section.bg-dark.text-light .card {
+                width: 90% !important;
+            }
+        }
+    </style>
     <section class="banner-section">
         <img src="{% static 'img/me_malayali_gamer_logo.jpg' %}" class="img-fluid" alt="ETS2 Hero Banner Image">
     </section>
 
     <section class="hero-section bg-primary text-white text-center">
         <div class="container">
-            <h1 class="display-4">ModHub</h1>
-            <p class="lead">Your Ultimate Destination for Euro Truck Simulator 2 Mods</p>
-            <p>Discover, share, and download mods for ETS2, ATS, and more truck sims. Community-driven and safe!</p>
+            <h1 class="display-4">Me Malayali Gamer</h1>
+            <p class="lead">Discover, share, and download mods. Community-driven and safe!</p>
             {% if user.is_authenticated %}
                 <a href="{% url 'Main:create' %}" class="btn btn-light btn-lg">Upload Your Mods</a>
             {% else %}
@@ -39,7 +109,7 @@
                             <input type="text" id="searchInput" placeholder="Search ETS2 mods: trucks, maps, skins..."
                                    class="form-control form-control-lg px-4 py-2 border-2 border-secondary rounded-pill focus:outline-none focus:ring-4 focus:ring-cyan-400 transition-all shadow-lg">
                             <button class="btn btn-primary rounded-pill px-4 py-2 ms-2" type="submit" id="searchButton">
-                                <i class="bi bi-search"></i> Search
+                                <i class="bi bi-search"></i> <span class="d-none d-md-inline">Search</span>
                             </button>
                         </form>
                         <button class="btn btn-lg rounded-circle shadow-lg d-flex align-items-center justify-content-center ms-2"
@@ -158,7 +228,7 @@
             <h2 class="text-center mb-4">Categories</h2>
             <div class="row text-center">
                 {% for category in categories %}
-                <div class="col-md-4 mb-3">
+                <div class="col-6 col-md-4 mb-3">
                     <a href="/category/{{ category }}" class="btn btn-outline-primary btn-lg">{{ category }}</a>
                 </div>
                 {% endfor %}
@@ -175,7 +245,7 @@
                 <div class="col-md-12">
                     <h5 class="text-center mb-3"><b>Latest Video</b></h5>
                     <div class="card bg-light text-dark" style="max-width: 800px; margin: 0 auto;">
-                        <div class="video-embed">
+                        <div class="video-embed ratio ratio-16x9">
                             <iframe src="https://www.youtube.com/embed/{{ latest_video.id }}" 
                                     title="{{ latest_video.snippet.title }}" 
                                     frameborder="0" 

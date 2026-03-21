@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
 from .filters import ModsFilter
+from .utils import apply_cropped_image
 from django.core.paginator import Paginator
 import os
 from django.contrib.auth import update_session_auth_hash
@@ -17,6 +18,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 @login_required(login_url="user_login")
 def create_mods(request):
     if request.method == "POST":
+        apply_cropped_image(request.POST,request.FILES)
         frm = modform(request.POST,request.FILES)
         if frm.is_valid():
             frm.instance.user = request.user
@@ -51,6 +53,7 @@ def edit_mods(request,pk):
     edited_mods = get_object_or_404(Modsinfo,pk=pk,user=request.user)
     is_edit = True
     if request.method == "POST":
+        apply_cropped_image(request.POST,request.FILES)
         frm = modform(request.POST,request.FILES,instance=edited_mods)
         if frm.is_valid():
             frm.save()
@@ -86,7 +89,7 @@ def settings_page(request):
         user.last_name = request.POST.get('last_name', user.last_name)
         user.save()
         messages.success(request, "Profile updated successfully!")
-        return redirect("settings_page")
+        return redirect("Main:settings_page")
     return render(request,"main/settings.html")
 
 @login_required(login_url="user_login")
@@ -97,10 +100,10 @@ def password_change(request):
             user = password_form.save()
             update_session_auth_hash(request, user)
             messages.success(request,"Password has been updated successfully!")
-            return redirect("settings_page")
+            return redirect("Main:settings_page")
         else:
             return render(request, "main/settings.html", {
                 "password_form": password_form,
                 "active_tab": "security"
             })
-    return redirect("settings_page")
+    return redirect("Main:settings_page")

@@ -43,7 +43,7 @@
             <h1 class="text-center mb-4 display-4 fw-bold floating-animation" style="background: linear-gradient(to right, #06b6d4, #3b82f6, #8b5cf6); -webkit-background-clip: text; background-clip: text; color: transparent;">{{ mod.title }}</h1>
             <div class="shadow-lg rounded-3">
                 <div class="position-relative rounded-3 overflow-hidden p-1" style="background: linear-gradient(45deg, #06b6d4, #3b82f6, #8b5cf6);">
-                    <img src="{{ mod.thumbnail_img.url }}" alt="{{ mod.title }}" class="img-fluid w-100 rounded-2" style="max-height: 400px; object-fit: cover; object-position: top; display: block;">
+                    <img id="modThumbnail" src="{{ mod.thumbnail_img.url }}" alt="{{ mod.title }}" class="img-fluid w-100 rounded-2" style="max-height: 400px; object-fit: cover; object-position: top; display: block;">
                 </div>
             </div>
         </div>
@@ -156,7 +156,7 @@
         const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
         const modalImage = document.getElementById('modalImage');
         
-        document.querySelectorAll('.carousel-item img').forEach(img => {
+        document.querySelectorAll('.carousel-item img, #modThumbnail').forEach(img => {
             img.style.cursor = 'pointer';
             img.addEventListener('click', function() {
                 modalImage.src = this.src;

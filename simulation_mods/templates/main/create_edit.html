@@ -7,6 +7,9 @@
 {% block extra_head %}
     <link rel="stylesheet" href="{% static 'css/flatpickr.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <!-- Cropper.js -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -14,6 +17,12 @@
     <div class="upload-container">
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
+
+            <!-- Hidden inputs for cropped images -->
+            <input type="hidden" name="cropped_thumbnail_img" id="cropped_thumbnail_img">
+            <input type="hidden" name="cropped_img_1" id="cropped_img_1">
+            <input type="hidden" name="cropped_img_2" id="cropped_img_2">
+            <input type="hidden" name="cropped_img_3" id="cropped_img_3">
 
             <!-- MOVED INSIDE FORM -->
             <div class="mod-visibility">
@@ -151,6 +160,17 @@
     </div>
 </div>
 
+<!-- Crop Modal -->
+<div id="cropModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; align-items:center; justify-content:center; flex-direction:column;">
+    <div style="position:relative; width:90%; height:80%; max-width:800px; background:#000;">
+        <img id="cropImage" style="max-width:100%; max-height:100%; display:block;">
+    </div>
+    <div style="margin-top:20px;">
+        <button type="button" id="cropBtn" class="btn btn-primary btn-lg">Crop & Use</button>
+        <button type="button" id="cancelCropBtn" class="btn btn-secondary btn-lg ms-2">Cancel</button>
+    </div>
+</div>
+
 <script src="{% static 'js/flatpickr.min.js' %}"></script>
 <script>
     flatpickr("#id_uploaded_on", {
@@ -181,6 +201,76 @@
         };
         reader.readAsDataURL(file);
     };
+
+    // Cropper variables
+    let cropper;
+    let currentInput;
+    let currentPh;
+    let currentFile;
+    const cropModal = document.getElementById('cropModal');
+    const cropImage = document.getElementById('cropImage');
+
+    function openCropModal(file, input, ph) {
+        currentFile = file;
+        currentInput = input;
+        currentPh = ph;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            cropImage.src = e.target.result;
+            cropModal.style.display = 'flex';
+            if (cropper) cropper.destroy();
+            cropper = new Cropper(cropImage, {
+                aspectRatio: NaN,
+                viewMode: 1,
+                autoCropArea: 0.9,
+            });
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function closeCropModal() {
+        cropModal.style.display = 'none';
+        if (cropper) {
+            cropper.destroy();
+            cropper = null;
+        }
+        cropImage.src = "";
+        currentFile = null;
+        currentInput = null;
+        currentPh = null;
+    }
+
+    // Handle Crop Button
+    document.getElementById('cropBtn').addEventListener('click', () => {
+        if (!cropper) return;
+        const canvas = cropper.getCroppedCanvas({ width: 1280, height: 720 });
+        const base64data = canvas.toDataURL('image/jpeg');
+        
+        const hiddenId = currentInput.id.replace('id_', 'cropped_');
+        const hiddenInput = document.getElementById(hiddenId);
+        if (hiddenInput) hiddenInput.value = base64data;
+
+        // Update preview with cropped image
+        // Ensure input has the file (important for drag & drop)
+        const dt = new DataTransfer(); dt.items.add(currentFile); currentInput.files = dt.files;
+
+        currentPh.innerHTML = '';
+        currentPh.appendChild(currentInput);
+        const img = document.createElement('img');
+        img.src = base64data;
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+        currentPh.appendChild(img);
+        currentPh.style.border = currentPh.dataset.index === '0' ? '2px solid ' + PRIMARY_COLOR : '2px solid #ccc';
+        currentPh.style.backgroundColor = 'transparent';
+
+        closeCropModal();
+    });
+
+    // Handle Cancel Button
+    document.getElementById('cancelCropBtn').addEventListener('click', () => {
+        if (currentInput) currentInput.value = ''; // Clear input if cancelled
+        closeCropModal();
+    });
 
     // Sync toggle and status
     function updateVisibilityStatus() {
@@ -230,18 +320,34 @@
             );
             ph.addEventListener('drop', e => {
                 const file = e.dataTransfer.files[0];
-                if (file) handleFile(file, ph.querySelector('.image-input'), ph);
+                if (file) openCropModal(file, ph.querySelector('.image-input'), ph);
             });
         });
 
         document.querySelectorAll('.image-input').forEach(input => {
             input.addEventListener('change', e => {
                 const file = e.target.files[0];
-                if (file) handleFile(file, input, input.closest('.image-placeholder'));
+                if (file) openCropModal(file, input, input.closest('.image-placeholder'));
             });
         });
 
         document.getElementById('id_is_public')?.addEventListener('change', updateVisibilityStatus);
+
+        // Form submission validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const inputs = document.querySelectorAll('.image-input');
+            for (let input of inputs) {
+                if (input.files.length > 0) {
+                    const hiddenId = input.id.replace('id_', 'cropped_');
+                    const hiddenVal = document.getElementById(hiddenId).value;
+                    if (!hiddenVal) {
+                        e.preventDefault();
+                        alert("Please crop the image before submitting.");
+                        return;
+                    }
+                }
+            }
+        });
     });
 </script>
 {% endblock %}

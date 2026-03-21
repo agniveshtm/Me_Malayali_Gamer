@@ -1,7 +1,77 @@
 <div id="mod-records-partial" hx-get="?{{ request.GET.urlencode }}" hx-trigger="every 5s" hx-target="this" hx-swap="outerHTML">
+<style>
+    @media (max-width: 576px) {
+        .mod-card .thumb-container {
+            height: 80px !important;
+            height: 100px !important;
+        }
+        .mod-card .card-body {
+            padding: 0.4rem !important;
+            padding: 0.5rem !important;
+        }
+        .mod-card .card-title {
+            font-size: 0.8rem !important;
+            font-size: 0.85rem !important;
+            margin-bottom: 0.25rem !important;
+            line-height: 1.2;
+        }
+        .mod-card .text-muted {
+            font-size: 0.65rem !important;
+            margin-bottom: 0.25rem !important;
+            line-height: 1.1;
+        }
+        .mod-card .text-muted > div {
+            margin-bottom: 0.1rem !important;
+            gap: 0.25rem !important;
+        }
+        .mod-card .user-badge {
+            margin-bottom: 0.25rem !important;
+            padding: 0.15rem 0.25rem !important;
+            font-size: 0.65rem !important;
+        }
+        .mod-card .btn {
+            padding: 0.4rem 0.3rem !important;
+            font-size: 0.6rem !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .mod-card .like-btn {
+            font-size: 0.3rem !important;
+            font-size: 0.4rem !important;
+        }
+        .mod-card .download-btn {
+            font-size: 0.9rem !important;
+        }
+        .mod-card .action-container {
+            gap: 0.25rem !important;
+        }
+        .mod-card .action-container > div {
+            gap: 0.25rem !important;
+        }
+        .mod-card .action-container .w-50 {
+            width: auto !important;
+            flex: 1 !important;
+        }
+        .mod-card .card-title span.rounded-pill {
+            font-size: 0.65rem !important;
+            padding: 0.1rem 0.3rem !important;
+        }
+        .mod-card .thumb-container .new-badge {
+            font-size: 0.55rem !important;
+            padding: 0.1rem 0.25rem !important;
+            top: 5px !important;
+            right: 5px !important;
+        }
+        .pagination .page-link {
+            padding: 0.2rem 0.4rem !important;
+            font-size: 0.7rem !important;
+        }
+    }
+</style>
 {% if public_mods %}
 <div class="container-fluid px-3">
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    <div class="row row-cols-2 row-cols-md-2 row-cols-lg-3 g-2 g-md-4">
         {% for m in public_mods %}
         <div class="col">
             <div class="card h-100 shadow-lg border-0 rounded-4 overflow-hidden mod-card">
@@ -16,7 +86,7 @@
                     {% endif %}
                     {% with elapsed=m.uploaded_on|timesince %}
                     {% if "day" not in elapsed and "week" not in elapsed and "month" not in elapsed and "year" not in elapsed %}
-                    <span class="position-absolute px-2 py-1 fs-6 fw-bold text-white rounded-pill shadow" style="top: 10px; right: 10px; z-index: 10; background: linear-gradient(to right, #06b6d4, #2563eb, #4338ca);">
+                    <span class="position-absolute px-2 py-1 fs-6 fw-bold text-white rounded-pill shadow new-badge" style="top: 10px; right: 10px; z-index: 10; background: linear-gradient(to right, #06b6d4, #2563eb, #4338ca);">
                         New
                     </span>
                     {% endif %}
@@ -34,7 +104,7 @@
                     </h5>
 
                     <!-- META INFO -->
-                    <div class="text-muted small mb-3">
+                    <div class="text-muted small mb-3 d-none d-sm-block">
                         <div class="d-flex flex-wrap gap-3 mb-2">
                             <span class="d-flex align-items-center gap-1">
                                 <i class="fas fa-box text-warning"></i>
@@ -50,11 +120,11 @@
                                 <i class="fas fa-calendar text-info"></i>
                                 {{ m.uploaded_on|timesince }} ago
                             </span>
-                            <span class="d-flex align-items-center gap-1">
+                            <span class="d-none d-sm-flex align-items-center gap-1">
                                 <i class="fas fa-download text-success"></i>
                                 {{ m.downloads|default:0 }}
                             </span>
-                            <span class="d-flex align-items-center gap-1">
+                            <span class="d-none d-sm-flex align-items-center gap-1">
                                 <i class="fas fa-thumbs-up text-primary"></i>
                                 <span class="like-count-display" data-mod-id="{{ m.pk }}">{{ m.likes|default:0 }}</span>
                             </span>
@@ -63,7 +133,7 @@
 
 
                     <!-- USER INFO -->
-                    <div class="d-flex align-items-center gap-2 mb-3 p-2 bg-body-tertiary rounded-3">
+                    <div class="d-none d-sm-flex align-items-center gap-2 mb-3 p-2 bg-body-tertiary rounded-3 user-badge">
                         {%if m.user %}
                             {%if m.user.is_superuser%}
                                 <i class="fas fa-shield-alt text-danger"></i>
@@ -80,12 +150,12 @@
 
 
                     <!-- ACTIONS -->
-                    <div class="d-flex flex-column gap-2">
+                    <div class="d-flex flex-column gap-2 action-container">
                         <div class="d-flex gap-2">
                             <a href="{% url 'Home:download_count' m.pk %}"
                                 class="btn btn-success w-50 fw-bold rounded-pill shadow-sm download-btn"
                                 target="_blank">
-                                <i class="fas fa-download"></i> DOWNLOAD
+                                <i class="fas fa-download"></i>
                             </a>
                             <button class="like-btn btn btn-outline-primary w-50 rounded-pill d-flex align-items-center justify-content-center" data-mod-id="{{ m.pk }}">
                                 <i class="fas fa-thumbs-up"></i>
