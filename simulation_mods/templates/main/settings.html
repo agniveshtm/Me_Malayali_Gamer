@@ -3,6 +3,18 @@
 
 {% block title %}Settings - Me Malayali Gamer{% endblock %}
 
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/cropper.min.css' %}">
+    <script src="{% static 'js/cropper.min.js' %}"></script>
+    <style>
+        /* Force circle crop box in the modal */
+        .cropper-view-box,
+        .cropper-face {
+            border-radius: 50%;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
 <div class="container py-5">
     <div class="row mb-4">
@@ -43,17 +55,57 @@
                         </div>
                         <div class="card-body p-4">
                             <div class="d-flex align-items-center gap-4 mb-4">
-                                <div class="user-avatar rounded-circle d-flex align-items-center justify-content-center text-white fw-bold border border-3 border-light shadow-sm" style="width: 120px; height: 120px; font-size: 48px;" data-username="{{ user.username }}">
-                                    {{ user.username|make_list|first|upper }}
+
+                                <!-- Avatar wrapper -->
+                                <div class="position-relative d-inline-block" style="width: 120px; height: 120px;">
+
+                                    {% if user.profile.profile_image %}
+                                        <img src="{{ user.profile.profile_image.url }}"
+                                             id="avatarPreview"
+                                             class="rounded-circle border border-3 border-light shadow-sm"
+                                             style="width: 120px; height: 120px; object-fit: cover;">
+                                    {% else %}
+                                        <div class="user-avatar rounded-circle d-flex align-items-center justify-content-center text-white fw-bold border border-3 border-light shadow-sm"
+                                             id="avatarPreview"
+                                             style="width: 120px; height: 120px; font-size: 48px;"
+                                             data-username="{{ user.username }}">
+                                            {{ user.username|make_list|first|upper }}
+                                        </div>
+                                    {% endif %}
+
+                                    <!-- X button (top-left) — only visible when a real image exists -->
+                                    <button type="button"
+                                            id="removeAvatarBtn"
+                                            title="Remove profile picture"
+                                            class="position-absolute top-0 start-0 bg-danger rounded-circle d-flex align-items-center justify-content-center shadow border-0 {% if not user.profile.profile_image %}d-none{% endif %}"
+                                            style="width: 34px; height: 34px; border: 2px solid white !important; cursor: pointer;">
+                                        <i class="bi bi-x-lg text-white" style="font-size: 13px;"></i>
+                                    </button>
+
+                                    <!-- Pencil button (bottom-right) — always visible -->
+                                    <label for="profile_image_input"
+                                           class="position-absolute bottom-0 end-0 bg-primary rounded-circle d-flex align-items-center justify-content-center shadow"
+                                           style="width: 34px; height: 34px; cursor: pointer; border: 2px solid white;">
+                                        <i class="bi bi-pencil-fill text-white" style="font-size: 13px;"></i>
+                                    </label>
                                 </div>
+
+                                <!-- Hidden file input -->
+                                <input type="file" id="profile_image_input" accept="image/*" class="d-none">
+
                                 <div>
                                     <h4 class="mb-1 fw-bold">{{ user.username }}</h4>
                                     <p class="text-muted mb-0">Member since {{ user.date_joined|date:"F Y" }}</p>
                                 </div>
                             </div>
                             
-                            <form method="post">
+                            <form method="post" enctype="multipart/form-data" id="profileForm">
                                 {% csrf_token %}
+                                <!-- Hidden: cropped image payload -->
+                                <input type="hidden" name="cropped_profile_image" id="cropped_profile_image">
+                                <!-- Hidden: signals the view to delete the current profile image -->
+                                <input type="hidden" name="remove_profile_image" id="remove_profile_image" value="false">
+
                                 <div class="row g-3">
                                     <div class="col-md-6">
                                         <label class="form-label fw-semibold">Username</label>
@@ -196,16 +248,30 @@
     </div>
 </div>
 
+<!-- Profile Image Crop Modal -->
+<div id="profileCropModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.92); z-index:9999; align-items:center; justify-content:center; flex-direction:column;">
+    <p class="text-white mb-3 fw-semibold fs-5">Drag to reposition &middot; Use handles to resize</p>
+    <div style="position:relative; width:90%; max-width:500px; height:500px; background:#111;">
+        <img id="profileCropImage" style="max-width:100%; display:block;">
+    </div>
+    <div style="margin-top:20px;" class="d-flex gap-3">
+        <button type="button" id="profileCropBtn" class="btn btn-primary btn-lg">
+            <i class="bi bi-check-lg me-1"></i> Apply
+        </button>
+        <button type="button" id="profileCancelCropBtn" class="btn btn-secondary btn-lg">
+            Cancel
+        </button>
+    </div>
+</div>
+
 <script>
+    // ── Theme helpers ──────────────────────────────────────────────
     function setAutoTheme() {
         localStorage.removeItem('theme');
         const preferred = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         document.documentElement.setAttribute('data-bs-theme', preferred);
-        
-        // Update icons in navbar if they exist (relying on base.html structure)
         const iconLight = document.getElementById('theme-icon-light');
-        const iconDark = document.getElementById('theme-icon-dark');
-        
+        const iconDark  = document.getElementById('theme-icon-dark');
         if (iconLight && iconDark) {
             if (preferred === 'dark') {
                 iconLight.classList.add('d-none');
@@ -217,20 +283,20 @@
         }
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
+    // ── Password toggles ──────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', function () {
         const toggles = [
-            { inputId: 'id_old_password', toggleId: 'toggleOldPassword', iconId: 'eyeIconOld' },
-            { inputId: 'id_new_password1', toggleId: 'toggleNewPassword', iconId: 'eyeIconNew' },
-            { inputId: 'id_new_password2', toggleId: 'toggleConfirmNewPassword', iconId: 'eyeIconConfirmNew' }
+            { inputId: 'id_old_password',  toggleId: 'toggleOldPassword',        iconId: 'eyeIconOld' },
+            { inputId: 'id_new_password1', toggleId: 'toggleNewPassword',         iconId: 'eyeIconNew' },
+            { inputId: 'id_new_password2', toggleId: 'toggleConfirmNewPassword',  iconId: 'eyeIconConfirmNew' }
         ];
 
         toggles.forEach(({ inputId, toggleId, iconId }) => {
-            const input = document.getElementById(inputId);
+            const input     = document.getElementById(inputId);
             const toggleBtn = document.getElementById(toggleId);
-            const eyeIcon = document.getElementById(iconId);
-
+            const eyeIcon   = document.getElementById(iconId);
             if (input && toggleBtn && eyeIcon) {
-                toggleBtn.addEventListener('click', function() {
+                toggleBtn.addEventListener('click', function () {
                     const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
                     input.setAttribute('type', type);
                     eyeIcon.classList.toggle('bi-eye');
@@ -238,6 +304,106 @@
                 });
             }
         });
+
+        // ── Remove profile image (X button) ───────────────────────
+        const removeBtn = document.getElementById('removeAvatarBtn');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', function () {
+                const username = '{{ user.username }}';
+                const wrapper  = removeBtn.closest('.position-relative');
+
+                // 1. Swap the real image back to the letter avatar div
+                const currentAvatar = document.getElementById('avatarPreview');
+                const letterDiv     = document.createElement('div');
+                letterDiv.id            = 'avatarPreview';
+                letterDiv.className     = 'user-avatar rounded-circle d-flex align-items-center justify-content-center text-white fw-bold border border-3 border-light shadow-sm';
+                letterDiv.style.cssText = 'width:120px;height:120px;font-size:48px;';
+                letterDiv.setAttribute('data-username', username);
+                letterDiv.textContent   = username.charAt(0).toUpperCase();
+                wrapper.replaceChild(letterDiv, currentAvatar);
+
+                // 2. Re-apply the deterministic colour
+                if (typeof setAvatarColors === 'function') setAvatarColors();
+
+                // 3. Clear any pending cropped image so we don't accidentally re-upload
+                document.getElementById('cropped_profile_image').value = '';
+
+                // 4. Signal the view to delete the file from disk
+                document.getElementById('remove_profile_image').value = 'true';
+
+                // 5. Hide the X button — no real image left
+                removeBtn.classList.add('d-none');
+
+                // 6. Submit immediately so the deletion happens server-side
+                document.getElementById('profileForm').submit();
+            });
+        }
     });
+
+    // ── Profile image cropper ─────────────────────────────────────
+    let profileCropper;
+    const profileCropModal = document.getElementById('profileCropModal');
+    const profileCropImage = document.getElementById('profileCropImage');
+
+    document.getElementById('profile_image_input').addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        if (!file || !file.type.startsWith('image/')) return;
+
+        const reader = new FileReader();
+        reader.onload = function (ev) {
+            profileCropImage.src = ev.target.result;
+            profileCropModal.style.display = 'flex';
+
+            if (profileCropper) profileCropper.destroy();
+            profileCropper = new Cropper(profileCropImage, {
+                aspectRatio: 1,           // Square crop → displayed as circle via CSS
+                viewMode: 1,
+                autoCropArea: 0.8,
+                cropBoxResizable: true,
+                cropBoxMovable: true,
+            });
+        };
+        reader.readAsDataURL(file);
+    });
+
+    document.getElementById('profileCropBtn').addEventListener('click', function () {
+        if (!profileCropper) return;
+
+        const canvas     = profileCropper.getCroppedCanvas({ width: 400, height: 400 });
+        const base64data = canvas.toDataURL('image/jpeg');
+
+        // Store for form submission and clear the removal flag
+        document.getElementById('cropped_profile_image').value  = base64data;
+        document.getElementById('remove_profile_image').value   = 'false';
+
+        // Live preview: replace letter-avatar div with a real <img> if needed
+        const currentAvatar = document.getElementById('avatarPreview');
+        const parent        = currentAvatar.parentElement;
+
+        if (currentAvatar.tagName === 'DIV') {
+            const newImg         = document.createElement('img');
+            newImg.id            = 'avatarPreview';
+            newImg.className     = 'rounded-circle border border-3 border-light shadow-sm';
+            newImg.style.cssText = 'width:120px;height:120px;object-fit:cover;';
+            newImg.src           = base64data;
+            parent.replaceChild(newImg, currentAvatar);
+        } else {
+            currentAvatar.src = base64data;
+        }
+
+        // Show the X button now that a real image is in place
+        document.getElementById('removeAvatarBtn').classList.remove('d-none');
+
+        closeProfileCropModal();
+    });
+
+    document.getElementById('profileCancelCropBtn').addEventListener('click', closeProfileCropModal);
+
+    function closeProfileCropModal() {
+        profileCropModal.style.display = 'none';
+        if (profileCropper) { profileCropper.destroy(); profileCropper = null; }
+        profileCropImage.src = '';
+        document.getElementById('profile_image_input').value = '';
+    }
 </script>
 {% endblock %}

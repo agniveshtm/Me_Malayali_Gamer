@@ -82,9 +82,16 @@
                     {% if user.is_authenticated %}
                         <div class="dropdown">
                             <a class="nav-link p-0 d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <div class="user-avatar rounded-circle d-flex align-items-center justify-content-center text-white fw-bold border border-2 border-primary" style="width: 36px; height: 36px; font-size: 18px;" data-username="{{ user.username }}">
-                                    {{ user.username|make_list|first|upper }}
-                                </div>
+                                {% if user.profile.profile_image %}
+                                    <img src="{{ user.profile.profile_image.url }}"
+                                            class="rounded-circle border border-2 border-primary"
+                                            style="width: 36px; height: 36px; object-fit: cover;"
+                                            alt="{{ user.username }}">
+                                {% else %}
+                                    <div class="user-avatar rounded-circle d-flex align-items-center justify-content-center text-white fw-bold border border-2 border-primary" style="width: 36px; height: 36px; font-size: 18px;" data-username="{{ user.username }}">
+                                        {{ user.username|make_list|first|upper }}
+                                    </div>
+                                {% endif %}
                                 <span class="text-light small fw-semibold">{{ user.username }}</span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2 p-2">
@@ -161,6 +168,7 @@
     </nav>
 
     <main class="flex-grow-1">
+        {% block messages %}
         <div class="container mt-3">
             {% if messages %}
                 {% for message in messages %}
@@ -171,6 +179,7 @@
                 {% endfor %}
             {% endif %}
         </div>
+        {% endblock messages %}
         {% block content %}
         {% endblock %}
     </main>
@@ -283,5 +292,6 @@
             setAvatarColors();
         });
     </script>
+    {% block scripts %}{% endblock %}
 </body>
 </html>

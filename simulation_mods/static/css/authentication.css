@@ -5,26 +5,23 @@
     box-sizing: border-box;
 }
 
-/* 🔥 FLICKER FIX: Set the default background color to match the gradient's dark side */
 body {
     font-family: Arial, sans-serif;
     height: 100vh;
     display: flex;
     overflow: hidden;
-    background-color: #1A2A40; 
+    background-color: var(--bs-body-bg);
 }
 
-/* 🔥 FLICKER FIX: Apply to HTML as well for full viewport coverage */
 html {
     overflow: hidden;
-    background-color: #1A2A40;
+    background-color: var(--bs-body-bg);
 }
 
 .gradient-section {
     width: 50%;
     height: 100vh;
-    /* Branded dark blue/cyan gradient */
-    background: linear-gradient(135deg, #1A2A40 0%, #00BFFF 100%); 
+    background: linear-gradient(135deg, #1A2A40 0%, #00BFFF 100%);
     position: relative;
     overflow: hidden;
     display: flex;
@@ -39,7 +36,7 @@ html {
     width: 200%;
     height: 200%;
     background: radial-gradient(circle at 30% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-                                    radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+                radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
     z-index: 1;
 }
 
@@ -57,10 +54,11 @@ html {
     transform: scale(1.05);
 }
 
-.auth-section { /* Generic content section */
+.auth-section {
     width: 50%;
     height: 100vh;
-    background: white;
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
     display: flex;
     flex-direction: column;
     padding: 60px 50px;
@@ -73,13 +71,13 @@ html {
 }
 
 .auth-header h1 {
-    color: #333;
+    color: var(--bs-body-color);
     margin-bottom: 8px;
     font-size: 32px;
 }
 
 .auth-header p {
-    color: #666;
+    color: var(--bs-secondary-color);
     font-size: 14px;
 }
 
@@ -90,7 +88,7 @@ html {
 label {
     display: block;
     margin-bottom: 8px;
-    color: #555;
+    color: var(--bs-body-color);
     font-weight: 500;
 }
 
@@ -99,19 +97,28 @@ input[type="password"],
 input[type="email"] {
     width: 100%;
     padding: 12px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--bs-border-color);
     border-radius: 6px;
     font-size: 14px;
+    background-color: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
 }
 
-/* Error styling for fields (used by signup) */
+input[type="text"]::placeholder,
+input[type="password"]::placeholder,
+input[type="email"]::placeholder {
+    color: var(--bs-secondary-color);
+}
+
+/* Error styling */
 .input-error input,
-.input-error .input-group input { 
+.input-error .input-group input {
     border-color: #dc3545 !important;
     box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
 }
 
-.error-message { /* Generic error class */
+.error-message {
     color: #dc3545;
     font-size: 13px;
     margin-top: 6px;
@@ -120,8 +127,7 @@ input[type="email"] {
 button[type="submit"] {
     width: 100%;
     padding: 12px;
-    /* Branded dark blue/cyan gradient for the button */
-    background: linear-gradient(135deg, #1A2A40 0%, #00BFFF 100%); 
+    background: linear-gradient(135deg, #1A2A40 0%, #00BFFF 100%);
     color: white;
     border: none;
     border-radius: 6px;
@@ -135,10 +141,10 @@ button[type="submit"]:hover {
     opacity: 0.9;
 }
 
-/* Message styling (used by login) */
+/* Message styling */
 .login-message {
     margin-bottom: 15px;
-    padding: 10px 12px 10px 40px; 
+    padding: 10px 12px 10px 40px;
     border-radius: 6px;
     font-size: 14px;
     position: relative;
@@ -147,9 +153,9 @@ button[type="submit"]:hover {
 }
 
 .login-success {
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
+    background-color: var(--bs-success-bg-subtle);
+    color: var(--bs-success-text-emphasis);
+    border: 1px solid var(--bs-success-border-subtle);
 }
 
 .login-success .checkmark {
@@ -162,9 +168,9 @@ button[type="submit"]:hover {
 }
 
 .login-error {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+    background-color: var(--bs-danger-bg-subtle);
+    color: var(--bs-danger-text-emphasis);
+    border: 1px solid var(--bs-danger-border-subtle);
 }
 
 @keyframes fadeIn {
@@ -172,16 +178,16 @@ button[type="submit"]:hover {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Link styling (used by both) */
+/* Link styling */
 .link-text {
     text-align: center;
     margin-top: 15px;
     font-size: 14px;
+    color: var(--bs-body-color);
 }
 
 .link-text a {
-    /* Link in cyan */
-    color: #00BFFF; 
+    color: #00BFFF;
     text-decoration: none;
     font-weight: 600;
 }
@@ -192,44 +198,41 @@ button[type="submit"]:hover {
 
 /* --- MEDIA QUERIES --- */
 
-/* Tablet devices */
 @media (max-width: 1024px) {
     .auth-section {
         padding: 40px 30px;
     }
 }
 
-/* Mobile devices */
 @media (max-width: 768px) {
     body {
         flex-direction: column;
     }
-    
+
     .gradient-section {
         width: 100%;
-        height: 200px; 
+        height: 200px;
         min-height: 200px;
         padding: 20px;
     }
-    
+
     .auth-section {
         width: 100%;
         padding: 30px 20px;
-        overflow-y: auto; 
-        height: auto; 
-        min-height: calc(100vh - 200px); 
+        overflow-y: auto;
+        height: auto;
+        min-height: calc(100vh - 200px);
     }
-    
+
     .auth-header h1 {
         font-size: 26px;
     }
-    
+
     .auth-header p {
         font-size: 14px;
     }
 }
 
-/* Small mobile devices */
 @media (max-width: 480px) {
     .gradient-section {
         height: 150px;
@@ -284,7 +287,6 @@ button[type="submit"]:hover {
         font-size: 13px;
     }
 
-    /* OTP responsive styles */
     .otp-inputs {
         flex-wrap: wrap;
         gap: 8px;

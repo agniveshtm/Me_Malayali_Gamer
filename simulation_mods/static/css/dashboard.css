@@ -306,19 +306,149 @@ background-color: #1f2937 !important;
 color: #f87171 !important;
 }
 
-/* RESPONSIVE */
-@media (max-width: 768px) {
-.thumb-container {
-    width: 100% !important;
-    height: auto !important;
-    aspect-ratio: 16/9 !important;
+/* RESPONSIVE - Enhanced for smartphones */
+.container-fluid { padding-left: 1rem !important; padding-right: 1rem !important; }
+
+@media (max-width: 991px) {
+  .welcome-msg { font-size: 2.2rem !important; line-height: 1.2; }
 }
-.welcome-msg { font-size: 2rem !important; }
-.no-mods-title { font-size: 2.5rem !important; }
-.no-mods-subtitle { font-size: 1.25rem !important; }
-.upload-btn { font-size: 1.25rem; padding: 0.75rem 2rem; }
-.meta-stats { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
-.filter-btn { width: 48px !important; height: 48px !important; }
+
+@media (max-width: 768px) {
+  .thumb-container {
+      height: 220px !important;
+      min-height: 200px !important;
+  }
+  .welcome-msg { font-size: 2rem !important; }
+  .no-mods-title { font-size: 2.5rem !important; }
+  .no-mods-subtitle { font-size: 1.25rem !important; }
+  .upload-btn { font-size: 1.25rem; padding: 0.75rem 2rem; }
+  .meta-stats { flex-direction: column !important; align-items: flex-start; gap: 0.5rem; }
+  .filter-btn { width: 48px !important; height: 48px !important; }
+  .dropdown-menu { min-width: 290px !important; }
+}
+
+@media (max-width: 576px) {
+  /* Stack header for narrow phones */
+  .container-fluid .row > .col-12 > .text-center { margin-bottom: 2rem; }
+  
+  /* Welcome full width */
+  .welcome-msg { 
+    font-size: 1.8rem !important; 
+    line-height: 1.3 !important;
+    margin-bottom: 1.5rem !important;
+  }
+  
+  /* Header section: stack vertically */
+  .d-flex.justify-content-between.align-items-center.flex-wrap {
+    flex-direction: column !important;
+    gap: 1.5rem !important;
+    align-items: stretch !important;
+  }
+  
+  /* Left part: center upload btn */
+  .d-flex.align-items-center.gap-3 {
+    flex-direction: column !important;
+    gap: 1rem !important;
+    text-align: center;
+  }
+  
+  h1.display-3 { 
+    font-size: 2.5rem !important; 
+    line-height: 1.2 !important;
+  }
+  
+  /* Upload btn full width-ish */
+  .btn-lg { 
+    width: 100% !important; 
+    max-width: 280px; 
+    margin: 0 auto; 
+    justify-content: center !important;
+  }
+  
+  /* Search row: full width, stack controls */
+  div[style*="width: 100%; max-width: 450px"] {
+    width: 100% !important;
+    max-width: none !important;
+  }
+  
+  #searchInput {
+    font-size: 1rem !important;
+    padding: 0.875rem 1rem !important;
+  }
+  
+  #orderButton, .filter-btn {
+    width: 44px !important;
+    height: 44px !important;
+  }
+  
+  /* Filter dropdown mobile */
+  .dropdown-menu { 
+    min-width: 95vw !important; 
+    max-width: 320px !important; 
+    margin: 0.25rem -0.5rem !important;
+    border-radius: 1rem !important;
+    padding: 1rem !important;
+  }
+  
+  .dropdown-menu form { 
+    padding: 0 !important; 
+  }
+  
+  .dropdown-menu .form-control, .dropdown-menu .form-select {
+    font-size: 0.95rem !important;
+    padding: 0.75rem 0.875rem !important;
+  }
+  
+  .dropdown-menu .mb-3 { margin-bottom: 1rem !important; }
+  
+  /* Pagination smaller */
+  .pagination .page-link { 
+    font-size: 0.9rem !important; 
+    padding: 0.5rem 0.75rem !important; 
+  }
+  
+  /* Mod cards thumbs */
+  .thumb-container {
+    height: 180px !important;
+    border-width: 3px !important;
+    border-radius: 1.25rem !important;
+  }
+  
+  /* Card body padding */
+  .card-body { padding: 1rem !important; }
+  
+  .card-title { font-size: 1.1rem !important; }
+  
+  /* Action buttons stack better */
+  .d-flex.gap-2 > .btn { 
+    font-size: 0.85rem !important; 
+    padding: 0.5rem 0.75rem !important; 
+  }
+  
+  /* No mods */
+  .no-mods-title { font-size: 2.25rem !important; }
+  .upload-btn { 
+    font-size: 1.1rem !important; 
+    padding: 0.875rem 2.5rem !important; 
+    width: 100%; 
+    max-width: 280px;
+  }
+  
+  /* Ensure container tighter padding */
+  .container-fluid { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
+  
+  /* Modal buttons touch friendly */
+  .modal .btn { 
+    min-height: 48px !important; 
+    padding: 0.75rem 1.5rem !important; 
+    font-size: 1rem !important; 
+  }
+  
+  /* Dark mode tweaks preserved */
+  [data-bs-theme="dark"] .dropdown-menu { 
+    background-color: #1f2937 !important; 
+    border: 1px solid #374151 !important; 
+  }
 }
 
 /*====================================================CREATE-EDIT-CSS===========================================================*/

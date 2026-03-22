@@ -8,6 +8,11 @@
 {% block content %}
     {% csrf_token %}
     <style>
+        .banner-section {
+                margin: 0;
+                padding: 0;
+                line-height: 0;margin-top: calc(-0.3 * var(--navbar-height));
+        }
         @media (max-width: 768px) {
             .display-4 {
                 font-size: 1.8rem;
@@ -79,7 +84,7 @@
         }
     </style>
     <section class="banner-section">
-        <img src="{% static 'img/me_malayali_gamer_logo.jpg' %}" class="img-fluid" alt="ETS2 Hero Banner Image">
+        <img src="{% static 'img/me_malayali_gamer_logo.jpg' %}" class="img-fluid d-block w-100" alt="ETS2 Hero Banner Image">
     </section>
 
     <section class="hero-section bg-primary text-white text-center">

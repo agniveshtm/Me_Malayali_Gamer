@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
 from .filters import ModsFilter
-from .utils import apply_cropped_image
+from .utils import apply_cropped_image,apply_cropped_profile_image
 from django.core.paginator import Paginator
 import os
 from django.contrib.auth import update_session_auth_hash
@@ -88,6 +88,20 @@ def settings_page(request):
         user.first_name = request.POST.get('first_name', user.first_name)
         user.last_name = request.POST.get('last_name', user.last_name)
         user.save()
+        
+        if request.POST.get('remove_profile_image') == 'true':
+            profile = user.profile
+            if profile.profile_image:
+                profile.profile_image.delete(save=True)
+            messages.success(request,"Profile picture removed.")
+            return redirect("Main:settings_page")
+
+        files_data = apply_cropped_profile_image(request.POST, request.FILES.copy())
+        profile_image = files_data.get('profile_image')
+        if profile_image:
+            user.profile.profile_image = profile_image
+            user.profile.save()
+
         messages.success(request, "Profile updated successfully!")
         return redirect("Main:settings_page")
     return render(request,"main/settings.html")

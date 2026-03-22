@@ -1,6 +1,66 @@
 <div id="mod-dashboard-partial" hx-get="?{{ request.GET.urlencode }}" hx-trigger="every 5s" hx-target="this" hx-swap="outerHTML" hx-select="#mod-dashboard-partial">
+<style>
+    /* Fix for all viewport sizes */
+    .mod-card {
+        overflow: hidden !important;
+        border-radius: 1rem !important;
+    }
+    .mod-card .thumb-container {
+        overflow: hidden !important;
+        border-radius: 0 !important;
+        width: 100% !important;
+    }
+    .mod-card .thumb-container img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        object-position: center !important;
+        display: block !important;
+        border-radius: 0 !important;
+    }
+
+    @media (max-width: 576px) {
+        .mod-card .thumb-container {
+            height: 100px !important;
+        }
+        .mod-card .card-body {
+            padding: 0.5rem !important;
+        }
+        .mod-card .card-title {
+            font-size: 0.85rem !important;
+            margin-bottom: 0.25rem !important;
+            line-height: 1.2;
+        }
+        .mod-card .card-title span.rounded-pill {
+            font-size: 0.65rem !important;
+            padding: 0.1rem 0.3rem !important;
+        }
+        .mod-card .btn {
+            padding: 0.4rem 0.3rem !important;
+            font-size: 0.6rem !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .mod-card .action-container {
+            gap: 0.25rem !important;
+        }
+        .mod-card .action-container > div {
+            gap: 0.25rem !important;
+        }
+        .mod-card .action-container .w-50 {
+            width: auto !important;
+            flex: 1 !important;
+        }
+        .pagination .page-link {
+            padding: 0.2rem 0.4rem !important;
+            font-size: 0.7rem !important;
+        }
+    }
+</style>
+
     {% if mods %}
-      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+      <div class="row row-cols-2 row-cols-md-2 row-cols-lg-3 g-2 g-md-4">
         {% for m in mods %}
         <div class="col">
             <div class="card h-100 shadow-lg border-0 rounded-4 overflow-hidden mod-card">
@@ -36,8 +96,8 @@
                         </span>
                     </h5>
 
-                    <!-- META INFO -->
-                    <div class="text-muted small mb-3">
+                    <!-- META INFO — hidden on mobile -->
+                    <div class="text-muted small mb-3 d-none d-sm-block">
                         <div class="d-flex flex-wrap gap-3 mb-2">
                             <span class="d-flex align-items-center gap-1">
                                 <i class="fas fa-box text-warning"></i>
@@ -65,14 +125,14 @@
                     </div>
 
                     <!-- ACTIONS -->
-                    <div class="d-flex flex-column gap-2 mt-auto">
+                    <div class="d-flex flex-column gap-2 mt-auto action-container">
                         <div class="d-flex gap-2">
                             <a href="{% url 'Main:edit' m.pk %}" class="btn btn-success w-50 fw-bold rounded-pill shadow-sm">
-                                <i class="fas fa-edit"></i> EDIT
+                                <i class="fas fa-edit"></i> <span class="d-none d-sm-inline">EDIT</span>
                             </a>
                             <button class="btn btn-danger w-50 fw-bold rounded-pill shadow-sm delete-btn"
                                     data-url="{% url 'Main:delete' m.pk %}" data-title="{{ m.title|escapejs }}">
-                                <i class="fas fa-trash-alt"></i> DELETE
+                                <i class="fas fa-trash-alt"></i> <span class="d-none d-sm-inline">DELETE</span>
                             </button>
                         </div>
                     </div>
@@ -92,7 +152,7 @@
                        href="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ mods.previous_page_number }}"
                        hx-get="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ mods.previous_page_number }}"
                        hx-target="#mod-dashboard-container"
-                   hx-select="#mod-dashboard-partial"
+                       hx-select="#mod-dashboard-partial"
                        hx-swap="innerHTML"
                        hx-push-url="true">
                         Previous
@@ -108,7 +168,7 @@
                                href="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ i }}"
                                hx-get="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ i }}"
                                hx-target="#mod-dashboard-container"
-                           hx-select="#mod-dashboard-partial"
+                               hx-select="#mod-dashboard-partial"
                                hx-swap="innerHTML"
                                hx-push-url="true">{{ i }}</a>
                         </li>
@@ -124,7 +184,7 @@
                        href="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ mods.next_page_number }}"
                        hx-get="?{% for k, v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}page={{ mods.next_page_number }}"
                        hx-target="#mod-dashboard-container"
-                   hx-select="#mod-dashboard-partial"
+                       hx-select="#mod-dashboard-partial"
                        hx-swap="innerHTML"
                        hx-push-url="true">
                         Next

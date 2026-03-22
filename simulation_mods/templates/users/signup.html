@@ -3,7 +3,7 @@
 
 {% block page_title %}Signup Page{% endblock page_title %}
 
-{% block content %}
+{% block auth_content %}
     <div class="auth-header">
         <h1><b>Create Account</b></h1>
         <p>Create your account to get started</p>
@@ -94,7 +94,7 @@
             <a href="{% url 'Users:user_login' %}">Log in</a>
         </div>
     </form>
-{% endblock content %}
+{% endblock auth_content %}
 
 {% block scripts %}
 <script>

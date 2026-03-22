@@ -1,27 +1,76 @@
+{% extends 'common/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ page_title }}</title>
-    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
-    <link rel="icon" type="image" href="{% static 'img/favicon.ico' %}">
-    <link rel="stylesheet" href="{% static 'css/bootstrap-icons.min.css' %}">
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block messages %}{% endblock %}
+
+{% block extra_head %}
     <link rel="stylesheet" href="{% static 'css/authentication.css' %}">
-</head>
-<body>
+    <style>
+        main > .container {
+            margin-top: 0 !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            max-width: 100% !important;
+        }
+        .auth-wrapper {
+            min-height: calc(100vh - 56px);
+            display: flex;
+        }
+        footer { margin-top: 0 !important; }
+
+        /* Mobile fixes — accounts for top navbar (56px) + bottom nav (80px) */
+        @media (max-width: 991.98px) {
+            body {
+                overflow: auto !important;
+                height: auto !important;
+            }
+            .auth-wrapper {
+                flex-direction: column;
+                min-height: calc(100vh - 56px - 80px);
+            }
+            .gradient-section {
+                width: 100% !important;
+                height: 200px !important;
+                min-height: 200px !important;
+            }
+            .auth-section {
+                width: 100% !important;
+                height: auto !important;
+                overflow-y: visible !important;
+                min-height: calc(100vh - 56px - 80px - 200px) !important;
+                padding-bottom: 50px !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            html{
+                overflow: auto !important;
+            }
+            .gradient-section {
+                height: 150px !important;
+                min-height: 150px !important;
+            }
+            .auth-section {
+                min-height: calc(100vh - 56px - 80px - 150px) !important;
+                padding-bottom: 50px !important;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
     <div class="gradient-section">
         <img src="{% static 'img/me_malayali_gamer_logo.jpg' %}" alt="Me Malayali Gamer Logo" class="gamer-image">
     </div>
-    
+
     <div class="auth-section">
-        {% block content %}
+        {% block auth_content %}
         {% endblock %}
     </div>
+</div>
+{% endblock %}
 
-    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
-    {% block scripts %}
-    {% endblock %}
-</body>
-</html>
+{% block scripts %}{% endblock %}

@@ -2,7 +2,9 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 import uuid
-from .utils import image_directory_path
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from .utils import image_directory_path,profile_image_directory_path
 # Create your models here.
 class Vehicle(models.Model):
     vehicle_type = models.CharField(max_length=20,verbose_name="Vehicle Type",
@@ -51,4 +53,15 @@ class Modsinfo(models.Model):
     likes = models.IntegerField(default=0)
     def __str__(self):
         return self.title
+
+class Profile(models.Model):
+    user = models.OneToOneField(User,on_delete=models.CASCADE)
+    profile_image = models.ImageField(upload_to=profile_image_directory_path,
+                                      blank=True,null=True)
     
+    def __str__(self):
+        return f'{self.user.username} Profile'
+    
+@receiver(post_save, sender=User)
+def create_or_save_profile(sender, instance, created, **kwargs):
+    Profile.objects.get_or_create(user=instance)

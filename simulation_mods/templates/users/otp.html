@@ -3,7 +3,7 @@
 
 {% block page_title %}Enter OTP{% endblock page_title %}
 
-{% block content %}
+{% block auth_content %}
     <div class="auth-header text-center">
         <h1><b>{% if is_verification %}Verify Your Email{% else %}Enter OTP{% endif %}</b></h1>
     </div>
@@ -63,7 +63,7 @@
             Don't have an account? <a href="{% url 'Users:user_signup' %}">Sign up</a>
         {% endif %}
     </div>
-{% endblock content %}
+{% endblock auth_content %}
 
 {% block scripts %}
 <script>

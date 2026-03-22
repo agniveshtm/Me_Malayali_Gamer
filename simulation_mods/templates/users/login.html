@@ -3,7 +3,7 @@
 
 {% block page_title %}Login Page{% endblock page_title %}
 
-{% block content %}
+{% block auth_content %}
     <div class="auth-header">
         <h1><b>Login</b></h1>
         <p>Enter your credentials to access your account</p>
@@ -67,7 +67,7 @@
             <a href="{% url 'Users:forgot_password' %}">Forgot password?</a>
         </div>
     </form>
-{% endblock content %}
+{% endblock auth_content %}
 
 {% block scripts %}
 <script>
