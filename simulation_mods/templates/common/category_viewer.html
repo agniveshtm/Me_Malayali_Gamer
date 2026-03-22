@@ -5,6 +5,28 @@
 {% block content %}
 {% csrf_token %}
 
+<style>
+@media (max-width: 768px) {
+    #searchInput {
+        font-size: 1rem !important;
+        padding: 0.5rem 1rem !important;
+    }
+    #searchButton {
+        padding: 0.5rem 1rem !important;
+    }
+    #orderButton, #filterDropdown {
+        width: 42px !important;
+        height: 42px !important;
+        padding: 0 !important;
+        min-width: 42px !important;
+    }
+    #filterDropdown svg {
+        width: 20px;
+        height: 20px;
+    }
+}
+</style>
+
 <!-- Category Header -->
 <section class="py-5 bg-light">
     <div class="container text-center">
@@ -30,7 +52,7 @@
                         <input type="text" id="searchInput" placeholder="Search mods in {{ current_category }}..."
                                class="form-control form-control-lg px-4 py-2 border-2 border-secondary rounded-pill focus:outline-none focus:ring-4 focus:ring-cyan-400 transition-all shadow-lg">
                         <button class="btn btn-primary rounded-pill px-4 py-2 ms-2" type="submit" id="searchButton">
-                            <i class="bi bi-search"></i> Search
+                            <i class="bi bi-search"></i>
                         </button>
                     </form>
                     <button class="btn btn-lg rounded-circle shadow-lg d-flex align-items-center justify-content-center ms-2"
