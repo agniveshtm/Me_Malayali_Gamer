@@ -1,0 +1,573 @@
+{% extends "admin_panel/admin_base.html" %}
+{% load static %}
+
+{% block title %}Admin — Edit Mod{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/flatpickr.min.css' %}">
+<link rel="stylesheet" href="{% static 'css/cropper.min.css' %}">
+<script src="{% static 'js/cropper.min.js' %}"></script>
+<style>
+    :root {
+        --accent: #3b82f6;
+        --accent-dim: rgba(59,130,246,0.10);
+    }
+
+    /* ── Two-column layout ── */
+    .edit-grid {
+        display: grid;
+        grid-template-columns: 420px 1fr;
+        gap: 1.75rem;
+        align-items: start;
+    }
+    @media (max-width: 1100px) { .edit-grid { grid-template-columns: 360px 1fr; } }
+    @media (max-width: 900px)  { .edit-grid { grid-template-columns: 1fr; } }
+
+    .sticky-sidebar { position: sticky; top: 76px; }
+
+    /* ── Section headings ── */
+    .sec-head {
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #6c757d;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    /* ── Image drop zones ── */
+    .img-zone {
+        position: relative;
+        border-radius: 0.75rem;
+        border: 2px dashed #ced4da;
+        background: transparent;
+        overflow: hidden;
+        cursor: pointer;
+        transition: border-color 0.2s, background 0.2s, box-shadow 0.2s, transform 0.15s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+    [data-bs-theme="dark"] .img-zone { border-color: #495057; }
+
+    .img-zone:hover, .img-zone.drag-over {
+        border-color: var(--accent);
+        background: var(--accent-dim);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(59,130,246,0.15);
+    }
+    .img-zone input[type="file"] {
+        position: absolute; inset: 0; opacity: 0;
+        cursor: pointer; width: 100%; height: 100%; z-index: 2;
+    }
+    .img-zone img {
+        position: absolute; inset: 0;
+        width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .zone-inner {
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 0.5rem; padding: 1.25rem;
+        pointer-events: none;
+        color: #adb5bd; text-align: center; z-index: 1;
+    }
+    .zone-inner i    { font-size: 2rem; }
+    .zone-inner span { font-size: 0.82rem; line-height: 1.4; }
+
+    /* Thumbnail zone */
+    .img-zone.is-thumb {
+        height: 260px;
+        border-style: solid;
+        border-color: var(--accent);
+        background: var(--accent-dim);
+    }
+    .img-zone.is-thumb .zone-inner i    { font-size: 3rem; color: var(--accent); }
+    .img-zone.is-thumb .zone-inner span { color: var(--accent); font-weight: 600; font-size: 0.9rem; }
+
+    /* Secondary zones */
+    .img-zone.is-secondary { height: 150px; }
+
+    .img-zone.has-image { border-style: solid; border-color: var(--accent); }
+
+    .img-badge {
+        position: absolute; top: 8px; left: 8px;
+        font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em;
+        padding: 3px 9px; border-radius: 20px; text-transform: uppercase;
+        background: rgba(0,0,0,0.55); color: #fff;
+        pointer-events: none; z-index: 3;
+    }
+    .img-check {
+        position: absolute; top: 8px; right: 8px;
+        background: #22c55e; color: #fff; border-radius: 50%;
+        width: 24px; height: 24px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.7rem; pointer-events: none; z-index: 3;
+    }
+
+    /* ── Visibility pill ── */
+    .vis-pill {
+        display: flex; align-items: center;
+        justify-content: space-between;
+        border-radius: 0.75rem; padding: 1rem 1.25rem;
+        border: 2px solid #dee2e6; background: transparent;
+        transition: background 0.25s, border-color 0.25s;
+    }
+    [data-bs-theme="dark"] .vis-pill { border-color: #444; }
+    .vis-pill.is-public  { border-color: #22c55e; background: rgba(34,197,94,0.07); }
+    .vis-pill.is-private { border-color: #ef4444; background: rgba(239,68,68,0.07); }
+    .vis-pill .vl { font-weight: 700; font-size: 1rem; }
+    .vis-pill .vs { font-size: 0.78rem; color: #6c757d; margin-top: 2px; }
+
+    /* ── Form controls sizing ── */
+    .form-control,
+    .form-select,
+    .card-body select,
+    .card-body input[type="text"],
+    .card-body input[type="url"],
+    .card-body textarea {
+        padding: 0.7rem 1rem;
+        font-size: 1.05rem;
+        border-radius: 0.5rem;
+        width: 100%;
+        display: block;
+    }
+    /* Django-rendered selects need Bootstrap-style borders */
+    .card-body select {
+        appearance: auto;
+        border: 1px solid #ced4da;
+        background-color: var(--bs-body-bg);
+        color: var(--bs-body-color);
+        line-height: 1.5;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    [data-bs-theme="dark"] .card-body select {
+        border-color: #495057;
+        background-color: #2b3035;
+        color: #dee2e6;
+    }
+    .card-body select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 0.2rem rgba(59,130,246,0.2); }
+    /* Labels */
+    .form-label { font-size: 1rem; }
+    /* Tall description */
+    textarea.form-control,
+    .card-body textarea { min-height: 300px; resize: vertical; }
+
+    /* ── Flatpickr dark ── */
+    [data-bs-theme="dark"] .flatpickr-input {
+        background-color: var(--bs-body-bg);
+        color: var(--bs-body-color);
+        border-color: #495057;
+    }
+
+    /* ── Crop modal ── */
+    #cropModal {
+        display: none; position: fixed; inset: 0;
+        background: rgba(0,0,0,0.93); z-index: 9999;
+        align-items: center; justify-content: center; flex-direction: column;
+    }
+    #cropModal .crop-wrap {
+        position: relative; width: 90%; max-width: 860px;
+        height: 72vh; background: #111; border-radius: 0.75rem; overflow: hidden;
+    }
+    #cropModal .crop-wrap img { max-width: 100%; max-height: 100%; display: block; }
+    #cropModal .crop-actions { margin-top: 1.25rem; display: flex; gap: 0.75rem; }
+
+    /* ── Dividers ── */
+    .sec-divider { margin: 1.75rem 0; opacity: 0.08; }
+</style>
+{% endblock %}
+
+{% block page_content %}
+<div class="px-2 px-xl-4 py-4">
+
+    <!-- Page header -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
+                 style="width:52px;height:52px;background:var(--accent-dim);">
+                <i class="bi bi-pencil-square fs-4 text-primary"></i>
+            </div>
+            <div>
+                <h4 class="fw-bold mb-0">Edit Mod</h4>
+                <small class="text-muted">Editing: <strong class="text-body">{{ form.instance.title }}</strong></small>
+            </div>
+        </div>
+        <a href="{% url 'admin_panel:admin_dashboard' %}?tab=mods"
+           class="btn btn-outline-secondary px-4">
+            <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show mb-4" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" novalidate id="editModForm">
+        {% csrf_token %}
+        <input type="hidden" name="cropped_thumbnail_img" id="cropped_thumbnail_img">
+        <input type="hidden" name="cropped_img_1"         id="cropped_img_1">
+        <input type="hidden" name="cropped_img_2"         id="cropped_img_2">
+        <input type="hidden" name="cropped_img_3"         id="cropped_img_3">
+
+        <div class="edit-grid">
+
+            <!-- ═══════════ LEFT SIDEBAR ═══════════ -->
+            <div class="sticky-sidebar d-flex flex-column gap-3">
+
+                <!-- Images -->
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-body p-4">
+                        <p class="sec-head"><i class="bi bi-images"></i>Mod Images</p>
+
+                        <!-- Thumbnail -->
+                        <div class="mb-3">
+                            <div class="img-zone is-thumb {% if form.instance.thumbnail_img %}has-image{% endif %}"
+                                 id="zone-0" data-index="0">
+                                {% if form.instance.thumbnail_img %}
+                                    <img src="{{ form.instance.thumbnail_img.url }}" alt="Thumbnail">
+                                    <div class="img-check"><i class="bi bi-check2"></i></div>
+                                {% else %}
+                                    <div class="zone-inner">
+                                        <i class="bi bi-image-fill"></i>
+                                        <span>Thumbnail<br><small class="opacity-75">Click or drag &amp; drop</small></span>
+                                    </div>
+                                {% endif %}
+                                <div class="img-badge">Thumbnail</div>
+                                <input type="file" id="id_thumbnail_img" name="thumbnail_img"
+                                       class="image-input" accept="image/*" data-index="0">
+                            </div>
+                        </div>
+
+                        <!-- 3 secondary images -->
+                        <div class="row g-2">
+                            <div class="col-4">
+                                <div class="img-zone is-secondary {% if form.instance.img_1 %}has-image{% endif %}"
+                                     id="zone-1" data-index="1">
+                                    {% if form.instance.img_1 %}
+                                        <img src="{{ form.instance.img_1.url }}" alt="Image 1">
+                                        <div class="img-check"><i class="bi bi-check2"></i></div>
+                                    {% else %}
+                                        <div class="zone-inner">
+                                            <i class="bi bi-plus-circle" style="font-size:1.5rem;"></i>
+                                            <span style="font-size:0.72rem;">Image 1</span>
+                                        </div>
+                                    {% endif %}
+                                    <input type="file" id="id_img_1" name="img_1"
+                                           class="image-input" accept="image/*" data-index="1">
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="img-zone is-secondary {% if form.instance.img_2 %}has-image{% endif %}"
+                                     id="zone-2" data-index="2">
+                                    {% if form.instance.img_2 %}
+                                        <img src="{{ form.instance.img_2.url }}" alt="Image 2">
+                                        <div class="img-check"><i class="bi bi-check2"></i></div>
+                                    {% else %}
+                                        <div class="zone-inner">
+                                            <i class="bi bi-plus-circle" style="font-size:1.5rem;"></i>
+                                            <span style="font-size:0.72rem;">Image 2</span>
+                                        </div>
+                                    {% endif %}
+                                    <input type="file" id="id_img_2" name="img_2"
+                                           class="image-input" accept="image/*" data-index="2">
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="img-zone is-secondary {% if form.instance.img_3 %}has-image{% endif %}"
+                                     id="zone-3" data-index="3">
+                                    {% if form.instance.img_3 %}
+                                        <img src="{{ form.instance.img_3.url }}" alt="Image 3">
+                                        <div class="img-check"><i class="bi bi-check2"></i></div>
+                                    {% else %}
+                                        <div class="zone-inner">
+                                            <i class="bi bi-plus-circle" style="font-size:1.5rem;"></i>
+                                            <span style="font-size:0.72rem;">Image 3</span>
+                                        </div>
+                                    {% endif %}
+                                    <input type="file" id="id_img_3" name="img_3"
+                                           class="image-input" accept="image/*" data-index="3">
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-muted mt-2 mb-0" style="font-size:0.72rem;">
+                            Max 4 MB per image &nbsp;·&nbsp; First image is the thumbnail
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Visibility -->
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-body p-4">
+                        <p class="sec-head"><i class="bi bi-eye"></i>Visibility</p>
+                        <div class="vis-pill" id="visPill">
+                            <div>
+                                <div class="vl" id="visLabel">—</div>
+                                <div class="vs" id="visSub">—</div>
+                            </div>
+                            <div class="form-check form-switch mb-0">
+                                <input class="form-check-input" type="checkbox" role="switch"
+                                       id="id_is_public" name="is_public"
+                                       {% if form.instance.is_public %}checked{% endif %}
+                                       style="width:3em;height:1.5em;cursor:pointer;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upload date -->
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-body p-4">
+                        <p class="sec-head"><i class="bi bi-calendar3"></i>Upload Date</p>
+                        <input type="text" id="id_uploaded_on" name="{{ form.uploaded_on.html_name }}"
+                               class="form-control"
+                               value="{{ form.instance.uploaded_on|date:'Y-m-d H:i' }}"
+                               placeholder="Select date &amp; time">
+                        {% if form.uploaded_on.errors %}
+                            <div class="text-danger mt-1" style="font-size:0.8rem;">{{ form.uploaded_on.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Save / Cancel -->
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg py-3 fw-semibold">
+                        <i class="bi bi-check2-circle me-2"></i>Save Changes
+                    </button>
+                    <a href="{% url 'admin_panel:admin_dashboard' %}?tab=mods"
+                       class="btn btn-outline-secondary">Cancel</a>
+                </div>
+
+            </div><!-- /sidebar -->
+
+
+            <!-- ═══════════ RIGHT MAIN PANEL ═══════════ -->
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4 p-lg-5">
+
+                    <!-- Basic Info -->
+                    <p class="sec-head"><i class="bi bi-info-circle"></i>Basic Info</p>
+                    <div class="row g-4 mb-4">
+                        <div class="col-lg-8">
+                            <label class="form-label fw-semibold">{{ form.title.label }}</label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                                <div class="text-danger mt-1" style="font-size:0.82rem;">{{ form.title.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-lg-4">
+                            <label class="form-label fw-semibold">{{ form.version.label }}</label>
+                            {{ form.version }}
+                            {% if form.version.errors %}
+                                <div class="text-danger mt-1" style="font-size:0.82rem;">{{ form.version.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <hr class="sec-divider">
+
+                    <!-- Classification -->
+                    <p class="sec-head"><i class="bi bi-tags"></i>Classification</p>
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Vehicle {{ form.type.label }}</label>
+                            {{ form.type }}
+                            {% if form.type.errors %}
+                                <div class="text-danger mt-1" style="font-size:0.82rem;">{{ form.type.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Mod {{ form.category.label }}</label>
+                            {{ form.category }}
+                            {% if form.category.errors %}
+                                <div class="text-danger mt-1" style="font-size:0.82rem;">{{ form.category.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <hr class="sec-divider">
+
+                    <!-- Download Link -->
+                    <p class="sec-head"><i class="bi bi-link-45deg"></i>Download</p>
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">{{ form.download_link.label }}</label>
+                        {{ form.download_link }}
+                        {% if form.download_link.errors %}
+                            <div class="text-danger mt-1" style="font-size:0.82rem;">{{ form.download_link.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <hr class="sec-divider">
+
+                    <!-- Description -->
+                    <p class="sec-head"><i class="bi bi-text-paragraph"></i>Description</p>
+                    <div>
+                        <label class="form-label fw-semibold">{{ form.description.label }}</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="text-danger mt-1" style="font-size:0.82rem;">{{ form.description.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                </div>
+            </div><!-- /main panel -->
+
+        </div><!-- /edit-grid -->
+    </form>
+</div>
+
+
+<!-- ── Crop Modal ── -->
+<div id="cropModal">
+    <div class="crop-wrap">
+        <img id="cropImage" alt="Crop preview">
+    </div>
+    <div class="crop-actions">
+        <button type="button" id="cropBtn" class="btn btn-primary btn-lg px-5">
+            <i class="bi bi-crop me-2"></i>Crop &amp; Use
+        </button>
+        <button type="button" id="cancelCropBtn" class="btn btn-outline-light btn-lg px-5">Cancel</button>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/flatpickr.min.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    // ── Flatpickr ──
+    const uploadedOnInput = document.getElementById('id_uploaded_on');
+    flatpickr('#id_uploaded_on', {
+        enableTime: true,
+        time_24hr: true,
+        dateFormat: 'Y-m-d H:i',
+        altInput: true,
+        altFormat: 'F j, Y — H:i',
+        allowInput: true,
+        defaultDate: uploadedOnInput.value.trim() || null
+    });
+
+    // ── Visibility toggle ──
+    const toggle = document.getElementById('id_is_public');
+    const pill   = document.getElementById('visPill');
+    const lbl    = document.getElementById('visLabel');
+    const sub    = document.getElementById('visSub');
+
+    function syncVis() {
+        const pub = toggle.checked;
+        pill.className = 'vis-pill ' + (pub ? 'is-public' : 'is-private');
+        lbl.textContent = pub ? 'Public'  : 'Private';
+        sub.textContent = pub ? 'Visible to everyone' : 'Only visible to you';
+    }
+    toggle.addEventListener('change', syncVis);
+    syncVis();
+
+    // ── Cropper ──
+    let cropper, currentInput, currentPh, currentFile;
+    const modal   = document.getElementById('cropModal');
+    const cropImg = document.getElementById('cropImage');
+
+    function openCrop(file, input, ph) {
+        currentFile  = file;
+        currentInput = input;
+        currentPh    = ph;
+        const reader = new FileReader();
+        reader.onload = e => {
+            cropImg.src = e.target.result;
+            modal.style.display = 'flex';
+            if (cropper) cropper.destroy();
+            cropper = new Cropper(cropImg, {
+                aspectRatio: NaN, viewMode: 1, autoCropArea: 0.9
+            });
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function closeCrop() {
+        modal.style.display = 'none';
+        if (cropper) { cropper.destroy(); cropper = null; }
+        cropImg.src = '';
+        currentFile = currentInput = currentPh = null;
+    }
+
+    document.getElementById('cropBtn').addEventListener('click', () => {
+        if (!cropper) return;
+        const b64 = cropper.getCroppedCanvas({ width: 1280, height: 720 }).toDataURL('image/jpeg');
+        const hidden = document.getElementById(currentInput.id.replace('id_', 'cropped_'));
+        if (hidden) hidden.value = b64;
+
+        const dt = new DataTransfer(); dt.items.add(currentFile); currentInput.files = dt.files;
+        applyPreview(currentPh, b64);
+        closeCrop();
+    });
+
+    document.getElementById('cancelCropBtn').addEventListener('click', () => {
+        if (currentInput) currentInput.value = '';
+        closeCrop();
+    });
+
+    function applyPreview(zone, src) {
+        zone.classList.add('has-image');
+        zone.querySelector('.zone-inner')?.remove();
+        const oldImg = zone.querySelector('img');
+        if (oldImg) oldImg.remove();
+        zone.querySelector('.img-check')?.remove();
+        const img = document.createElement('img');
+        img.src = src;
+        zone.insertBefore(img, zone.querySelector('input[type=file]'));
+        const chk = document.createElement('div');
+        chk.className = 'img-check';
+        chk.innerHTML = '<i class="bi bi-check2"></i>';
+        zone.appendChild(chk);
+    }
+
+    // ── Wire zones ──
+    document.querySelectorAll('.image-input').forEach(input => {
+        const zone = input.closest('.img-zone');
+
+        input.addEventListener('change', e => {
+            const file = e.target.files[0];
+            if (file) openCrop(file, input, zone);
+        });
+
+        ['dragenter','dragover','dragleave','drop'].forEach(ev =>
+            zone.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); })
+        );
+        ['dragenter','dragover'].forEach(ev =>
+            zone.addEventListener(ev, () => zone.classList.add('drag-over'))
+        );
+        ['dragleave','drop'].forEach(ev =>
+            zone.addEventListener(ev, () => zone.classList.remove('drag-over'))
+        );
+        zone.addEventListener('drop', e => {
+            const file = e.dataTransfer.files[0];
+            if (file) openCrop(file, input, zone);
+        });
+    });
+
+    // ── Submit guard ──
+    document.getElementById('editModForm').addEventListener('submit', function(e) {
+        for (const input of document.querySelectorAll('.image-input')) {
+            if (input.files.length > 0) {
+                const val = document.getElementById(input.id.replace('id_', 'cropped_'))?.value;
+                if (!val) {
+                    e.preventDefault();
+                    alert('Please crop the selected image before saving.');
+                    return;
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

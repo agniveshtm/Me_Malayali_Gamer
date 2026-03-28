@@ -79,7 +79,7 @@
                         <span class="small">Theme</span>
                     </button>
                     
-                    {% if user.is_authenticated %}
+                    {% if user.is_authenticated and not user.is_staff and not user.is_superuser %}
                         <div class="dropdown">
                             <a class="nav-link p-0 d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 {% if user.profile.profile_image %}
