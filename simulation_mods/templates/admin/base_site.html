@@ -1,0 +1,17 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block branding %}
+<div id="site-name">
+    <a href="{% url 'admin:index' %}">
+        {{ site_header|default:_('Django administration') }}
+    </a>
+</div>
+{% if user.is_authenticated %}
+<a href="{% url 'admin_panel:admin_dashboard' %}" 
+   style="background:#0dcaf0; color:#000; padding:5px 16px; margin-left:20px;
+          border-radius:50px; text-decoration:none; font-size:13px; font-weight:600;">
+    ← Back to Admin Panel
+</a>
+{% endif %}
+{% endblock %}
