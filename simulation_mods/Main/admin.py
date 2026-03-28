@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Modsinfo,Vehicle,ModCategory
+from .models import *
 # Register your models here.
 class ModsinfoAdmin(admin.ModelAdmin):
     list_display=['title','version','type','category','is_public','likes','downloads']
@@ -7,3 +7,4 @@ class ModsinfoAdmin(admin.ModelAdmin):
 admin.site.register(Modsinfo,ModsinfoAdmin)
 admin.site.register(Vehicle)
 admin.site.register(ModCategory)
+admin.site.register(Profile)

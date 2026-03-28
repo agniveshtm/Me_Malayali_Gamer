@@ -1,0 +1,139 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Panel - Me Malayali Gamer{% endblock %}</title>
+    <link href="{% static 'img/favicon.ico' %}" rel="icon" type="image">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/bootstrap-icons.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/all.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <script src="{% static 'js/htmx.min.js' %}"></script>
+    {% block extra_head %}{% endblock %}
+    <style>
+        @media (max-width: 991.98px) {
+            body {
+                padding-bottom: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Admin Navbar - Dark fixed top -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top shadow-lg border-bottom border-secondary">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="{% url 'admin_panel:admin_dashboard' %}">
+                <img src="{% static 'img/favicon.png' %}" alt="Logo" width="32" height="32" class="rounded">
+                <span>Me Malayali Gamer</span>
+            </a>
+            <div class="navbar-nav ms-auto d-flex align-items-center gap-2">
+                <button class="btn btn-outline-light btn-sm rounded-pill d-flex align-items-center gap-1" onclick="toggleTheme()" title="Toggle Theme">
+                    <i class="bi bi-moon-stars-fill" id="theme-icon-light"></i>
+                    <i class="bi bi-sun-fill d-none" id="theme-icon-dark"></i>
+                    <span class="small d-none d-md-inline">Theme</span>
+                </button>
+                <form method="POST" action="{% url 'Users:user_logout' %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-light btn-sm rounded-pill px-3">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span class="small d-none d-sm-inline ms-1">Logout</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="container mt-5 pt-3">
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="flex-grow-1 pt-5 pb-5">
+        <div class="container-fluid">
+            {% block page_content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Admin Footer -->
+    <footer class="bg-dark text-white py-4 border-top border-secondary">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <small>Admin Panel: Full control over mods, users, downloads, and platform statistics.</small>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <small>Main site: Euro Truck Simulator 2 mods - Discover, share, download community content.</small>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script>
+        function getPreferredTheme() {
+            const storedTheme = localStorage.getItem('theme');
+            if (storedTheme) return storedTheme;
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-bs-theme', theme);
+            localStorage.setItem('theme', theme);
+
+            const iconLight = document.getElementById('theme-icon-light');
+            const iconDark = document.getElementById('theme-icon-dark');
+
+            if (iconLight && iconDark) {
+                if (theme === 'dark') {
+                    iconLight.classList.add('d-none');
+                    iconDark.classList.remove('d-none');
+                } else {
+                    iconLight.classList.remove('d-none');
+                    iconDark.classList.add('d-none');
+                }
+            }
+        }
+
+        function setAvatarColors() {
+            const avatars = document.querySelectorAll('.user-avatar');
+            const colors = ['#DB4437','#E91E63','#9C27B0','#673AB7','#3F51B5','#4285F4','#039BE5','#0097A7','#00897B','#0F9D58','#689F38','#EF6C00','#FF5722','#795548','#757575','#607D8B'];
+            avatars.forEach(avatar => {
+                const username = avatar.getAttribute('data-username');
+                if (username) {
+                    let hash = 0;
+                    for (let i = 0; i < username.length; i++) {
+                        hash = username.charCodeAt(i) + ((hash << 5) - hash);
+                    }
+                    avatar.style.backgroundColor = colors[Math.abs(hash % colors.length)];
+                }
+            });
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            setTheme(newTheme);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const preferred = getPreferredTheme();
+            setTheme(preferred);
+            setAvatarColors();
+        });
+    </script>
+
+    {% block scripts %}{% endblock %}
+
+</body>
+</html>

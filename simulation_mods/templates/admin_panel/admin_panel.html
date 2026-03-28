@@ -1,0 +1,454 @@
+{% extends "admin_panel/admin_base.html" %}
+{% load static %}
+
+{% block page_content %}
+<!-- Page Header -->
+<div class="row mb-5">
+    <div class="col-12 text-center">
+        <h1 class="fw-bold display-4 mb-3 text-info">Me Malayali Gamer</h1>
+        <div class="mb-4">
+            <h2 class="fw-bold mb-2">Admin Panel</h2>
+            <p class="lead text-muted mb-0 fs-5">Full control over mods, users, and platform stats.</p>
+        </div>
+        <i class="bi bi-gear-wide-connected fs-1 text-primary opacity-75"></i>
+        <div class="mt-4">
+            <a href="{% url 'admin:index' %}" class="btn btn-outline-info rounded-pill px-4">
+                <i class="bi bi-box-arrow-up-right me-2"></i>Open Django Administration
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Stat Cards -->
+<div class="row g-3 mb-5">
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="card border-0 shadow-sm h-100 text-center rounded-4 transition-all hover-lift">
+            <div class="card-body py-4">
+                <div class="bg-primary bg-opacity-10 rounded-3 d-inline-flex align-items-center justify-content-center mb-3" style="width:60px;height:60px;">
+                    <i class="bi bi-box-seam fs-3 text-primary"></i>
+                </div>
+                <div class="h2 fw-bold text-primary mb-1">{{ total_mods }}</div>
+                <div class="text-muted small">Total Mods</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="card border-0 shadow-sm h-100 text-center rounded-4 transition-all hover-lift">
+            <div class="card-body py-4">
+                <div class="bg-success bg-opacity-10 rounded-3 d-inline-flex align-items-center justify-content-center mb-3" style="width:60px;height:60px;">
+                    <i class="bi bi-people-fill fs-3 text-success"></i>
+                </div>
+                <div class="h2 fw-bold text-success mb-1">{{ total_users }}</div>
+                <div class="text-muted small">Total Users</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="card border-0 shadow-sm h-100 text-center rounded-4 transition-all hover-lift">
+            <div class="card-body py-4">
+                <div class="bg-warning bg-opacity-10 rounded-3 d-inline-flex align-items-center justify-content-center mb-3" style="width:60px;height:60px;">
+                    <i class="bi bi-download fs-3 text-warning"></i>
+                </div>
+                <div class="h2 fw-bold text-warning mb-1">{{ total_downloads }}</div>
+                <div class="text-muted small">Total Downloads</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="card border-0 shadow-sm h-100 text-center rounded-4 transition-all hover-lift">
+            <div class="card-body py-4">
+                <div class="bg-danger bg-opacity-10 rounded-3 d-inline-flex align-items-center justify-content-center mb-3" style="width:60px;height:60px;">
+                    <i class="bi bi-heart-fill fs-3 text-danger"></i>
+                </div>
+                <div class="h2 fw-bold text-danger mb-1">{{ total_likes }}</div>
+                <div class="text-muted small">Total Likes</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="card border-0 shadow-sm h-100 text-center rounded-4 transition-all hover-lift">
+            <div class="card-body py-4">
+                <div class="bg-info bg-opacity-10 rounded-3 d-inline-flex align-items-center justify-content-center mb-3" style="width:60px;height:60px;">
+                    <i class="bi bi-globe fs-3 text-info"></i>
+                </div>
+                <div class="h2 fw-bold text-info mb-1">{{ public_mods }}</div>
+                <div class="text-muted small">Public Mods</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+        <div class="card border-0 shadow-sm h-100 text-center rounded-4 transition-all hover-lift">
+            <div class="card-body py-4">
+                <div class="bg-secondary bg-opacity-10 rounded-3 d-inline-flex align-items-center justify-content-center mb-3" style="width:60px;height:60px;">
+                    <i class="bi bi-lock-fill fs-3 text-secondary"></i>
+                </div>
+                <div class="h2 fw-bold text-secondary mb-1">{{ private_mods }}</div>
+                <div class="text-muted small">Private Mods</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabs -->
+<ul class="nav nav-tabs mb-4 bg-light rounded-top-3 shadow-sm border-0" id="adminTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active px-4 py-2 fw-semibold" id="mods-tab" data-bs-toggle="tab" data-bs-target="#mods-tab-pane" type="button" role="tab">
+            Mods <span class="badge bg-primary ms-1">{{ total_mods }}</span>
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link px-4 py-2 fw-semibold" id="users-tab" data-bs-toggle="tab" data-bs-target="#users-tab-pane" type="button" role="tab">
+            Users <span class="badge bg-primary ms-1">{{ total_users }}</span>
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content border border-top-0 rounded-bottom-3 shadow-sm overflow-hidden bg-white" id="adminTabContent">
+    
+    <!-- Mods Tab -->
+    <div class="tab-pane fade show active p-4" id="mods-tab-pane" role="tabpanel">
+        <!-- Mods Filter -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4">
+                <form method="GET" class="row g-3 align-items-end">
+                    <input type="hidden" name="tab" value="mods">
+                    <div class="col-lg-3 col-md-6">
+                        <label class="form-label fw-semibold">Search</label>
+                        <input type="text" class="form-control" name="mod_search" placeholder="Search title or uploader..." value="{{ mod_search|default_if_none:'' }}">
+                    </div>
+                    <div class="col-lg-2 col-md-6">
+                        <label class="form-label fw-semibold">Vehicle Type</label>
+                        <select class="form-select" name="filter_type">
+                            <option value="">All Types</option>
+                            {% for v in vehicle_types %}
+                            <option value="{{ v.id }}" {% if filter_type == v.id|stringformat:'s' %}selected{% endif %}>{{ v.vehicle_type }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-md-6">
+                        <label class="form-label fw-semibold">Category</label>
+                        <select class="form-select" name="filter_category">
+                            <option value="">All Categories</option>
+                            {% for c in mod_categories %}
+                            <option value="{{ c.id }}" {% if filter_category == c.id|stringformat:'s' %}selected{% endif %}>{{ c.mod_category }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-md-6">
+                        <label class="form-label fw-semibold">Visibility</label>
+                        <select class="form-select" name="filter_visibility">
+                            <option value="" {% if not filter_visibility %}selected{% endif %}>All</option>
+                            <option value="public" {% if filter_visibility == 'public' %}selected{% endif %}>Public</option>
+                            <option value="private" {% if filter_visibility == 'private' %}selected{% endif %}>Private</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <button type="submit" class="btn btn-primary w-100">Filter</button>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <a href="{% url 'admin_panel:admin_dashboard' %}?tab=mods" class="btn btn-outline-secondary w-100">
+                            <i class="bi bi-x-circle me-1"></i>Clear
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Mods Table -->
+        <div class="card border-0 shadow-lg">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th style="width: 8%;">Thumbnail</th>
+                            <th style="width: 22%;">Title</th>
+                            <th style="width: 12%;">Uploader</th>
+                            <th>Type</th>
+                            <th>Category</th>
+                            <th>Visibility</th>
+                            <th style="width: 8%;">Downloads</th>
+                            <th style="width: 8%;">Likes</th>
+                            <th style="width: 12%;">Uploaded</th>
+                            <th style="width: 12%;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if mods %}
+                            {% for mod in mods %}
+                            <tr>
+                                <td>
+                                    {% if mod.thumbnail_img %}
+                                        <img src="{{ mod.thumbnail_img.url }}" alt="" class="rounded-2" style="width:80px;height:48px;object-fit:cover;">
+                                    {% else %}
+                                        <div class="bg-secondary-subtle rounded-2 d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
+                                            <i class="bi bi-image text-muted fs-5"></i>
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="fw-semibold">{{ mod.title }}</div>
+                                    <small class="text-muted">v{{ mod.version }}</small>
+                                </td>
+                                <td>
+                                    {% if mod.user.profile.profile_image %}
+                                        <img src="{{ mod.user.profile.profile_image.url }}" class="rounded-circle me-2" style="width:24px;height:24px;object-fit:cover;" alt="">
+                                    {% else %}
+                                        <div class="user-avatar rounded-circle d-flex align-items-center justify-content-center fw-bold me-2 text-white fs-9" style="width:24px;height:24px;" data-username="{{ mod.user.username }}">
+                                            {{ mod.user.username|make_list|first|upper }}
+                                        </div>
+                                    {% endif %}
+                                    <div>{{ mod.user.username }}</div>
+                                </td>
+                                <td>{% if mod.type %}<span class="badge bg-info text-dark fs-9 px-2 py-1">{{ mod.type.vehicle_type }}</span>{% else %}<span class="text-muted">—</span>{% endif %}</td>
+                                <td>{% if mod.category %}<span class="badge bg-secondary fs-9 px-2 py-1">{{ mod.category.mod_category }}</span>{% else %}<span class="text-muted">—</span>{% endif %}</td>
+                                <td>
+                                    <span id="visibility-badge-{{ mod.id }}">
+                                        <form method="post" hx-post="{% url 'admin_panel:admin_toggle_visibility' mod.id %}" hx-swap="outerHTML" hx-target="#visibility-badge-{{ mod.id }}" style="display: inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="badge border-0 {% if mod.is_public %}bg-success{% else %}bg-danger{% endif %} text-white" style="cursor:pointer;font-size:0.75rem;padding:6px 12px;border-radius:50px;transition: all 0.2s;">
+                                                {% if mod.is_public %}
+                                                    <i class="bi bi-globe me-1"></i>Public
+                                                {% else %}
+                                                    <i class="bi bi-lock-fill me-1"></i>Private
+                                                {% endif %}
+                                            </button>
+                                        </form>
+                                    </span>
+                                </td>
+                                <td class="fw-bold text-center">{{ mod.downloads }}</td>
+                                <td class="fw-bold text-center">{{ mod.likes }}</td>
+                                <td>{{ mod.uploaded_on|date:"d M Y" }}</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'Home:view_mods' mod.id %}" class="btn btn-outline-info btn-sm" title="View Mod">View</a>
+                                        <a href="{% url 'admin_panel:admin_mod_edit' mod.id %}" class="btn btn-outline-primary btn-sm">Edit</a>
+                                        <a href="{% url 'admin_panel:admin_delete_mod' mod.id %}" class="btn btn-outline-danger btn-sm" onclick="return confirm('Delete {{ mod.title }}?')">Delete</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="10" class="text-center py-5 text-muted">
+                                    <i class="bi bi-inbox fs-1 d-block mb-3 opacity-50"></i>
+                                    No mods found.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Mods Pagination -->
+            {% if mods.has_other_pages %}
+            <div class="card-footer bg-light border-0 py-3">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <small class="text-muted">
+                            Showing {{ mods.start_index }}–{{ mods.end_index }} of {{ mods.paginator.count }} mods
+                        </small>
+                    </div>
+                    <div class="col-md-6">
+                        <nav aria-label="Mods pagination">
+                            {% with mods as page_obj %}
+                            <ul class="pagination justify-content-end mb-0">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?tab=mods&amp;page=1&amp;{{ request.GET.urlencode|cut:'page='|cut:'tab=' }}">First</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?tab=mods&amp;page={{ page_obj.previous_page_number }}&amp;{{ request.GET.urlencode|cut:'page='|cut:'tab=' }}">Previous</a>
+                                    </li>
+                                {% endif %}
+
+                                {% for num in page_obj.paginator.page_range %}
+                                    {% if page_obj.number == num %}
+                                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                    {% elif num > page_obj.number|add:-3 and num < page_obj.number|add:3 %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?tab=mods&amp;page={{ num }}&amp;{{ request.GET.urlencode|cut:'page='|cut:'tab=' }}">{{ num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?tab=mods&amp;page={{ page_obj.next_page_number }}&amp;{{ request.GET.urlencode|cut:'page='|cut:'tab=' }}">Next</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?tab=mods&amp;page={{ page_obj.paginator.num_pages }}&amp;{{ request.GET.urlencode|cut:'page='|cut:'tab=' }}">Last</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                            {% endwith %}
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Users Tab -->
+    <div class="tab-pane fade p-4" id="users-tab-pane" role="tabpanel">
+        <!-- Users Filter -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4">
+                <form method="GET" class="row g-3 align-items-end">
+                    <input type="hidden" name="tab" value="users">
+                    <div class="col-lg-8 col-md-8">
+                        <label class="form-label fw-semibold">Search</label>
+                        <input type="text" class="form-control" name="user_search" placeholder="Search username or email..." value="{{ user_search|default_if_none:'' }}">
+                    </div>
+                    <div class="col-lg-2 col-md-2">
+                        <button type="submit" class="btn btn-success w-100">Search</button>
+                    </div>
+                    <div class="col-lg-2 col-md-2">
+                        <a href="{% url 'admin_panel:admin_dashboard' %}?tab=users" class="btn btn-outline-secondary w-100">
+                            <i class="bi bi-x-circle me-1"></i>Clear
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="card border-0 shadow-lg">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th style="width: 8%;">Avatar</th>
+                            <th style="width: 20%;">Username</th>
+                            <th style="width: 25%;">Email</th>
+                            <th style="width: 12%;">Joined</th>
+                            <th style="width: 8%;">Mods</th>
+                            <th>Role</th>
+                            <th style="width: 12%;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if users %}
+                            {% for u in users %}
+                            <tr>
+                                <td>
+                                    {% if u.profile.profile_image %}
+                                        <img src="{{ u.profile.profile_image.url }}" class="rounded-circle" style="width:36px;height:36px;object-fit:cover;" alt="">
+                                    {% else %}
+                                        <div class="user-avatar rounded-circle d-flex align-items-center justify-content-center fw-bold text-white" style="width:36px;height:36px;" data-username="{{ u.username }}">
+                                            {{ u.username|make_list|first|upper }}
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="fw-semibold">{{ u.username }}</div>
+                                    {% if u.first_name or u.last_name %}
+                                        <small class="text-muted">{{ u.first_name }} {{ u.last_name }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>{{ u.email|default:"—" }}</td>
+                                <td>{{ u.date_joined|date:"d M Y" }}</td>
+                                <td class="fw-bold text-center">{{ u.modsinfo_set.count }}</td>
+                                <td>
+                                    {% if u.is_superuser %}
+                                        <span class="badge bg-danger">Superuser</span>
+                                    {% elif u.is_staff %}
+                                        <span class="badge bg-warning text-dark">Staff</span>
+                                    {% else %}
+                                        <span class="badge bg-light text-dark">User</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if not u.is_superuser and u != request.user %}
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'admin_panel:admin_mod_user_edit' u.id %}" class="btn btn-outline-primary btn-sm">Edit</a>
+                                        <a href="{% url 'admin_panel:admin_delete_user' u.id %}" class="btn btn-outline-danger btn-sm" onclick="return confirm('Delete user &apos;{{ u.username }}&apos;? All their mods will also be deleted.');">Delete</a>
+                                    </div>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Protected</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center py-5 text-muted">
+                                    <i class="bi bi-people fs-1 d-block mb-3 opacity-50"></i>
+                                    No users found.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Users Pagination -->
+            {% if users.has_other_pages %}
+            <div class="card-footer bg-light border-0 py-3">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <small class="text-muted">
+                            Showing {{ users.start_index }}–{{ users.end_index }} of {{ users.paginator.count }} users
+                        </small>
+                    </div>
+                    <div class="col-md-6">
+                        <nav aria-label="Users pagination">
+                            {% with users as page_obj %}
+                            <ul class="pagination justify-content-end mb-0">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?tab=users&amp;page_u=1&amp;{{ request.GET.urlencode|cut:'page_u='|cut:'page='|cut:'tab=' }}">First</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?tab=users&amp;page_u={{ page_obj.previous_page_number }}&amp;{{ request.GET.urlencode|cut:'page_u='|cut:'page='|cut:'tab=' }}">Previous</a>
+                                    </li>
+                                {% endif %}
+
+                                {% for num in page_obj.paginator.page_range %}
+                                    {% if page_obj.number == num %}
+                                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                    {% elif num > page_obj.number|add:-3 and num < page_obj.number|add:3 %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?tab=users&amp;page_u={{ num }}&amp;{{ request.GET.urlencode|cut:'page_u='|cut:'page='|cut:'tab=' }}">{{ num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?tab=users&amp;page_u={{ page_obj.next_page_number }}&amp;{{ request.GET.urlencode|cut:'page_u='|cut:'page='|cut:'tab=' }}">Next</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?tab=users&amp;page_u={{ page_obj.paginator.num_pages }}&amp;{{ request.GET.urlencode|cut:'page_u='|cut:'page='|cut:'tab=' }}">Last</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                            {% endwith %}
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('tab') === 'users') {
+        const tab = document.getElementById('users-tab');
+        if (tab) new bootstrap.Tab(tab).show();
+    }
+    if (typeof setAvatarColors === 'function') setAvatarColors();
+});
+</script>
+
+<style>
+.transition-all { transition: all 0.2s ease-in-out; }
+.hover-lift:hover { transform: translateY(-4px); box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15)!important; }
+</style>
+{% endblock %}

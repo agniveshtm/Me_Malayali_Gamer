@@ -2,7 +2,7 @@ from django.shortcuts import render,redirect,get_object_or_404
 from .forms import modform
 from .models import Modsinfo
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from .decorator import mod_user_required
 from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
 from .filters import ModsFilter
@@ -15,7 +15,7 @@ from django.contrib.auth.forms import PasswordChangeForm
 #=============DASHBOARD===============#
 
 #============= CREATE ================
-@login_required(login_url="user_login")
+@mod_user_required
 def create_mods(request):
     if request.method == "POST":
         apply_cropped_image(request.POST,request.FILES)
@@ -31,7 +31,7 @@ def create_mods(request):
   
 #============ DASHBOARD ===============
 @never_cache
-@login_required(login_url="user_login")
+@mod_user_required
 def dashboard_page(request):
     order = request.GET.get('order', '-uploaded_on')
     mods = Modsinfo.objects.filter(user=request.user).order_by(order)
@@ -48,7 +48,7 @@ def dashboard_page(request):
     return render(request,"main/dashboard.html",context)
 
 #=============== EDIT =================
-@login_required(login_url="user_login")
+@mod_user_required
 def edit_mods(request,pk):
     edited_mods = get_object_or_404(Modsinfo,pk=pk,user=request.user)
     is_edit = True
@@ -64,7 +64,7 @@ def edit_mods(request,pk):
 
 #=============== DELETE =================
 @require_POST
-@login_required(login_url="user_login")
+@mod_user_required
 def delete_mods(request,pk):
     deleted_mods = get_object_or_404(Modsinfo,pk=pk,user=request.user)
     mod_title = deleted_mods.title
@@ -81,7 +81,7 @@ def delete_mods(request,pk):
     messages.success(request, f"'{mod_title}' has been deleted successfully!")
     return redirect("Main:dashboard_page")
 
-@login_required(login_url="user_login")
+@mod_user_required
 def settings_page(request):
     if request.method == "POST":
         user = request.user
@@ -106,7 +106,7 @@ def settings_page(request):
         return redirect("Main:settings_page")
     return render(request,"main/settings.html")
 
-@login_required(login_url="user_login")
+@mod_user_required
 def password_change(request):
     if request.method == "POST":
         password_form = PasswordChangeForm(request.user, request.POST)

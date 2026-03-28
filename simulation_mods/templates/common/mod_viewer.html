@@ -35,6 +35,26 @@
         50% { transform: scale(1.05); }
         100% { transform: scale(1); }
     }
+@media (max-width: 576px) {
+  .btn-primary.btn-lg {
+    font-size: 1rem !important;
+    padding: 0.75rem 1.25rem !important;
+    max-width: 260px !important;
+  }
+  .container {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  .card-body {
+    padding: 1.25rem !important;
+  }
+  h1.display-4 {
+    font-size: 2rem !important;
+  }
+  h2.display-5 {
+    font-size: 1.75rem !important;
+  }
+}
 </style>
 <div class="container mt-5 mb-5">
     <!-- Thumbnail and Title -->
@@ -80,7 +100,7 @@
                     <p class="lead">{{ mod.description|linebreaks }}</p>
                     {% if mod.download_link %}
                         <div class="text-center mt-4">
-                            <a href="{{ mod.download_link }}" target="_blank" class="btn btn-primary btn-lg shadow-lg rounded-pill px-5 py-3" style="background: linear-gradient(to right, #06b6d4, #3b82f6); border: none;">
+                            <a href="{{ mod.download_link }}" target="_blank" class="btn btn-primary btn-lg shadow-lg rounded-pill px-4 py-2 text-nowrap me-auto ms-auto d-block mx-auto" style="background: linear-gradient(to right, #06b6d4, #3b82f6); border: none; max-width: 280px; font-size: 1.1rem;">
                                 <i class="bi bi-download me-2"></i>Download Mod
                             </a>
                         </div>

@@ -1,0 +1,526 @@
+{% extends 'admin_panel/admin_base.html' %}
+{% load static %}
+
+{% block title %}Admin — Edit User{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/cropper.min.css' %}">
+<script src="{% static 'js/cropper.min.js' %}"></script>
+<style>
+    :root {
+        --accent: #3b82f6;
+        --accent-dim: rgba(59,130,246,0.10);
+    }
+
+    /* ── Two-column layout ── */
+    .edit-grid {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 1.75rem;
+        align-items: start;
+    }
+    @media (max-width: 1100px) { .edit-grid { grid-template-columns: 280px 1fr; } }
+    @media (max-width: 900px)  { .edit-grid { grid-template-columns: 1fr; } }
+
+    .sticky-sidebar { position: sticky; top: 76px; }
+
+    /* ── Section headings ── */
+    .sec-head {
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #6c757d;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    /* ── Avatar ── */
+    .avatar-zone {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 2rem 1.5rem 1.5rem;
+        text-align: center;
+    }
+
+    .avatar-ring {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        margin-bottom: 1rem;
+        cursor: pointer;
+    }
+
+    .avatar-ring::before {
+        content: '';
+        position: absolute;
+        inset: -3px;
+        border-radius: 50%;
+        background: conic-gradient(var(--accent) 0deg, rgba(59,130,246,0.15) 200deg, var(--accent) 360deg);
+        z-index: 0;
+    }
+
+    .avatar-img-wrap {
+        position: relative;
+        z-index: 1;
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 3px solid var(--bs-body-bg, #fff);
+        background: var(--accent-dim);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--accent);
+    }
+
+    .avatar-img-wrap img {
+        width: 100%; height: 100%; object-fit: cover;
+    }
+
+    .avatar-overlay {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        background: rgba(59,130,246,0.75);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.2s;
+        z-index: 2;
+    }
+    .avatar-ring:hover .avatar-overlay { opacity: 1; }
+
+    /* Invisible click target over the whole ring */
+    .avatar-ring-label {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        cursor: pointer;
+        z-index: 3;
+    }
+
+    .avatar-username {
+        font-weight: 700;
+        font-size: 1.05rem;
+        margin-bottom: 0.2rem;
+    }
+
+    .avatar-hint {
+        font-size: 0.72rem;
+        color: #6c757d;
+        line-height: 1.5;
+    }
+
+    /* ── Status toggle rows ── */
+    .status-toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.65rem 0;
+        border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    [data-bs-theme="dark"] .status-toggle-row { border-bottom-color: rgba(255,255,255,0.06); }
+    .status-toggle-row:last-child { border-bottom: none; }
+
+    .toggle-name {
+        font-size: 0.88rem;
+        font-weight: 600;
+    }
+    .toggle-desc {
+        font-size: 0.72rem;
+        color: #6c757d;
+        margin-top: 1px;
+    }
+
+    /* ── Date chips ── */
+    .date-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.78rem;
+        background: rgba(0,0,0,0.04);
+        border: 1px solid rgba(0,0,0,0.07);
+        border-radius: 2rem;
+        padding: 0.3rem 0.75rem;
+        color: #6c757d;
+    }
+    [data-bs-theme="dark"] .date-chip {
+        background: rgba(255,255,255,0.05);
+        border-color: rgba(255,255,255,0.09);
+    }
+
+    /* ── Password block ── */
+    .pwd-block {
+        background: var(--accent-dim);
+        border-radius: 0.6rem;
+        padding: 0.9rem 1rem;
+        border: 1px solid rgba(59,130,246,0.15);
+    }
+    .pwd-algo {
+        font-family: 'SFMono-Regular', Consolas, monospace;
+        font-size: 0.75rem;
+        color: #6c757d;
+        margin-top: 2px;
+    }
+
+    /* ── Form controls ── */
+    .card-body input[type="text"],
+    .card-body input[type="email"] {
+        display: block;
+        width: 100%;
+        padding: 0.65rem 1rem;
+        font-size: 0.95rem;
+        border-radius: 0.5rem;
+        border: 1px solid #ced4da;
+        background-color: var(--bs-body-bg);
+        color: var(--bs-body-color);
+        transition: border-color 0.15s, box-shadow 0.15s;
+        line-height: 1.5;
+    }
+    [data-bs-theme="dark"] .card-body input[type="text"],
+    [data-bs-theme="dark"] .card-body input[type="email"] {
+        border-color: #495057;
+        background-color: #2b3035;
+        color: #dee2e6;
+    }
+    .card-body input[type="text"]:focus,
+    .card-body input[type="email"]:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 0.2rem rgba(59,130,246,0.2);
+    }
+
+    .form-label { font-size: 0.9rem; }
+
+    /* ── Dividers ── */
+    .sec-divider { margin: 1.5rem 0; opacity: 0.08; }
+
+    /* ── Cropper circle hint ── */
+    .cropper-view-box,
+    .cropper-face { border-radius: 50%; }
+</style>
+{% endblock %}
+
+{% block page_content %}
+<div class="px-2 px-xl-4 py-4">
+
+    <!-- Page header -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
+                 style="width:52px;height:52px;background:var(--accent-dim);">
+                <i class="bi bi-person-gear fs-4 text-primary"></i>
+            </div>
+            <div>
+                <h4 class="fw-bold mb-0">Edit User</h4>
+                <small class="text-muted">Editing: <strong class="text-body">{{ user.username }}</strong></small>
+            </div>
+        </div>
+        <a href="{% url 'admin_panel:admin_dashboard' %}" class="btn btn-outline-secondary px-4">
+            <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+
+    {% if user_form_errors %}
+        <div class="alert alert-danger mb-4">
+            <strong>Form Errors:</strong> {{ user_form_errors }}
+        </div>
+    {% endif %}
+    {% if profile_form_errors %}
+        <div class="alert alert-danger mb-4">
+            <strong>Profile Errors:</strong> {{ profile_form_errors }}
+        </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" novalidate id="editUserForm">
+        {% csrf_token %}
+        <!-- Hidden: cropped image payload from cropper.js -->
+        <input type="hidden" name="cropped_profile_image" id="cropped_profile_image">
+
+        <div class="edit-grid">
+
+            <!-- ═══════════ LEFT SIDEBAR ═══════════ -->
+            <div class="sticky-sidebar d-flex flex-column gap-3">
+
+                <!-- Avatar card -->
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="avatar-zone">
+                        <div class="avatar-ring" title="Click to upload a new photo">
+                            <div class="avatar-img-wrap" id="avatarImgWrap">
+                                {% if profile.profile_image %}
+                                    <img id="avatarPreview"
+                                         src="{{ profile.profile_image.url }}"
+                                         alt="{{ user.username }}">
+                                {% else %}
+                                    <span id="avatarPreview">{{ user.username|slice:":1"|upper }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="avatar-overlay">
+                                <i class="bi bi-camera-fill text-white fs-4"></i>
+                            </div>
+                            <!-- Invisible label covers the entire ring -->
+                            <label for="id_profile_image_trigger" class="avatar-ring-label"></label>
+                        </div>
+
+                        <!-- Hidden file input — NOT inside the form's enctype field list,
+                             the real upload happens via the base64 hidden input above -->
+                        <input type="file"
+                               id="id_profile_image_trigger"
+                               accept="image/*"
+                               class="d-none">
+
+                        <div class="avatar-username mt-2">{{ user.get_full_name|default:user.username }}</div>
+                        <div class="avatar-hint">Click to upload · JPG, PNG · max 2 MB</div>
+                    </div>
+
+                    <!-- Dates -->
+                    <div class="px-4 pb-4 d-flex flex-column gap-2">
+                        <span class="date-chip">
+                            <i class="bi bi-clock-history"></i>
+                            Last login: {{ user.last_login|date:"M d, Y"|default:"Never" }}
+                        </span>
+                        <span class="date-chip">
+                            <i class="bi bi-calendar-plus"></i>
+                            Joined: {{ user.date_joined|date:"M d, Y" }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Permissions card -->
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-body p-4">
+                        <p class="sec-head"><i class="bi bi-shield-check"></i>Permissions</p>
+
+                        <div class="status-toggle-row">
+                            <div>
+                                <div class="toggle-name">Active</div>
+                                <div class="toggle-desc">Can log in to the system</div>
+                            </div>
+                            <div class="form-check form-switch mb-0">
+                                <input class="form-check-input" type="checkbox" role="switch"
+                                       id="id_is_active" name="is_active"
+                                       {% if user.is_active %}checked{% endif %}
+                                       style="width:3em;height:1.5em;cursor:pointer;">
+                            </div>
+                        </div>
+
+                        <div class="status-toggle-row">
+                            <div>
+                                <div class="toggle-name">Staff</div>
+                                <div class="toggle-desc">Can access this admin panel</div>
+                            </div>
+                            <div class="form-check form-switch mb-0">
+                                <input class="form-check-input" type="checkbox" role="switch"
+                                       id="id_is_staff" name="is_staff"
+                                       {% if user.is_staff %}checked{% endif %}
+                                       style="width:3em;height:1.5em;cursor:pointer;">
+                            </div>
+                        </div>
+
+                        <div class="status-toggle-row">
+                            <div>
+                                <div class="toggle-name">Superuser</div>
+                                <div class="toggle-desc">Has all permissions</div>
+                            </div>
+                            <div class="form-check form-switch mb-0">
+                                <input class="form-check-input" type="checkbox" role="switch"
+                                       id="id_is_superuser" name="is_superuser"
+                                       {% if user.is_superuser %}checked{% endif %}
+                                       style="width:3em;height:1.5em;cursor:pointer;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Save / Cancel -->
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg py-3 fw-semibold">
+                        <i class="bi bi-check2-circle me-2"></i>Save Changes
+                    </button>
+                    <a href="{% url 'admin_panel:admin_dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+
+            </div><!-- /sidebar -->
+
+
+            <!-- ═══════════ RIGHT MAIN PANEL ═══════════ -->
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4 p-lg-5">
+
+                    <!-- Account -->
+                    <p class="sec-head"><i class="bi bi-person-badge"></i>Account</p>
+                    <div class="row g-4 mb-4">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold" for="id_username">
+                                {{ user_form.username.label }}
+                            </label>
+                            {{ user_form.username }}
+                            {% if user_form.username.help_text %}
+                                <div class="form-text">{{ user_form.username.help_text }}</div>
+                            {% endif %}
+                            {% if user_form.username.errors %}
+                                <div class="text-danger mt-1" style="font-size:0.82rem;">{{ user_form.username.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Password block -->
+                    <div class="pwd-block mb-4">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                            <div>
+                                <div class="fw-semibold" style="font-size:0.88rem;">Password</div>
+                                <div class="pwd-algo">pbkdf2_sha256 · 1,000,000 iterations · hashed &amp; salted</div>
+                                <div class="form-text mt-1">Raw passwords are never stored or visible.</div>
+                            </div>
+                            <a href="{% url 'admin_panel:admin_mod_user_password' user.id %}" class="btn btn-outline-primary btn-sm px-3">
+                                <i class="bi bi-key me-1"></i>Reset Password
+                            </a>
+                        </div>
+                    </div>
+
+                    <hr class="sec-divider">
+
+                    <!-- Personal info -->
+                    <p class="sec-head"><i class="bi bi-person-lines-fill"></i>Personal Info</p>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" for="id_first_name">
+                                {{ user_form.first_name.label }}
+                            </label>
+                            {{ user_form.first_name }}
+                            {% if user_form.first_name.errors %}
+                                <div class="text-danger mt-1" style="font-size:0.82rem;">{{ user_form.first_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold" for="id_last_name">
+                                {{ user_form.last_name.label }}
+                            </label>
+                            {{ user_form.last_name }}
+                            {% if user_form.last_name.errors %}
+                                <div class="text-danger mt-1" style="font-size:0.82rem;">{{ user_form.last_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold" for="id_email">
+                                {{ user_form.email.label }}
+                            </label>
+                            {{ user_form.email }}
+                            {% if user_form.email.errors %}
+                                <div class="text-danger mt-1" style="font-size:0.82rem;">{{ user_form.email.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                </div>
+            </div><!-- /main panel -->
+
+        </div><!-- /edit-grid -->
+    </form>
+
+</div>
+
+
+<!-- ═══════════ CROP MODAL ═══════════ -->
+<div id="adminCropModal"
+     style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.92); z-index:9999;
+            align-items:center; justify-content:center; flex-direction:column;">
+    <p class="text-white mb-3 fw-semibold fs-5">
+        Drag to reposition &middot; Use handles to resize
+    </p>
+    <div style="position:relative; width:90%; max-width:500px; height:500px; background:#111;">
+        <img id="adminCropImage" style="max-width:100%; display:block;">
+    </div>
+    <div class="d-flex gap-3 mt-4">
+        <button type="button" id="adminCropApplyBtn" class="btn btn-primary btn-lg">
+            <i class="bi bi-check-lg me-1"></i>Apply
+        </button>
+        <button type="button" id="adminCropCancelBtn" class="btn btn-secondary btn-lg">
+            Cancel
+        </button>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    // ── Cropper setup ─────────────────────────────────────────────
+    let cropper;
+    const cropModal  = document.getElementById('adminCropModal');
+    const cropImage  = document.getElementById('adminCropImage');
+    const fileInput  = document.getElementById('id_profile_image_trigger');
+
+    fileInput.addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        if (!file || !file.type.startsWith('image/')) return;
+
+        const reader = new FileReader();
+        reader.onload = function (ev) {
+            cropImage.src = ev.target.result;
+            cropModal.style.display = 'flex';
+
+            if (cropper) cropper.destroy();
+            cropper = new Cropper(cropImage, {
+                aspectRatio: 1,
+                viewMode: 1,
+                autoCropArea: 0.8,
+                cropBoxResizable: true,
+                cropBoxMovable: true,
+            });
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // Apply crop
+    document.getElementById('adminCropApplyBtn').addEventListener('click', function () {
+        if (!cropper) return;
+
+        const canvas = cropper.getCroppedCanvas({ width: 400, height: 400 });
+        const b64    = canvas.toDataURL('image/jpeg');
+
+        // Store base64 for submission
+        document.getElementById('cropped_profile_image').value = b64;
+
+        // Live preview — replace whatever is in the wrap with the new image
+        const wrap = document.getElementById('avatarImgWrap');
+        wrap.innerHTML = `<img id="avatarPreview"
+                               src="${b64}"
+                               alt="Preview"
+                               style="width:100%;height:100%;object-fit:cover;">`;
+
+        closeCropModal();
+    });
+
+    // Cancel crop
+    document.getElementById('adminCropCancelBtn').addEventListener('click', closeCropModal);
+
+    function closeCropModal() {
+        cropModal.style.display = 'none';
+        if (cropper) { cropper.destroy(); cropper = null; }
+        cropImage.src = '';
+        fileInput.value = '';
+    }
+
+    // ── Cmd/Ctrl+S shortcut ───────────────────────────────────────
+    document.addEventListener('keydown', function (e) {
+        if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+            e.preventDefault();
+            document.getElementById('editUserForm').submit();
+        }
+    });
+});
+</script>
+{% endblock %}

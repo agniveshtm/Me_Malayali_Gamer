@@ -1,7 +1,10 @@
 from django.contrib.auth.forms import UserCreationForm,AuthenticationForm
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm, AuthenticationForm
 from django import forms
 from django.contrib.auth.models import User
+from Main.models import Profile
 from django.contrib.auth import authenticate
+
 class ModUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True,help_text="Required. Enter a valid email address.")
 
@@ -14,6 +17,20 @@ class ModUserCreationForm(UserCreationForm):
         if User.objects.filter(email=email).exists():
             raise forms.ValidationError("Account with this email already exists, Please use another email")
         return email
+
+class UserAdminChangeForm(UserChangeForm):
+    class Meta(UserChangeForm.Meta):
+        model = User
+
+class UserAdminForm(UserChangeForm):
+    class Meta(UserChangeForm.Meta):
+        model = User
+        fields = ['username', 'first_name', 'last_name', 'email']
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['profile_image']
 
 class ModAuthenticationForm(AuthenticationForm):
     def __init__(self,*args,**kwargs):
