@@ -220,7 +220,7 @@
                                 <td>{{ mod.uploaded_on|date:"d M Y" }}</td>
                                 <td>
                                     <div class="btn-group" role="group">
-                                        <a href="{% url 'Home:view_mods' mod.id %}" class="btn btn-outline-info btn-sm" title="View Mod">View</a>
+                                        <a href="{% url 'admin_panel:admin_mod_view' mod.id %}" class="btn btn-outline-info btn-sm" title="View Mod">View</a>
                                         <a href="{% url 'admin_panel:admin_mod_edit' mod.id %}" class="btn btn-outline-primary btn-sm">Edit</a>
                                         <a href="{% url 'admin_panel:admin_delete_mod' mod.id %}" class="btn btn-outline-danger btn-sm" onclick="return confirm('Delete {{ mod.title }}?')">Delete</a>
                                     </div>

@@ -147,6 +147,11 @@ def admin_mod_edit(request, mod_id):
     return render(request, 'admin_panel/admin_mod_edit.html', {'form': form})
 
 @staff_member_required
+def admin_mod_view(request, mod_id):
+    mod = get_object_or_404(Modsinfo, pk=mod_id)
+    return render(request, 'admin_panel/admin_mod_view.html', {'mod': mod})
+
+@staff_member_required
 def admin_mod_user_edit(request, user_id):
     target_user = get_object_or_404(User, pk=user_id)
     profile, _ = Profile.objects.get_or_create(user=target_user)
