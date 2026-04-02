@@ -10,6 +10,8 @@ from googleapiclient.discovery import build
 from django.core.cache import cache
 from django.utils import timezone
 from datetime import timedelta
+from django.contrib import messages
+from admin_panel.models import ContactMessage
 import re
 #=============HOME PAGE===============#
 # Cache timeout in seconds (15 minutes)
@@ -220,6 +222,25 @@ def view_mods(request,pk):
     return render(request,'common/mod_viewer.html',{'mod':mod})
 
 def about_page(request):
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        address = request.POST.get('address', '').strip()
+        mobile_number = request.POST.get('mobile_number', '').strip()
+        subject = request.POST.get('subject', '').strip()
+        message_text = request.POST.get('message', '').strip()
+
+        if name and mobile_number and subject and message_text:
+            ContactMessage.objects.create(
+                name=name,
+                address=address,
+                mobile_number=mobile_number,
+                subject=subject,
+                message=message_text,
+            )
+            messages.success(request, 'Your message has been sent successfully! We will get back to you soon.')
+        else:
+            messages.error(request, 'Please fill in all required fields (Name, Mobile Number, Subject, Message).')
+        return redirect('Home:about_page')
     return render(request,'main/about.html')
 
 def categories_page(request, category):
