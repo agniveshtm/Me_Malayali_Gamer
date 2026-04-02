@@ -101,6 +101,11 @@
             Users <span class="badge bg-primary ms-1">{{ total_users }}</span>
         </button>
     </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link px-4 py-2 fw-semibold" id="messages-tab" data-bs-toggle="tab" data-bs-target="#messages-tab-pane" type="button" role="tab">
+            Messages {% if unread_messages > 0 %}<span class="badge bg-danger ms-1">{{ unread_messages }}</span>{% else %}<span class="badge bg-primary ms-1">{{ total_messages }}</span>{% endif %}
+        </button>
+    </li>
 </ul>
 
 <div class="tab-content border border-top-0 rounded-bottom-3 shadow-sm overflow-hidden bg-white" id="adminTabContent">
@@ -432,6 +437,113 @@
         </div>
     </div>
 
+    <!-- Messages Tab -->
+    <div class="tab-pane fade p-4" id="messages-tab-pane" role="tabpanel">
+        <!-- Messages Table -->
+        <div class="card border-0 shadow-lg">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th style="width: 15%;">Date</th>
+                            <th style="width: 15%;">Name</th>
+                            <th style="width: 15%;">Mobile</th>
+                            <th style="width: 15%;">Subject</th>
+                            <th>Message</th>
+                            <th style="width: 10%;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if contact_messages %}
+                            {% for msg in contact_messages %}
+                            <tr class="{% if not msg.is_read %}table-secondary fw-semibold{% endif %}">
+                                <td>{{ msg.submitted_at|date:"d M Y, H:i" }}</td>
+                                <td>{{ msg.name }}</td>
+                                <td>{{ msg.mobile_number }}</td>
+                                <td>{{ msg.subject }}</td>
+                                <td>
+                                    <div class="text-truncate" style="max-width: 300px;" title="{{ msg.message }}">
+                                        {{ msg.message }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span id="message-status-badge-{{ msg.id }}">
+                                        <form method="post" hx-post="{% url 'admin_panel:admin_toggle_message_status' msg.id %}" hx-swap="outerHTML" hx-target="#message-status-badge-{{ msg.id }}" style="display: inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="badge border-0 {% if msg.is_read %}bg-success text-white{% else %}bg-warning text-dark{% endif %}" style="cursor:pointer;font-size:0.75rem;padding:6px 12px;border-radius:50px;transition: all 0.2s;">
+                                                {% if msg.is_read %}
+                                                    <i class="bi bi-check2-circle me-1"></i>Read
+                                                {% else %}
+                                                    <i class="bi bi-envelope-fill me-1"></i>Unread
+                                                {% endif %}
+                                            </button>
+                                        </form>
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted">
+                                    <i class="bi bi-envelope fs-1 d-block mb-3 opacity-50"></i>
+                                    No messages found.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Messages Pagination -->
+            {% if contact_messages.has_other_pages %}
+            <div class="card-footer bg-light border-0 py-3">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <small class="text-muted">
+                            Showing {{ contact_messages.start_index }}–{{ contact_messages.end_index }} of {{ contact_messages.paginator.count }} messages
+                        </small>
+                    </div>
+                    <div class="col-md-6">
+                        <nav aria-label="Messages pagination">
+                            {% with contact_messages as page_obj %}
+                            <ul class="pagination justify-content-end mb-0">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?tab=messages&amp;page_m=1">First</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?tab=messages&amp;page_m={{ page_obj.previous_page_number }}">Previous</a>
+                                    </li>
+                                {% endif %}
+
+                                {% for num in page_obj.paginator.page_range %}
+                                    {% if page_obj.number == num %}
+                                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                    {% elif num > page_obj.number|add:-3 and num < page_obj.number|add:3 %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?tab=messages&amp;page_m={{ num }}">{{ num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?tab=messages&amp;page_m={{ page_obj.next_page_number }}">Next</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?tab=messages&amp;page_m={{ page_obj.paginator.num_pages }}">Last</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                            {% endwith %}
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
 </div>
 {% endblock %}
 
@@ -441,6 +553,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const params = new URLSearchParams(window.location.search);
     if (params.get('tab') === 'users') {
         const tab = document.getElementById('users-tab');
+        if (tab) new bootstrap.Tab(tab).show();
+    } else if (params.get('tab') === 'messages') {
+        const tab = document.getElementById('messages-tab');
         if (tab) new bootstrap.Tab(tab).show();
     }
     if (typeof setAvatarColors === 'function') setAvatarColors();

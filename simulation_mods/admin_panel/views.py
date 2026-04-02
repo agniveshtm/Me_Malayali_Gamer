@@ -11,6 +11,7 @@ from Main.forms import modform
 from Users.forms import UserAdminForm, ProfileForm
 from django.contrib.auth.forms import AdminPasswordChangeForm
 from django.core.files.base import ContentFile
+from .models import ContactMessage
 import uuid,base64
 
 
@@ -62,9 +63,17 @@ def admin_dashboard(request):
     users_paginator = Paginator(users_qs, 20)
     users_page = users_paginator.get_page(request.GET.get('page_u'))
 
+    # Messages
+    total_messages = ContactMessage.objects.count()
+    unread_messages = ContactMessage.objects.filter(is_read=False).count()
+    
+    messages_qs = ContactMessage.objects.all().order_by('-submitted_at')
+    messages_paginator = Paginator(messages_qs, 20)
+    messages_page = messages_paginator.get_page(request.GET.get('page_m'))
+
     # Active tab
     active_tab = request.GET.get('tab', 'mods')
-    if active_tab not in ('mods', 'users'):
+    if active_tab not in ('mods', 'users', 'messages'):
         active_tab = 'mods'
 
     context = {
@@ -84,6 +93,9 @@ def admin_dashboard(request):
         'filter_visibility': filter_visibility,
         'user_search': user_search,
         'active_tab': active_tab,
+        'contact_messages': messages_page,
+        'total_messages': total_messages,
+        'unread_messages': unread_messages,
     }
     return render(request, 'admin_panel/admin_panel.html', context)
 
@@ -106,6 +118,40 @@ def admin_toggle_visibility(request, mod_id):
           hx-post="/admin-panel/mod/{mod.id}/toggle-visibility/"
           hx-swap="outerHTML"
           hx-target="#visibility-badge-{mod.id}"
+          style="display: inline;">
+        <input type="hidden" name="csrfmiddlewaretoken" value="{csrf}">
+        <button type="submit"
+                class="badge border-0 {css_class}"
+                style="cursor:pointer; font-size:0.75rem; padding:6px 12px; border-radius:50px; transition: all 0.2s;">
+            {icon}
+        </button>
+    </form>
+</span>"""
+    return HttpResponse(html)
+
+@staff_member_required
+def admin_toggle_message_status(request, message_id):
+    if request.method != 'POST':
+        return HttpResponse(status=405)
+
+    msg = get_object_or_404(ContactMessage, pk=message_id)
+    msg.is_read = not msg.is_read
+    msg.save()
+
+    csrf = get_token(request)
+    if msg.is_read:
+        css_class = 'bg-success text-white'
+        icon = '<i class="bi bi-check2-circle me-1"></i>Read'
+    else:
+        css_class = 'bg-warning text-dark'
+        icon = '<i class="bi bi-envelope-fill me-1"></i>Unread'
+
+    html = f"""
+<span id="message-status-badge-{msg.id}">
+    <form method="post"
+          hx-post="/admin-panel/message/{msg.id}/toggle-status/"
+          hx-swap="outerHTML"
+          hx-target="#message-status-badge-{msg.id}"
           style="display: inline;">
         <input type="hidden" name="csrfmiddlewaretoken" value="{csrf}">
         <button type="submit"
