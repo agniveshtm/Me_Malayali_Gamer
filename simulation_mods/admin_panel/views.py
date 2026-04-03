@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.models import User
 from django.contrib import messages
@@ -162,6 +163,13 @@ def admin_toggle_message_status(request, message_id):
     </form>
 </span>"""
     return HttpResponse(html)
+
+@staff_member_required
+def admin_delete_message(request, message_id):
+    msg = get_object_or_404(ContactMessage, pk=message_id)
+    msg.delete()
+    messages.success(request, "Message deleted successfully.")
+    return redirect(reverse('admin_panel:admin_dashboard') + '?tab=messages')
 
 @staff_member_required
 def admin_delete_mod(request, mod_id):
