@@ -166,6 +166,8 @@ def admin_toggle_message_status(request, message_id):
 
 @staff_member_required
 def admin_delete_message(request, message_id):
+    if request.method != 'POST':
+        return HttpResponse(status=405)
     msg = get_object_or_404(ContactMessage, pk=message_id)
     msg.delete()
     messages.success(request, "Message deleted successfully.")
@@ -173,6 +175,8 @@ def admin_delete_message(request, message_id):
 
 @staff_member_required
 def admin_delete_mod(request, mod_id):
+    if request.method != 'POST':
+        return HttpResponse(status=405)
     mod = get_object_or_404(Modsinfo, pk=mod_id)
     mod_title = mod.title  # Save before delete
 
@@ -295,6 +299,8 @@ def admin_mod_user_password(request, user_id):
 
 @staff_member_required
 def admin_delete_user(request, user_id):
+    if request.method != 'POST':
+        return HttpResponse(status=405)
     target_user = get_object_or_404(User, pk=user_id)
 
     if target_user.is_superuser:
