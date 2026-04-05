@@ -562,7 +562,10 @@
                 </div>
                 <div class="modal-footer border-top-0 justify-content-center pb-4">
                     <button type="button" class="btn btn-light px-4 rounded-pill shadow-sm" data-bs-dismiss="modal">Cancel</button>
-                    <a href="#" id="deleteConfirmBtn" class="btn btn-danger px-4 rounded-pill shadow-sm">Delete</a>
+                    <form id="deleteConfirmForm" method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger px-4 rounded-pill shadow-sm">Delete</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -593,7 +596,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const message = button.getAttribute('data-delete-message');
             
             this.querySelector('#deleteConfirmMessage').textContent = message;
-            this.querySelector('#deleteConfirmBtn').setAttribute('href', url);
+            this.querySelector('#deleteConfirmForm').setAttribute('action', url);
         });
     }
 });
