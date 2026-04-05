@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 import uuid
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from .utils import image_directory_path,profile_image_directory_path
 # Create your models here.
@@ -65,3 +65,19 @@ class Profile(models.Model):
 @receiver(post_save, sender=User)
 def create_or_save_profile(sender, instance, created, **kwargs):
     Profile.objects.get_or_create(user=instance)
+
+
+@receiver(post_delete, sender=Modsinfo)
+def delete_mod_images(sender, instance, **kwargs):
+    default_thumb = 'img/default_placeholder.jpg'
+    if instance.thumbnail_img and instance.thumbnail_img.name != default_thumb:
+        instance.thumbnail_img.delete(save=False)
+    for img_field in [instance.img_1, instance.img_2, instance.img_3]:
+        if img_field and img_field.name != default_thumb:
+            img_field.delete(save=False)
+
+
+@receiver(post_delete, sender=Profile)
+def delete_profile_image(sender, instance, **kwargs):
+    if instance.profile_image:
+        instance.profile_image.delete(save=False)

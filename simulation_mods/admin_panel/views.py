@@ -4,6 +4,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.http import HttpResponse
+from django.views.decorators.http import require_POST
 from django.db.models import Sum, Q
 from django.core.paginator import Paginator
 from django.middleware.csrf import get_token
@@ -101,9 +102,8 @@ def admin_dashboard(request):
     return render(request, 'admin_panel/admin_panel.html', context)
 
 @staff_member_required
+@require_POST
 def admin_toggle_visibility(request, mod_id):
-    if request.method != 'POST':
-        return HttpResponse(status=405)
 
     mod = get_object_or_404(Modsinfo, pk=mod_id)
     mod.is_public = not mod.is_public
@@ -131,9 +131,8 @@ def admin_toggle_visibility(request, mod_id):
     return HttpResponse(html)
 
 @staff_member_required
+@require_POST
 def admin_toggle_message_status(request, message_id):
-    if request.method != 'POST':
-        return HttpResponse(status=405)
 
     msg = get_object_or_404(ContactMessage, pk=message_id)
     msg.is_read = not msg.is_read
@@ -165,28 +164,18 @@ def admin_toggle_message_status(request, message_id):
     return HttpResponse(html)
 
 @staff_member_required
+@require_POST
 def admin_delete_message(request, message_id):
-    if request.method != 'POST':
-        return HttpResponse(status=405)
     msg = get_object_or_404(ContactMessage, pk=message_id)
     msg.delete()
     messages.success(request, "Message deleted successfully.")
     return redirect(reverse('admin_panel:admin_dashboard') + '?tab=messages')
 
 @staff_member_required
+@require_POST
 def admin_delete_mod(request, mod_id):
-    if request.method != 'POST':
-        return HttpResponse(status=405)
     mod = get_object_or_404(Modsinfo, pk=mod_id)
     mod_title = mod.title  # Save before delete
-
-    default_thumb = 'img/default_placeholder.jpg'
-    if mod.thumbnail_img and mod.thumbnail_img.name != default_thumb:
-        mod.thumbnail_img.delete(save=False)
-    for img_field in [mod.img_1, mod.img_2, mod.img_3]:
-        if img_field and img_field.name != default_thumb:
-            img_field.delete(save=False)
-
     mod.delete()
     messages.success(request, f"Mod '{mod_title}' has been deleted.")
     return redirect('admin_panel:admin_dashboard')
@@ -298,9 +287,8 @@ def admin_mod_user_password(request, user_id):
     return render(request, 'admin_panel/admin_mod_user_password.html', context)
 
 @staff_member_required
+@require_POST
 def admin_delete_user(request, user_id):
-    if request.method != 'POST':
-        return HttpResponse(status=405)
     target_user = get_object_or_404(User, pk=user_id)
 
     if target_user.is_superuser:
