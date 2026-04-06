@@ -69,15 +69,14 @@ def create_or_save_profile(sender, instance, created, **kwargs):
 
 @receiver(post_delete, sender=Modsinfo)
 def delete_mod_images(sender, instance, **kwargs):
-    default_thumb = 'img/default_placeholder.jpg'
-    if instance.thumbnail_img and instance.thumbnail_img.name != default_thumb:
-        instance.thumbnail_img.delete(save=False)
-    for img_field in [instance.img_1, instance.img_2, instance.img_3]:
-        if img_field and img_field.name != default_thumb:
-            img_field.delete(save=False)
-
+    default_thumb = sender._meta.get_field('thumbnail_img').get_default()
+    for field in instance._meta.fields:
+        if isinstance(field, models.ImageField):
+            img_file = getattr(instance, field.name)
+            if img_file and img_file.name != default_thumb:
+                img_file.delete(save=False)
 
 @receiver(post_delete, sender=Profile)
 def delete_profile_image(sender, instance, **kwargs):
     if instance.profile_image:
-        instance.profile_image.delete(save=False)
+        instance.profile_image.delete(save=False)
