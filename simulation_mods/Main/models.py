@@ -66,21 +66,19 @@ class Profile(models.Model):
 def create_or_save_profile(sender, instance, created, **kwargs):
     Profile.objects.get_or_create(user=instance)
 
+def _delete_instance_files(instance):
+    """Iterates over model fields and deletes files associated with FileFields,
+    excluding those set to the field's default value."""
+    for field in instance._meta.fields:
+        if isinstance(field, models.FileField):
+            file_to_delete = getattr(instance, field.name)
+            if file_to_delete and file_to_delete.name != field.get_default():
+                file_to_delete.delete(save=False)
 
 @receiver(post_delete, sender=Modsinfo)
 def delete_mod_images(sender, instance, **kwargs):
-    for field in instance._meta.fields:
-        if isinstance(field, models.FileField):
-            file_to_delete = getattr(instance, field.name)
-            # Only delete if a file is associated and it's not the field's default value
-            if file_to_delete and file_to_delete.name != field.get_default():
-                file_to_delete.delete(save=False)
+    _delete_instance_files(instance)
 
 @receiver(post_delete, sender=Profile)
 def delete_profile_image(sender, instance, **kwargs):
-    for field in instance._meta.fields:
-        if isinstance(field, models.FileField):
-            file_to_delete = getattr(instance, field.name)
-            # Only delete if a file is associated and it's not the field's default value
-            if file_to_delete and file_to_delete.name != field.get_default():
-                file_to_delete.delete(save=False)
+    _delete_instance_files(instance)
