@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 from django.contrib.auth.models import User
 from django.utils import timezone
 import uuid
@@ -73,7 +73,7 @@ def _delete_instance_files(instance):
         if isinstance(field, models.FileField):
             file_to_delete = getattr(instance, field.name)
             if file_to_delete and file_to_delete.name != field.get_default():
-                file_to_delete.delete(save=False)
+                transaction.on_commit(lambda f=file_to_delete: f.delete(save=False))
 
 @receiver(post_delete, sender=Modsinfo)
 def delete_mod_images(sender, instance, **kwargs):
