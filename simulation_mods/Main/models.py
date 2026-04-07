@@ -66,9 +66,11 @@ class Profile(models.Model):
 def create_or_save_profile(sender, instance, created, **kwargs):
     Profile.objects.get_or_create(user=instance)
 
-def _delete_instance_files(instance, using='default'):
+def _delete_instance_files(instance, using=None):
     """Iterates over model fields and deletes files associated with FileFields,
     excluding those set to the field's default value."""
+    if using is None:
+        using = instance._state.db
     for field in instance._meta.fields:
         if isinstance(field, models.FileField):
             file_to_delete = getattr(instance, field.name)
@@ -76,9 +78,9 @@ def _delete_instance_files(instance, using='default'):
                 transaction.on_commit(lambda f=file_to_delete: f.delete(save=False), using=using)
 
 @receiver(post_delete, sender=Modsinfo)
-def delete_mod_images(sender, instance, **kwargs):
-    _delete_instance_files(instance, using=kwargs.get('using', 'default'))
+def delete_mod_images(sender, instance, using, **kwargs):
+    _delete_instance_files(instance, using=using)
 
 @receiver(post_delete, sender=Profile)
-def delete_profile_image(sender, instance, **kwargs):
-    _delete_instance_files(instance, using=kwargs.get('using', 'default'))
+def delete_profile_image(sender, instance, using, **kwargs):
+    _delete_instance_files(instance, using=using)
