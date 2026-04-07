@@ -73,7 +73,7 @@ def _delete_instance_files(instance):
         if isinstance(field, models.FileField):
             file_to_delete = getattr(instance, field.name)
             if file_to_delete and file_to_delete.name != field.get_default():
-                transaction.on_commit(lambda f=file_to_delete: f.delete(save=False))
+                transaction.on_commit(lambda f=file_to_delete: f.delete(save=False), using=using)
 
 @receiver(post_delete, sender=Modsinfo)
 def delete_mod_images(sender, instance, **kwargs):
