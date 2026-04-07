@@ -66,7 +66,7 @@ class Profile(models.Model):
 def create_or_save_profile(sender, instance, created, **kwargs):
     Profile.objects.get_or_create(user=instance)
 
-def _delete_instance_files(instance):
+def _delete_instance_files(instance, using='default'):
     """Iterates over model fields and deletes files associated with FileFields,
     excluding those set to the field's default value."""
     for field in instance._meta.fields:
@@ -77,8 +77,8 @@ def _delete_instance_files(instance):
 
 @receiver(post_delete, sender=Modsinfo)
 def delete_mod_images(sender, instance, **kwargs):
-    _delete_instance_files(instance)
+    _delete_instance_files(instance, using=kwargs.get('using', 'default'))
 
 @receiver(post_delete, sender=Profile)
 def delete_profile_image(sender, instance, **kwargs):
-    _delete_instance_files(instance)
+    _delete_instance_files(instance, using=kwargs.get('using', 'default'))
