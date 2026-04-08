@@ -2,6 +2,7 @@ from django.db import models, transaction
 from django.contrib.auth.models import User
 from django.utils import timezone
 import uuid
+import os
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from .utils import image_directory_path,profile_image_directory_path
@@ -68,14 +69,27 @@ def create_or_save_profile(sender, instance, created, **kwargs):
 
 def _delete_instance_files(instance, using=None):
     """Iterates over model fields and deletes files associated with FileFields,
-    excluding those set to the field's default value."""
+    excluding those set to the field's default value. Also cleans up empty parent directories."""
     if using is None:
         using = instance._state.db
+    dirs_to_clean = set()
     for field in instance._meta.fields:
         if isinstance(field, models.FileField):
             file_to_delete = getattr(instance, field.name)
             if file_to_delete and file_to_delete.name != field.get_default():
+                try:
+                    dirs_to_clean.add(os.path.dirname(file_to_delete.path))
+                except NotImplementedError:
+                    pass
                 transaction.on_commit(lambda f=file_to_delete: f.delete(save=False), using=using)
+    if dirs_to_clean:
+        def cleanup_empty_dirs():
+            for d in dirs_to_clean:
+                try:
+                    os.rmdir(d)
+                except OSError:
+                    pass
+        transaction.on_commit(cleanup_empty_dirs, using=using)
 
 @receiver(post_delete, sender=Modsinfo)
 @receiver(post_delete, sender=Profile)
