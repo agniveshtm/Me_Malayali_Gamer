@@ -65,19 +65,10 @@ def edit_mods(request,pk):
 #=============== DELETE =================
 @require_POST
 @mod_user_required
-def delete_mods(request,pk):
-    deleted_mods = get_object_or_404(Modsinfo,pk=pk,user=request.user)
+def delete_mods(request, pk):
+    deleted_mods = get_object_or_404(Modsinfo, pk=pk, user=request.user)
     mod_title = deleted_mods.title
-    title_folder = os.path.dirname(deleted_mods.thumbnail_img.path)
-    for field in ["thumbnail_img","img_1","img_2","img_3"]:
-        img = getattr(deleted_mods,field)
-        if img and os.path.exists(img.path):
-            os.remove(img.path)
-    try:
-        os.rmdir(title_folder)
-    except OSError:
-        pass
-    deleted_mods.delete()
+    deleted_mods.delete()  # Signal handles file cleanup automatically
     messages.success(request, f"'{mod_title}' has been deleted successfully!")
     return redirect("Main:dashboard_page")
 
