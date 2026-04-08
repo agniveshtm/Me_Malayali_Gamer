@@ -77,7 +77,8 @@ def _delete_instance_files(instance, using=None):
             if file_to_delete and file_to_delete.name != field.get_default():
                 transaction.on_commit(lambda f=file_to_delete: f.delete(save=False), using=using)
 
-@receiver(post_delete, sender=[Modsinfo, Profile])
+@receiver(post_delete, sender=Modsinfo)
+@receiver(post_delete, sender=Profile)
 def delete_files_on_model_delete(sender, instance, using, **kwargs):
     """Signal handler to delete associated files when a model instance is deleted."""
     _delete_instance_files(instance, using=using)
