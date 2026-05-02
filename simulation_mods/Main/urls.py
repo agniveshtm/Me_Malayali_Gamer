@@ -18,7 +18,7 @@ from django.urls import path
 from . import views
 app_name = "Main"
 urlpatterns = [
-    path('dashboard/',views.dashboard_page,name="dashboard_page"),
+    path('dashboard/<str:username>',views.dashboard_page,name="dashboard_page"),
     path('create/',views.create_mods,name="create"),
     path('edit/<uuid:pk>',views.edit_mods,name="edit"),
     path('delete/<uuid:pk>',views.delete_mods,name="delete"),

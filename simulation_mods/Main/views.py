@@ -32,7 +32,7 @@ def create_mods(request):
 #============ DASHBOARD ===============
 @never_cache
 @mod_user_required
-def dashboard_page(request):
+def dashboard_page(request,username):
     order = request.GET.get('order', '-uploaded_on')
     mods = Modsinfo.objects.filter(user=request.user).order_by(order)
     count = mods.count()
@@ -42,7 +42,7 @@ def dashboard_page(request):
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
     has_filters = bool(request.GET and any(request.GET.values()))
-    context = {"mods":page_obj,"page_obj":page_obj,"filter":mods_filter,"count":count,"filtered_count":filtered_mods.count(),"has_filters":has_filters,"current_order":order}
+    context = {"username":username,"mods":page_obj,"page_obj":page_obj,"filter":mods_filter,"count":count,"filtered_count":filtered_mods.count(),"has_filters":has_filters,"current_order":order}
     if request.headers.get('HX-Request'):
         return render(request, 'partials/mod_dashboard_partial.html', context)
     return render(request,"main/dashboard.html",context)

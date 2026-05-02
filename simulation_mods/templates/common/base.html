@@ -55,7 +55,7 @@
                     </li>
                     {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'Main:dashboard_page' %}">
+                        <a class="nav-link" href="{% url 'Main:dashboard_page' request.user.username %}">
                             <i class="bi bi-speedometer2 me-1"></i>Dashboard
                         </a>
                     </li>
@@ -98,7 +98,7 @@
                                 <li><h6 class="dropdown-header fw-bold text-primary">Welcome, {{ user.username }}</h6></li>
                                 <li>
                                     <div class="d-grid px-3 py-2">
-                                        <a class="btn btn-outline-primary btn-sm" href="{% url 'Main:dashboard_page' %}"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
+                                        <a class="btn btn-outline-primary btn-sm" href="{% url 'Main:dashboard_page' request.user.username %}"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
                                     </div>
                                 </li>
                                 <li>
@@ -152,7 +152,7 @@
             </li>
             {% if user.is_authenticated %}
             <li class="nav-item">
-                <a class="nav-link d-flex flex-column align-items-center py-1" href="{% url 'Main:dashboard_page' %}">
+                <a class="nav-link d-flex flex-column align-items-center py-1" href="{% url 'Main:dashboard_page' request.user.username%}">
                     <i class="bi bi-speedometer2 mb-0"></i>
                     <span class="small" style="font-size: 0.7rem;">Dashboard</span>
                 </a>
