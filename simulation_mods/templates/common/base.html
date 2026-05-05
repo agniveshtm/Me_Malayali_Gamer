@@ -169,12 +169,19 @@
 
     <main class="flex-grow-1">
         {% block messages %}
-        <div class="container mt-3">
+        <div class="position-fixed top-0 end-0 p-3 d-flex flex-column align-items-end" style="top: var(--navbar-height) !important; z-index: 1050; pointer-events: none;">
             {% if messages %}
                 {% for message in messages %}
-                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <div class="alert fade show shadow border auto-dismiss-alert 
+                        {% if 'error' in message.tags %}bg-danger text-white border-danger
+                        {% elif 'success' in message.tags %}bg-success text-white border-success
+                        {% elif 'warning' in message.tags %}bg-warning text-dark border-warning
+                        {% elif 'info' in message.tags %}bg-info text-dark border-info
+                        {% else %}bg-primary text-white border-primary{% endif %}
+                        d-inline-flex align-items-center mb-2" 
+                        role="alert" 
+                        style="width: fit-content; max-width: 90vw; pointer-events: auto; outline: 2px solid white; outline-offset: -3px;">
+                        <span class="fw-semibold px-2">{{ message }}</span>
                     </div>
                 {% endfor %}
             {% endif %}
@@ -290,6 +297,15 @@
         document.addEventListener('DOMContentLoaded', () => {
             setTheme(getPreferredTheme());
             setAvatarColors();
+
+            // Auto-dismiss alerts after 2 seconds
+            setTimeout(() => {
+                const alerts = document.querySelectorAll('.auto-dismiss-alert');
+                alerts.forEach(alert => {
+                    alert.classList.remove('show');
+                    setTimeout(() => alert.remove(), 150); // wait for Bootstrap fade transition
+                });
+            }, 2000);
         });
     </script>
     {% block scripts %}{% endblock %}
