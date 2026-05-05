@@ -88,6 +88,7 @@ def user_login(request):
 @require_POST
 def user_logout(request):
     logout(request)
+    messages.success(request,"Logged out Successfully!!")
     return redirect('Home:home_page')
 
 @never_cache
